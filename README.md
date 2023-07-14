@@ -1,8 +1,13 @@
 # UTA GMS ENGINE
 
-## Deploy to PyPI
+## Download
 
 ```commandline
-py -m build
-py -m twine upload dist/*
+pip install uta-gms-engine
+```
+
+## Develop
+
+```commandline
+pip install -r requirements.txt
 ```
