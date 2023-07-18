@@ -1,0 +1,22 @@
+﻿<xmcda xmlns:xmcda="http://www.decision-deck.org/2021/XMCDA-4.0.0">
+  <criteriaValues>
+    <criterionValue>
+      <criterionID>g1</criterionID>
+      <value>
+        <integer>2</integer>
+      </value>
+    </criterionValue>
+    <criterionValue>
+      <criterionID>g2</criterionID>
+      <value>
+        <integer>2</integer>
+      </value>
+    </criterionValue>
+    <criterionValue>
+      <criterionID>g3</criterionID>
+      <value>
+        <integer>3</integer>
+      </value>
+    </criterionValue>
+  </criteriaValues>
+</xmcda>

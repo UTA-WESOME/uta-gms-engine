@@ -1,0 +1,52 @@
+﻿<xmcda xmlns:xmcda="http://www.decision-deck.org/2021/XMCDA-4.0.0">
+  <alternatives>
+    <alternative id="A" name="A">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="B" name="B">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="C" name="C">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="D" name="D">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="E" name="E">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="F" name="F">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="G" name="G">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="H" name="H">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="I" name="I">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="J" name="J">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="K" name="K">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+    <alternative id="L" name="L">
+      <type>real</type>
+      <active>true</active>
+    </alternative>
+  </alternatives>
+</xmcda>
