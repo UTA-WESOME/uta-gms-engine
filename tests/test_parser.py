@@ -22,7 +22,6 @@ def alternatives_array_dummy():
 
 
 def test_get_alternatives_array(alternatives_array_dummy):
-
     alternatives: List = parser.get_alternatives_array('performance_table.xml')
 
     assert alternatives == alternatives_array_dummy
