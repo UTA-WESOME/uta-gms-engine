@@ -25,4 +25,4 @@ jobs:
 
       - name: Run Tests
         run: |
-          python -c "import sys; sys.path.append('${GITHUB_WORKSPACE}/src'); pytest.main(['tests/'])"
+          python -c "import sys; sys.path.append('${GITHUB_WORKSPACE}/src'); import pytest; pytest.main(['tests/'])"
