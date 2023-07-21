@@ -1,13 +1,13 @@
-﻿<xmcda xmlns:xmcda="http://www.decision-deck.org/2021/XMCDA-4.0.0">
-  <criteria>
-    <criterion id="g1" name="g1">
-      <active>true</active>
-    </criterion>
-    <criterion id="g2" name="g2">
-      <active>true</active>
-    </criterion>
-    <criterion id="g3" name="g3">
-      <active>true</active>
-    </criterion>
-  </criteria>
+﻿<xmcda xmlns="http://www.decision-deck.org/2021/XMCDA-4.0.0">
+    <criteria>
+        <criterion id="g1" name="g1">
+            <active>true</active>
+        </criterion>
+        <criterion id="g2" name="g2">
+            <active>true</active>
+        </criterion>
+        <criterion id="g3" name="g3">
+            <active>true</active>
+        </criterion>
+    </criteria>
 </xmcda>
