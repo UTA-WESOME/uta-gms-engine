@@ -1,6 +1,5 @@
 from xmcda.criteria import Criteria
 from xmcda.XMCDA import XMCDA
-import numpy as np
 
 import os
 
@@ -11,24 +10,25 @@ class Parser:
     def __init__(self):
         self.xmcda: XMCDA = XMCDA()
 
-    def get_performance_table_array(self, path: str) -> np.ndarray:
+    def get_alternatives_array(self, path: str) -> List[List]:
         """
-        Method responsible for getting performance_table_array
+        Method responsible for getting array of alternatives
 
         :param path: Path to XMCDA file
 
-        :return: Array of performances ex. np.ndarray([[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...])
+        :return: Array of alternatives ex. [[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...]
         """
-        performance_table_list: List[np.array] = []
+        alternatives_array: List[List] = []
         xmcda: XMCDA = self.__load_file(path)
-        criterias_array: np.array = self.__get_criteria(path)
+        criterias_array: List = self.__get_criteria(path)
 
         for alternative in xmcda.alternatives:
-            performance_array = np.array(
-                [xmcda.performance_tables[0][alternative][xmcda.criteria[i]] for i in range(len(criterias_array))])
-            performance_table_list.append(performance_array)
+            alternative_array: List = []
+            for i in range(len(criterias_array)):
+                alternative_array.append(xmcda.performance_tables[0][alternative][xmcda.criteria[i]])
+            alternatives_array.append(alternative_array)
 
-        return np.array(performance_table_list)
+        return alternatives_array
 
     def __get_criteria(self, path: str):
         """
@@ -36,7 +36,7 @@ class Parser:
 
         :param path: Path to XMCDA file
 
-        :return: Array of criteria ex. np.array(['g1', 'g2', 'g3'])
+        :return: Array of criteria ex. ['g1', 'g2', 'g3']
         """
         criteria_array: List = []
         xmcda: XMCDA = self.__load_file(path)
@@ -45,7 +45,7 @@ class Parser:
         for criteria in criteria_xmcda:
             criteria_array.append(criteria.id)
 
-        return np.array(criteria_array)
+        return criteria_array
 
     def __load_file(self, path: str) -> XMCDA:
         """
@@ -63,3 +63,7 @@ class Parser:
         xmcda: XMCDA = self.xmcda.load(refined_path)
 
         return xmcda
+
+
+parser = Parser()
+
