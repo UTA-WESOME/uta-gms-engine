@@ -1,12 +1,12 @@
 import pytest
 
-from src.utagms.parser import parser
+from src.utagms.parser import Parser
 
 from typing import List
 
 
 @pytest.fixture()
-def alternatives_array_dummy():
+def performance_table_list_dummy():
     return [[26.0, 40.0, 44.0],
             [2.0, 2.0, 68.0],
             [18.0, 17.0, 14.0],
@@ -21,7 +21,8 @@ def alternatives_array_dummy():
             [62.0, 43.0, 0.0]]
 
 
-def test_get_alternatives_array(alternatives_array_dummy):
-    alternatives: List = parser.get_alternatives_array('performance_table.xml')
+def test_get_performance_table_list(performance_table_list_dummy):
+    parser = Parser()
+    performance_table_list: List = parser.get_performance_table_list('performance_table.xml')
 
-    assert alternatives == alternatives_array_dummy
+    assert performance_table_list == performance_table_list_dummy

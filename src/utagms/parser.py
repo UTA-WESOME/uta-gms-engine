@@ -10,42 +10,42 @@ class Parser:
     def __init__(self):
         self.xmcda: XMCDA = XMCDA()
 
-    def get_alternatives_array(self, path: str) -> List[List]:
+    def get_performance_table_list(self, path: str) -> List[List]:
         """
-        Method responsible for getting array of alternatives
+        Method responsible for getting list of performances
 
         :param path: Path to XMCDA file
 
-        :return: Array of alternatives ex. [[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...]
+        :return: List of alternatives ex. [[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...]
         """
-        alternatives_array: List[List] = []
+        performance_table_list: List[List] = []
         xmcda: XMCDA = self.__load_file(path)
-        criterias_array: List = self.__get_criteria(path)
+        criterias_list: List = self.__get_criteria(path)
 
         for alternative in xmcda.alternatives:
-            alternative_array: List = []
-            for i in range(len(criterias_array)):
-                alternative_array.append(xmcda.performance_tables[0][alternative][xmcda.criteria[i]])
-            alternatives_array.append(alternative_array)
+            performance_list: List = []
+            for i in range(len(criterias_list)):
+                performance_list.append(xmcda.performance_tables[0][alternative][xmcda.criteria[i]])
+            performance_table_list.append(performance_list)
 
-        return alternatives_array
+        return performance_table_list
 
     def __get_criteria(self, path: str):
         """
-        Private method responsible for getting array of criterias
+        Private method responsible for getting list of criterias
 
         :param path: Path to XMCDA file
 
-        :return: Array of criteria ex. ['g1', 'g2', 'g3']
+        :return: List of criteria ex. ['g1', 'g2', 'g3']
         """
-        criteria_array: List = []
+        criteria_list: List = []
         xmcda: XMCDA = self.__load_file(path)
         criteria_xmcda: Criteria = xmcda.criteria
 
         for criteria in criteria_xmcda:
-            criteria_array.append(criteria.id)
+            criteria_list.append(criteria.id)
 
-        return criteria_array
+        return criteria_list
 
     def __load_file(self, path: str) -> XMCDA:
         """
@@ -63,7 +63,3 @@ class Parser:
         xmcda: XMCDA = self.xmcda.load(refined_path)
 
         return xmcda
-
-
-parser = Parser()
-
