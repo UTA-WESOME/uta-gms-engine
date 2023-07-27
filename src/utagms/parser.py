@@ -14,21 +14,37 @@ class Parser:
         """
         Method responsible for getting list of performances
 
-        :param path: Path to XMCDA file
+        :param path: Path to XMCDA file (performance_table.xml)
 
         :return: List of alternatives ex. [[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...]
         """
-        performance_table_list: List[List] = []
+        performance_table_list: List[List[float]] = []
         xmcda: XMCDA = self._load_file(path)
         criterias_list: List = self._get_criteria(path)
 
         for alternative in xmcda.alternatives:
-            performance_list: List = []
+            performance_list: List[float] = []
             for i in range(len(criterias_list)):
                 performance_list.append(xmcda.performance_tables[0][alternative][xmcda.criteria[i]])
             performance_table_list.append(performance_list)
 
         return performance_table_list
+
+    def get_alternatives_id_list(self, path: str) -> List[str]:
+        """
+        Method responsible for getting list of alternatives ids
+
+        :param path: Path to XMCDA file (alternatives.xml)
+
+        :return: List of alternatives ex. [[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...]
+        """
+        alternatives_id_list: List[str] = []
+        xmcda: XMCDA = self._load_file(path)
+
+        for alternative in xmcda.alternatives:
+            alternatives_id_list.append(alternative.id)
+
+        return alternatives_id_list
 
     def _get_criteria(self, path: str):
         """
