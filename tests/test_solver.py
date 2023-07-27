@@ -45,7 +45,7 @@ def weights_list_dummy():
 
 
 @pytest.fixture()
-def hasse_diagram_list_dummy():
+def hasse_diagram_dict_dummy():
     return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'D', 'H', 'K', 'B', 'F'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J'}}
 
 
@@ -62,16 +62,16 @@ def test_create_variables_list_and_dict(performance_table_list_dummy):
     assert u_arr_dict[0][26.0].name == 'u_0_26.0'
 
 
-def test_get_hasse_diagram_list(
+def test_get_hasse_diagram_dict(
         performance_table_list_dummy,
         alternatives_id_list_dummy,
         preferences_list_dummy,
         indifferences_list_dummy,
         weights_list_dummy,
-        hasse_diagram_list_dummy
+        hasse_diagram_dict_dummy
 ):
     solver = Solver()
-    hasse_diagram_list = solver.get_hasse_diagram_list(
+    hasse_diagram_list = solver.get_hasse_diagram_dict(
         performance_table_list_dummy,
         alternatives_id_list_dummy,
         preferences_list_dummy,
@@ -79,4 +79,4 @@ def test_get_hasse_diagram_list(
         weights_list_dummy
     )
 
-    assert hasse_diagram_list == hasse_diagram_list_dummy
+    assert hasse_diagram_list == hasse_diagram_dict_dummy

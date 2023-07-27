@@ -11,7 +11,7 @@ class Solver:
     def __str__(self):
         return self.name
 
-    def get_hasse_diagram_list(
+    def get_hasse_diagram_dict(
             self,
             performance_table_list: List[List[float]],
             alternatives_id_list: List[str],
@@ -20,7 +20,7 @@ class Solver:
             weights: List[float]
     ) -> List[str]:
         """
-        Method for getting hasse diagram list
+        Method for getting hasse diagram dict
 
         :param performance_table_list:
         :param alternatives_id_list:
