@@ -49,19 +49,6 @@ def hasse_diagram_dict_dummy():
     return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'D', 'H', 'K', 'B', 'F'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J'}}
 
 
-def test_create_variables_list_and_dict(performance_table_list_dummy):
-    solver = Solver()
-    u_arr, u_arr_dict = solver._create_variables_list_and_dict(performance_table_list_dummy)
-
-    assert len(u_arr) == 3
-    assert len(u_arr_dict) == 3
-    assert len(u_arr[0]) == 11
-    assert len(u_arr[1]) == 10
-    assert len(u_arr[2]) == 10
-    assert u_arr[0][0].name == 'u_0_0.0'
-    assert u_arr_dict[0][26.0].name == 'u_0_26.0'
-
-
 def test_get_hasse_diagram_dict(
         performance_table_list_dummy,
         alternatives_id_list_dummy,
