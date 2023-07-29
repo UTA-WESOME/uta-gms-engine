@@ -36,7 +36,7 @@ class Parser:
 
         :param path: Path to XMCDA file (alternatives.xml)
 
-        :return: List of alternatives ex. [[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...]
+        :return: List of alternatives ex. ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
         """
         alternatives_id_list: List[str] = []
         xmcda: XMCDA = self._load_file(path)
