@@ -1,15 +1,12 @@
 from xmcda.criteria import Criteria
 from xmcda.XMCDA import XMCDA
 
-import os
-
 from typing import List
+
+from src.utils.parser_utils import ParserUtils
 
 
 class Parser:
-    def __init__(self):
-        self.xmcda: XMCDA = XMCDA()
-
     def get_performance_table_list(self, path: str) -> List[List]:
         """
         Method responsible for getting list of performances
@@ -19,8 +16,8 @@ class Parser:
         :return: List of alternatives ex. [[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...]
         """
         performance_table_list: List[List[float]] = []
-        xmcda: XMCDA = self._load_file(path)
-        criterias_list: List = self._get_criteria(path)
+        xmcda: XMCDA = ParserUtils.load_file(path)
+        criterias_list: List = self.get_criteria(path)
 
         for alternative in xmcda.alternatives:
             performance_list: List[float] = []
@@ -30,7 +27,8 @@ class Parser:
 
         return performance_table_list
 
-    def get_alternatives_id_list(self, path: str) -> List[str]:
+    @staticmethod
+    def get_alternatives_id_list(path: str) -> List[str]:
         """
         Method responsible for getting list of alternatives ids
 
@@ -39,43 +37,27 @@ class Parser:
         :return: List of alternatives ex. ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
         """
         alternatives_id_list: List[str] = []
-        xmcda: XMCDA = self._load_file(path)
+        xmcda: XMCDA = ParserUtils.load_file(path)
 
         for alternative in xmcda.alternatives:
             alternatives_id_list.append(alternative.id)
 
         return alternatives_id_list
 
-    def _get_criteria(self, path: str):
+    @staticmethod
+    def get_criteria(path: str):
         """
-        Private method responsible for getting list of criterias
+        Method responsible for getting list of criterias
 
         :param path: Path to XMCDA file
 
         :return: List of criteria ex. ['g1', 'g2', 'g3']
         """
         criteria_list: List = []
-        xmcda: XMCDA = self._load_file(path)
+        xmcda: XMCDA = ParserUtils.load_file(path)
         criteria_xmcda: Criteria = xmcda.criteria
 
         for criteria in criteria_xmcda:
             criteria_list.append(criteria.id)
 
         return criteria_list
-
-    def _load_file(self, path: str) -> XMCDA:
-        """
-        Private method responsible for loading XMCDA files from tests/files location.
-        To be refined later when we will read files from different location
-
-        :param path: Path to XMCDA file
-
-        :return: XMCDA
-        """
-        current_script_path: str = os.path.dirname(os.path.abspath(__file__))
-        directory_path: str = os.path.dirname(os.path.dirname(current_script_path))
-        refined_path: str = os.path.normpath(os.path.join(directory_path, f"./tests/files/{path}"))
-
-        xmcda: XMCDA = self.xmcda.load(refined_path)
-
-        return xmcda
