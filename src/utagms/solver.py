@@ -20,7 +20,7 @@ class Solver:
             preferences: List[List[int]],
             indifferences: List[List[int]],
             weights: List[float]
-    ) -> List[str]:
+    ) -> Dict[str, set]:
         """
         Method for getting hasse diagram dict
 
