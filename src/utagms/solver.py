@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from pulp import LpProblem
 
-from src.utils.solver_utils import SolverUtils
+from src.utagms.utils.solver_utils import SolverUtils
 
 
 class Solver:

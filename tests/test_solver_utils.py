@@ -3,7 +3,7 @@ from typing import Dict
 import pytest
 from pulp import LpProblem, value
 
-from src.utils.solver_utils import SolverUtils
+from src.utagms.utils.solver_utils import SolverUtils
 
 
 @pytest.fixture()
