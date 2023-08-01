@@ -1,6 +1,6 @@
 import pytest
 
-from src.utagms.parser import Parser
+from src.utagmsengine.parser import Parser
 
 from typing import List
 
@@ -21,8 +21,34 @@ def performance_table_list_dummy():
             [62.0, 43.0, 0.0]]
 
 
+@pytest.fixture()
+def alternatives_id_list_dummy():
+    return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+
+
+@pytest.fixture()
+def criteria_list_dummy():
+    return ['g1', 'g2', 'g3']
+
+
 def test_get_performance_table_list(performance_table_list_dummy):
     parser = Parser()
-    performance_table_list: List = parser.get_performance_table_list('performance_table.xml')
+    performance_table_list: List[List[float]] = parser.get_performance_table_list('performance_table.xml')
 
     assert performance_table_list == performance_table_list_dummy
+
+
+def test_get_alternatives_id_list(alternatives_id_list_dummy):
+    parser = Parser()
+    alternatives_id_list: List[str] = parser.get_alternatives_id_list('alternatives.xml')
+
+    assert alternatives_id_list == alternatives_id_list_dummy
+
+
+def test_get_criteria(criteria_list_dummy):
+    parser = Parser()
+
+    criteria_list: List[str] = parser.get_criteria('performance_table.xml')
+
+    assert criteria_list == criteria_list_dummy
+
