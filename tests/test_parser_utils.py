@@ -2,7 +2,7 @@ import pytest
 
 from xmcda.XMCDA import XMCDA
 
-from src.utagms.utils.parser_utils import ParserUtils
+from src.utagmsengine.utils.parser_utils import ParserUtils
 
 
 def test_load_file():

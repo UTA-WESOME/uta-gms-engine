@@ -3,7 +3,7 @@ from xmcda.XMCDA import XMCDA
 
 from typing import List
 
-from utils.parser_utils import ParserUtils
+from .utils.parser_utils import ParserUtils
 
 
 class Parser:

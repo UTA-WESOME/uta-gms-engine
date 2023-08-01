@@ -1,6 +1,6 @@
 import pytest
 
-from src.utagms.parser import Parser
+from src.utagmsengine.parser import Parser
 
 from typing import List
 

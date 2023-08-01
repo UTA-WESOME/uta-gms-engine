@@ -1,6 +1,6 @@
 import pytest
 
-from src.utagms.solver import Solver
+from src.utagmsengine.solver import Solver
 
 
 @pytest.fixture()
