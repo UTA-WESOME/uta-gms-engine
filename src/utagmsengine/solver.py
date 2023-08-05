@@ -38,7 +38,7 @@ class Solver:
                 if i == j:
                     continue
 
-                problem: LpProblem = SolverUtils.calculate_epsilon(
+                problem: LpProblem = SolverUtils.calculate_solved_problem(
                     performance_table_list=performance_table_list,
                     preferences=preferences,
                     indifferences=indifferences,
@@ -53,4 +53,40 @@ class Solver:
         direct_relations: Dict[str, set] = SolverUtils.calculate_direct_relations(necessary)
         return direct_relations
 
+    def get_ranking_dict(
+            self,
+            performance_table_list: List[List[float]],
+            alternatives_id_list: List[str],
+            preferences: List[List[int]],
+            indifferences: List[List[int]],
+            weights: List[float]
+    ) -> Dict[str, float]:
+        """
+        Method for getting ranking dict
 
+        :param performance_table_list:
+        :param alternatives_id_list:
+        :param preferences:
+        :param indifferences:
+        :param weights:
+
+        :return refined_necessary:
+        """
+
+        problem: LpProblem = SolverUtils.calculate_solved_problem(
+            performance_table_list=performance_table_list,
+            preferences=preferences,
+            indifferences=indifferences,
+            weights=weights,
+        )
+
+        variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in problem.variables()}
+
+        alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_dict(
+            variables_and_values_dict=variables_and_values_dict,
+            performance_table_list=performance_table_list,
+            alternatives_id_list=alternatives_id_list,
+            weights=weights
+        )
+
+        return alternatives_and_utilities_dict
