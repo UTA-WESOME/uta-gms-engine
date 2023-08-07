@@ -31,24 +31,45 @@ def criteria_list_dummy():
     return ['g1', 'g2', 'g3']
 
 
-def test_get_performance_table_list(performance_table_list_dummy):
+def test_get_performance_table_list_xml(performance_table_list_dummy):
     parser = Parser()
-    performance_table_list: List[List[float]] = parser.get_performance_table_list('performance_table.xml')
+    performance_table_list: List[List[float]] = parser.get_performance_table_list_xml('performance_table.xml')
 
     assert performance_table_list == performance_table_list_dummy
 
 
-def test_get_alternatives_id_list(alternatives_id_list_dummy):
+def test_get_alternatives_id_list_xml(alternatives_id_list_dummy):
     parser = Parser()
-    alternatives_id_list: List[str] = parser.get_alternatives_id_list('alternatives.xml')
+    alternatives_id_list: List[str] = parser.get_alternatives_id_list_xml('alternatives.xml')
 
     assert alternatives_id_list == alternatives_id_list_dummy
 
 
-def test_get_criteria(criteria_list_dummy):
+def test_get_criteria_xml(criteria_list_dummy):
     parser = Parser()
 
-    criteria_list: List[str] = parser.get_criteria('performance_table.xml')
+    criteria_list: List[str] = parser.get_criteria_xml('performance_table.xml')
+
+    assert criteria_list == criteria_list_dummy
+
+def test_get_performance_table_list_csv(performance_table_list_dummy):
+    parser = Parser()
+    performance_table_list: List[List[float]] = parser.get_performance_table_list_csv('../tests/files/alternatives.csv')
+
+    assert performance_table_list == performance_table_list_dummy
+
+
+def test_get_alternatives_id_list_csv(alternatives_id_list_dummy):
+    parser = Parser()
+    alternatives_id_list: List[str] = parser.get_alternatives_id_list_csv('../tests/files/alternatives.csv')
+
+    assert alternatives_id_list == alternatives_id_list_dummy
+
+
+def test_get_criteria_csv(criteria_list_dummy):
+    parser = Parser()
+
+    criteria_list: List[str] = parser.get_criteria_csv('../tests/files/alternatives.csv')
 
     assert criteria_list == criteria_list_dummy
 
