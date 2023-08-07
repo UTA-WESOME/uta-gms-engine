@@ -6,7 +6,7 @@ from pulp import LpVariable, LpProblem, LpMaximize, lpSum, LpAffineExpression
 class SolverUtils:
 
     @staticmethod
-    def calculate_epsilon(
+    def calculate_solved_problem(
             performance_table_list: List[List[float]],
             preferences: List[List[int]],
             indifferences: List[List[int]],
@@ -165,6 +165,13 @@ class SolverUtils:
 
     @staticmethod
     def calculate_direct_relations(necessary: List[List[str]]) -> Dict[str, set]:
+        """
+        Method for getting only direct relations in Hasse Diagram
+
+        :param necessary:
+
+        :return:
+        """
         direct_relations: Dict[str, set] = {}
 
         for relation in necessary:
@@ -183,3 +190,28 @@ class SolverUtils:
             direct_relations[node1]: Dict[str] = related_nodes_copy
 
         return direct_relations
+
+    @staticmethod
+    def get_alternatives_and_utilities_dict(
+            variables_and_values_dict,
+            performance_table_list,
+            alternatives_id_list,
+            weights
+    ) -> Dict[str, float]:
+
+        utilities: List[float] = []
+        for i in range(len(performance_table_list)):
+            utility: float = 0.0
+            for j in range(len(weights)):
+                variable_name: str = f"u_{j}_{performance_table_list[i][j]}"
+                utility += round(variables_and_values_dict[variable_name] * weights[j], 4)
+
+            utilities.append(utility)
+
+        utilities_dict: Dict[str, float] = {}
+        # TODO: Sorting possibly unnecessary, but for now it's nicer for human eye :)
+        for i in range(len(utilities)):
+            utilities_dict[alternatives_id_list[i]] = utilities[i]
+        sorted_dict: Dict[str, float] = dict(sorted(utilities_dict.items(), key=lambda item: item[1]))
+
+        return sorted_dict

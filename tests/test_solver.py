@@ -49,6 +49,11 @@ def hasse_diagram_dict_dummy():
     return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'D', 'H', 'K', 'B', 'F'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J'}}
 
 
+@pytest.fixture()
+def ranking_dict_dummy():
+    return {'E': 0.0, 'B': 0.1867, 'C': 0.1867, 'F': 0.1867, 'H': 0.1867, 'I': 0.1867, 'J': 0.1867, 'K': 0.1867, 'L': 0.1867, 'A': 0.3734, 'D': 0.3734, 'G': 0.3734}
+
+
 def test_get_hasse_diagram_dict(
         performance_table_list_dummy,
         alternatives_id_list_dummy,
@@ -67,3 +72,24 @@ def test_get_hasse_diagram_dict(
     )
 
     assert hasse_diagram_list == hasse_diagram_dict_dummy
+
+
+def test_get_ranking_dict(
+        performance_table_list_dummy,
+        alternatives_id_list_dummy,
+        preferences_list_dummy,
+        indifferences_list_dummy,
+        weights_list_dummy,
+        ranking_dict_dummy
+):
+    solver = Solver()
+
+    ranking = solver.get_ranking_dict(
+        performance_table_list_dummy,
+        alternatives_id_list_dummy,
+        preferences_list_dummy,
+        indifferences_list_dummy,
+        weights_list_dummy
+    )
+
+    assert ranking == ranking_dict_dummy

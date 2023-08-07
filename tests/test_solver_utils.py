@@ -40,6 +40,10 @@ def indifferences_list_dummy():
 def weights_list_dummy():
     return [0.4, 0.25, 0.35]
 
+@pytest.fixture()
+def alternatives_id_list_dummy():
+    return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+
 
 @pytest.fixture()
 def problem_variable_values_dummy():
@@ -56,6 +60,16 @@ def direct_relations_dummy():
     return {'A': {'F', 'K'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'B', 'H', 'D', 'F', 'K'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J'}}
 
 
+@pytest.fixture()
+def alternatives_and_utilities_dict_dummy():
+    return {'E': 0.0, 'B': 0.1867, 'C': 0.1867, 'F': 0.1867, 'H': 0.1867, 'I': 0.1867, 'J': 0.1867, 'K': 0.1867, 'L': 0.1867, 'A': 0.3734, 'D': 0.3734, 'G': 0.3734}
+
+
+@pytest.fixture()
+def variables_and_values_dict_dummy():
+    return {'epsilon': 0.18666667, 'u_0_0.0': 0.0, 'u_0_16.0': 0.46666667, 'u_0_18.0': 0.46666667, 'u_0_2.0': 0.0, 'u_0_25.0': 0.46666667, 'u_0_26.0': 0.46666667, 'u_0_35.0': 0.46666667, 'u_0_6.0': 0.0, 'u_0_62.0': 0.46666667, 'u_0_7.0': 0.0, 'u_0_9.0': 0.46666667, 'u_1_15.0': 0.0, 'u_1_17.0': 0.0, 'u_1_2.0': 0.0, 'u_1_24.0': 0.0, 'u_1_30.0': 0.0, 'u_1_40.0': 0.0, 'u_1_43.0': 0.0, 'u_1_55.0': 0.0, 'u_1_62.0': 0.0, 'u_1_9.0': 0.0, 'u_2_0.0': 0.0, 'u_2_100.0': 0.53333333, 'u_2_12.0': 0.0, 'u_2_14.0': 0.0, 'u_2_17.0': 0.0, 'u_2_25.0': 0.53333333, 'u_2_44.0': 0.53333333, 'u_2_68.0': 0.53333333, 'u_2_73.0': 0.53333333, 'u_2_88.0': 0.53333333}
+
+
 def test_create_variables_list_and_dict(performance_table_list_dummy):
     u_arr, u_arr_dict = SolverUtils.create_variables_list_and_dict(performance_table_list_dummy)
 
@@ -68,14 +82,14 @@ def test_create_variables_list_and_dict(performance_table_list_dummy):
     assert u_arr_dict[0][26.0].name == 'u_0_26.0'
 
 
-def test_calculate_epsilon(
+def test_calculate_solved_problem(
     performance_table_list_dummy,
     preferences_list_dummy,
     indifferences_list_dummy,
     weights_list_dummy,
     problem_variable_values_dummy
 ):
-    problem: LpProblem = SolverUtils.calculate_epsilon(
+    problem: LpProblem = SolverUtils.calculate_solved_problem(
         performance_table_list=performance_table_list_dummy,
         preferences=preferences_list_dummy,
         indifferences=indifferences_list_dummy,
@@ -95,3 +109,22 @@ def test_calculate_direct_relations(necessary_dummy, direct_relations_dummy):
     direct_relations: Dict[str, set] = SolverUtils.calculate_direct_relations(necessary_dummy)
 
     assert direct_relations == direct_relations_dummy
+
+
+def test_get_alternatives_and_utilities_dict(
+        variables_and_values_dict_dummy,
+        performance_table_list_dummy,
+        alternatives_id_list_dummy,
+        weights_list_dummy,
+        alternatives_and_utilities_dict_dummy
+):
+    alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_dict(
+        variables_and_values_dict=variables_and_values_dict_dummy,
+        performance_table_list=performance_table_list_dummy,
+        alternatives_id_list=alternatives_id_list_dummy,
+        weights=weights_list_dummy
+    )
+
+    assert alternatives_and_utilities_dict == alternatives_and_utilities_dict_dummy
+
+
