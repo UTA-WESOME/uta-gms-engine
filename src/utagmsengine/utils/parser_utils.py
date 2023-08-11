@@ -23,3 +23,5 @@ class ParserUtils:
         xmcda: XMCDA = xmcda.load(refined_path)
 
         return xmcda
+
+
