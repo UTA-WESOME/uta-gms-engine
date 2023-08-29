@@ -21,6 +21,7 @@ def performance_table_list_dummy():
             [26.0, 17.0, 17.0],
             [62.0, 43.0, 0.0]]
 
+
 @pytest.fixture()
 def preferences_list_dummy():
     return [
@@ -39,6 +40,12 @@ def indifferences_list_dummy():
 @pytest.fixture()
 def weights_list_dummy():
     return [0.4, 0.25, 0.35]
+
+
+@pytest.fixture()
+def criteria_list_dummy():
+    return [1, 1, 1]
+
 
 @pytest.fixture()
 def alternatives_id_list_dummy():
@@ -87,6 +94,7 @@ def test_calculate_solved_problem(
     preferences_list_dummy,
     indifferences_list_dummy,
     weights_list_dummy,
+    criteria_list_dummy,
     problem_variable_values_dummy
 ):
     problem: LpProblem = SolverUtils.calculate_solved_problem(
@@ -94,6 +102,7 @@ def test_calculate_solved_problem(
         preferences=preferences_list_dummy,
         indifferences=indifferences_list_dummy,
         weights=weights_list_dummy,
+        criteria=criteria_list_dummy,
         alternative_id_1=1,
         alternative_id_2=2
     )

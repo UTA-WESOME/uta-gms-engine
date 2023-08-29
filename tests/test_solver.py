@@ -28,7 +28,8 @@ def alternatives_id_list_dummy():
 def preferences_list_dummy():
     return [
         [6, 5],
-        [5, 4]
+        [5, 4],
+        [7, 5]
     ]
 
 
@@ -45,13 +46,18 @@ def weights_list_dummy():
 
 
 @pytest.fixture()
+def criteria_list_dummy():
+    return [1, 1, 1]
+
+
+@pytest.fixture()
 def hasse_diagram_dict_dummy():
-    return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'D', 'H', 'K', 'B', 'F'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J'}}
+    return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'B', 'D', 'F', 'H', 'K'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J', 'H'}}
 
 
 @pytest.fixture()
 def ranking_dict_dummy():
-    return {'E': 0.0, 'B': 0.1867, 'C': 0.1867, 'F': 0.1867, 'H': 0.1867, 'I': 0.1867, 'J': 0.1867, 'K': 0.1867, 'L': 0.1867, 'A': 0.3734, 'D': 0.3734, 'G': 0.3734}
+    return {'E': 0.0, 'B': 0.15, 'H': 0.15, 'I': 0.35, 'C': 0.4, 'F': 0.4, 'J': 0.4, 'K': 0.4, 'L': 0.4, 'A': 0.55, 'D':0.8, 'G': 0.8}
 
 
 def test_get_hasse_diagram_dict(
@@ -60,15 +66,18 @@ def test_get_hasse_diagram_dict(
         preferences_list_dummy,
         indifferences_list_dummy,
         weights_list_dummy,
+        criteria_list_dummy,
         hasse_diagram_dict_dummy
 ):
     solver = Solver()
+
     hasse_diagram_list = solver.get_hasse_diagram_dict(
         performance_table_list_dummy,
         alternatives_id_list_dummy,
         preferences_list_dummy,
         indifferences_list_dummy,
-        weights_list_dummy
+        weights_list_dummy,
+        criteria_list_dummy
     )
 
     assert hasse_diagram_list == hasse_diagram_dict_dummy
@@ -80,6 +89,7 @@ def test_get_ranking_dict(
         preferences_list_dummy,
         indifferences_list_dummy,
         weights_list_dummy,
+        criteria_list_dummy,
         ranking_dict_dummy
 ):
     solver = Solver()
@@ -89,7 +99,8 @@ def test_get_ranking_dict(
         alternatives_id_list_dummy,
         preferences_list_dummy,
         indifferences_list_dummy,
-        weights_list_dummy
+        weights_list_dummy,
+        criteria_list_dummy
     )
 
     assert ranking == ranking_dict_dummy
