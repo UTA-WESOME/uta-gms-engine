@@ -19,7 +19,8 @@ class Solver:
             alternatives_id_list: List[str],
             preferences: List[List[int]],
             indifferences: List[List[int]],
-            weights: List[float]
+            weights: List[float],
+            criteria: List[int]
     ) -> Dict[str, set]:
         """
         Method for getting hasse diagram dict
@@ -29,6 +30,7 @@ class Solver:
         :param preferences:
         :param indifferences:
         :param weights:
+        :param criteria:
 
         :return refined_necessary:
         """
@@ -43,6 +45,7 @@ class Solver:
                     preferences=preferences,
                     indifferences=indifferences,
                     weights=weights,
+                    criteria=criteria,
                     alternative_id_1=i,
                     alternative_id_2=j
                 )
@@ -59,7 +62,8 @@ class Solver:
             alternatives_id_list: List[str],
             preferences: List[List[int]],
             indifferences: List[List[int]],
-            weights: List[float]
+            weights: List[float],
+            criteria: List[int]
     ) -> Dict[str, float]:
         """
         Method for getting ranking dict
@@ -69,6 +73,7 @@ class Solver:
         :param preferences:
         :param indifferences:
         :param weights:
+        :param criteria:
 
         :return refined_necessary:
         """
@@ -78,6 +83,7 @@ class Solver:
             preferences=preferences,
             indifferences=indifferences,
             weights=weights,
+            criteria=criteria
         )
 
         variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in problem.variables()}

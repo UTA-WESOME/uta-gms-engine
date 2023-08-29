@@ -11,6 +11,7 @@ class SolverUtils:
             preferences: List[List[int]],
             indifferences: List[List[int]],
             weights: List[float],
+            criteria: List[int],
             alternative_id_1: int = -1,
             alternative_id_2: int = -1
     ) -> LpProblem:
@@ -22,6 +23,7 @@ class SolverUtils:
         :param preferences:
         :param indifferences:
         :param weights:
+        :param criteria:
         :param alternative_id_1:
         :param alternative_id_2:
 
@@ -34,22 +36,36 @@ class SolverUtils:
         u_list, u_list_dict = SolverUtils.create_variables_list_and_dict(performance_table_list)
 
         # Normalization constraints
-        last_elements: List[LpVariable] = [sublist[-1] for sublist in u_list]
-        problem += lpSum(last_elements) == 1
-
+        the_greatest_performance: List[LpVariable] = []
         for i in range(len(u_list)):
-            problem += u_list[i][0] == 0
+            if criteria[i] == 1:
+                the_greatest_performance.append(u_list[i][-1])
+                problem += u_list[i][-1] == weights[i]
+                problem += u_list[i][0] == 0
+            else:
+                the_greatest_performance.append(u_list[i][0])
+                problem += u_list[i][0] == weights[i]
+                problem += u_list[i][-1] == 0
+
+        problem += lpSum(the_greatest_performance) == 1
 
         # Monotonicity constraint
         for i in range(len(u_list)):
             for j in range(1, len(u_list[i])):
-                problem += u_list[i][j] >= u_list[i][j - 1]
+                if criteria[i] == 1:
+                    problem += u_list[i][j] >= u_list[i][j - 1]
+                else:
+                    problem += u_list[i][j - 1] >= u_list[i][j]
 
         # Bounds constraint
         for i in range(len(u_list)):
             for j in range(1, len(u_list[i]) - 1):
-                problem += u_list[i][-1] >= u_list[i][j]
-                problem += u_list[i][j] >= u_list[i][0]
+                if criteria[i] == 1:
+                    problem += u_list[i][-1] >= u_list[i][j]
+                    problem += u_list[i][j] >= u_list[i][0]
+                else:
+                    problem += u_list[i][0] >= u_list[i][j]
+                    problem += u_list[i][j] >= u_list[i][-1]
 
         # Preference constraint
         for preference in preferences:
@@ -65,12 +81,10 @@ class SolverUtils:
             weighted_left_side: List[LpAffineExpression] = []
             weighted_right_side: List[LpAffineExpression] = []
             for u in left_side:
-                i: int = int(str(u).split('_')[1])
-                weighted_left_side.append(weights[i] * u)
+                weighted_left_side.append(u)
 
             for u in right_side:
-                i: int = int(str(u).split('_')[1])
-                weighted_right_side.append(weights[i] * u)
+                weighted_right_side.append(u)
 
             problem += lpSum(weighted_left_side) >= lpSum(weighted_right_side) + epsilon
 
@@ -88,12 +102,10 @@ class SolverUtils:
             weighted_left_side: List[LpAffineExpression] = []
             weighted_right_side: List[LpAffineExpression] = []
             for u in left_side:
-                i: int = int(str(u).split('_')[1])
-                weighted_left_side.append(weights[i] * u)
+                weighted_left_side.append(u)
 
             for u in right_side:
-                i: int = int(str(u).split('_')[1])
-                weighted_right_side.append(weights[i] * u)
+                weighted_right_side.append(u)
 
             problem += lpSum(weighted_left_side) == lpSum(weighted_right_side)
 
@@ -110,12 +122,10 @@ class SolverUtils:
             weighted_left_side: List[LpAffineExpression] = []
             weighted_right_side: List[LpAffineExpression] = []
             for u in left_side:
-                i: int = int(str(u).split('_')[1])
-                weighted_left_side.append(weights[i] * u)
+                weighted_left_side.append(u)
 
             for u in right_side:
-                i: int = int(str(u).split('_')[1])
-                weighted_right_side.append(weights[i] * u)
+                weighted_right_side.append(u)
 
             problem += lpSum(weighted_left_side) >= lpSum(weighted_right_side) + epsilon
 
@@ -204,7 +214,7 @@ class SolverUtils:
             utility: float = 0.0
             for j in range(len(weights)):
                 variable_name: str = f"u_{j}_{performance_table_list[i][j]}"
-                utility += round(variables_and_values_dict[variable_name] * weights[j], 4)
+                utility += round(variables_and_values_dict[variable_name], 4)
 
             utilities.append(utility)
 
