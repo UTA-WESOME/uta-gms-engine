@@ -60,7 +60,15 @@ class Parser:
         for criteria in criteria_xmcda:
             criteria_list.append(criteria.id)
 
-        return criteria_list
+        # Recognition of the type of criteria
+        type_of_criterion: List[int] = []
+        for i in range(len(criteria_list)):
+            if criteria_list[i][0] == 'g':
+                type_of_criterion.append(1)
+            else:
+                type_of_criterion.append(0)
+
+        return type_of_criterion
 
     @staticmethod
     def get_performance_table_list_csv(path: str) -> List[List[float]]:
@@ -113,4 +121,12 @@ class Parser:
             csv_reader = csv.reader(csvfile, delimiter=';')
             criteria_list = next(csv_reader)
 
-        return criteria_list
+        # Recognition of the type of criteria
+        type_of_criterion: List[int] = []
+        for i in range(len(criteria_list)):
+            if criteria_list[i][0] == 'g':
+                type_of_criterion.append(1)
+            else:
+                type_of_criterion.append(0)
+
+        return type_of_criterion
