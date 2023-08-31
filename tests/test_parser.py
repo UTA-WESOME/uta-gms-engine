@@ -28,7 +28,7 @@ def alternatives_id_list_dummy():
 
 @pytest.fixture()
 def criteria_list_dummy():
-    return ['g1', 'g2', 'g3']
+    return [1, 1, 1]
 
 
 def test_get_performance_table_list_xml(performance_table_list_dummy):
@@ -51,6 +51,7 @@ def test_get_criteria_xml(criteria_list_dummy):
     criteria_list: List[str] = parser.get_criteria_xml('performance_table.xml')
 
     assert criteria_list == criteria_list_dummy
+
 
 def test_get_performance_table_list_csv(performance_table_list_dummy):
     parser = Parser()
