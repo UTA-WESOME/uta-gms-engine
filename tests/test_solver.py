@@ -28,8 +28,7 @@ def alternatives_id_list_dummy():
 def preferences_list_dummy():
     return [
         [6, 5],
-        [5, 4],
-        [7, 5]
+        [5, 4]
     ]
 
 
