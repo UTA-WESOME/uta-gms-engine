@@ -58,6 +58,11 @@ def problem_variable_values_dummy():
 
 
 @pytest.fixture()
+def predefined_number_of_linear_segments_problem_variable_values_dummy():
+    return [0.0, 0.0, 0.0, 0.0, 0.051612903, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.19166667, 0.25, 0.0, 0.35, 0.0, 0.0, 0.0, 0.266]
+
+
+@pytest.fixture()
 def necessary_dummy():
     return [['A', 'C'], ['A', 'E'], ['A', 'F'], ['A', 'J'], ['A', 'K'], ['C', 'J'], ['D', 'B'], ['D', 'C'], ['D', 'E'], ['D', 'F'], ['D', 'G'], ['D', 'H'], ['D', 'J'], ['D', 'K'], ['F', 'E'], ['F', 'J'], ['G', 'B'], ['G', 'C'], ['G', 'D'], ['G', 'E'], ['G', 'F'], ['G', 'H'], ['G', 'J'], ['G', 'K'], ['I', 'B'], ['K', 'C'], ['K', 'J'], ['L', 'J']]
 
@@ -77,6 +82,11 @@ def variables_and_values_dict_dummy():
     return {'epsilon': 0.18666667, 'u_0_0.0': 0.0, 'u_0_16.0': 0.46666667, 'u_0_18.0': 0.46666667, 'u_0_2.0': 0.0, 'u_0_25.0': 0.46666667, 'u_0_26.0': 0.46666667, 'u_0_35.0': 0.46666667, 'u_0_6.0': 0.0, 'u_0_62.0': 0.46666667, 'u_0_7.0': 0.0, 'u_0_9.0': 0.46666667, 'u_1_15.0': 0.0, 'u_1_17.0': 0.0, 'u_1_2.0': 0.0, 'u_1_24.0': 0.0, 'u_1_30.0': 0.0, 'u_1_40.0': 0.0, 'u_1_43.0': 0.0, 'u_1_55.0': 0.0, 'u_1_62.0': 0.0, 'u_1_9.0': 0.0, 'u_2_0.0': 0.0, 'u_2_100.0': 0.53333333, 'u_2_12.0': 0.0, 'u_2_14.0': 0.0, 'u_2_17.0': 0.0, 'u_2_25.0': 0.53333333, 'u_2_44.0': 0.53333333, 'u_2_68.0': 0.53333333, 'u_2_73.0': 0.53333333, 'u_2_88.0': 0.53333333}
 
 
+@pytest.fixture()
+def number_of_points_dummy():
+    return [3, 3, 3]
+
+
 def test_create_variables_list_and_dict(performance_table_list_dummy):
     u_arr, u_arr_dict = SolverUtils.create_variables_list_and_dict(performance_table_list_dummy)
 
@@ -87,6 +97,33 @@ def test_create_variables_list_and_dict(performance_table_list_dummy):
     assert len(u_arr[2]) == 10
     assert u_arr[0][0].name == 'u_0_0.0'
     assert u_arr_dict[0][26.0].name == 'u_0_26.0'
+
+
+def test_calculate_solved_problem_with_predefined_number_of_characteristic_points(
+    performance_table_list_dummy,
+    preferences_list_dummy,
+    indifferences_list_dummy,
+    weights_list_dummy,
+    criteria_list_dummy,
+    number_of_points_dummy,
+    predefined_number_of_linear_segments_problem_variable_values_dummy
+):
+    problem: LpProblem = SolverUtils.calculate_solved_problem_with_predefined_number_of_characteristic_points(
+        performance_table_list=performance_table_list_dummy,
+        preferences=preferences_list_dummy,
+        indifferences=indifferences_list_dummy,
+        weights=weights_list_dummy,
+        criteria=criteria_list_dummy,
+        number_of_points=number_of_points_dummy,
+        alternative_id_1=1,
+        alternative_id_2=2
+    )
+
+    variable_values = []
+    for var in problem.variables():
+        variable_values.append(value(var))
+
+    assert variable_values == predefined_number_of_linear_segments_problem_variable_values_dummy
 
 
 def test_calculate_solved_problem(

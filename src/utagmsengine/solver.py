@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from pulp import LpProblem
 
@@ -63,11 +63,13 @@ class Solver:
             preferences: List[List[int]],
             indifferences: List[List[int]],
             weights: List[float],
-            criteria: List[int]
+            criteria: List[int],
+            number_of_points: Optional[List[int]] = None
     ) -> Dict[str, float]:
         """
         Method for getting ranking dict
 
+        :param number_of_points:
         :param performance_table_list:
         :param alternatives_id_list:
         :param preferences:
@@ -78,21 +80,48 @@ class Solver:
         :return refined_necessary:
         """
 
-        problem: LpProblem = SolverUtils.calculate_solved_problem(
-            performance_table_list=performance_table_list,
-            preferences=preferences,
-            indifferences=indifferences,
-            weights=weights,
-            criteria=criteria
-        )
+        if number_of_points is None:
+            problem: LpProblem = SolverUtils.calculate_solved_problem(
+                performance_table_list=performance_table_list,
+                preferences=preferences,
+                indifferences=indifferences,
+                weights=weights,
+                criteria=criteria
+            )
 
-        variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in problem.variables()}
+            variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in
+                                                           problem.variables()}
 
-        alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_dict(
-            variables_and_values_dict=variables_and_values_dict,
-            performance_table_list=performance_table_list,
-            alternatives_id_list=alternatives_id_list,
-            weights=weights
-        )
+            alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_dict(
+                variables_and_values_dict=variables_and_values_dict,
+                performance_table_list=performance_table_list,
+                alternatives_id_list=alternatives_id_list,
+                weights=weights
+            )
+        else:
+            problem: LpProblem = SolverUtils.calculate_solved_problem_with_predefined_number_of_characteristic_points(
+                performance_table_list=performance_table_list,
+                preferences=preferences,
+                indifferences=indifferences,
+                weights=weights,
+                criteria=criteria,
+                number_of_points=number_of_points
+            )
+
+            variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in problem.variables()}
+
+            u_list, u_list_dict = SolverUtils.create_variables_list_and_dict(performance_table_list)
+
+            characteristic_points: List[List[float]] = SolverUtils.calculate_characteristic_points(
+                number_of_points, performance_table_list, u_list_dict
+            )
+
+            alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_using_interpolation_dict(
+                variables_and_values_dict=variables_and_values_dict,
+                performance_table_list=performance_table_list,
+                weights=weights,
+                characteristic_points=characteristic_points,
+                alternatives_id_list=alternatives_id_list,
+            )
 
         return alternatives_and_utilities_dict
