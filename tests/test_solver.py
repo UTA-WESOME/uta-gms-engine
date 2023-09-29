@@ -78,7 +78,7 @@ def test_get_hasse_diagram_dict(
         criteria_list_dummy,
         hasse_diagram_dict_dummy
 ):
-    solver = Solver()
+    solver = Solver(show_logs=True)
 
     hasse_diagram_list = solver.get_hasse_diagram_dict(
         performance_table_list_dummy,
@@ -102,7 +102,7 @@ def test_get_ranking_dict(
         number_of_points_dummy,
         ranking_dict_dummy,
 ):
-    solver = Solver()
+    solver = Solver(show_logs=True)
 
     ranking = solver.get_ranking_dict(
         performance_table_list_dummy,
@@ -126,7 +126,7 @@ def test_predefined_get_ranking_dict(
         number_of_points_dummy,
         predefined_linear_segments_ranking_dict_dummy
 ):
-    solver = Solver()
+    solver = Solver(show_logs=True)
 
     ranking_predefined_number_of_linear_segments = solver.get_ranking_dict(
         performance_table_list_dummy,
