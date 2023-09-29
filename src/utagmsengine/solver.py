@@ -7,8 +7,9 @@ from .utils.solver_utils import SolverUtils
 
 class Solver:
 
-    def __init__(self):
+    def __init__(self, show_logs: Optional[bool] = False):
         self.name = 'UTA GMS Solver'
+        self.show_logs = show_logs
 
     def __str__(self):
         return self.name
@@ -86,7 +87,8 @@ class Solver:
                 preferences=preferences,
                 indifferences=indifferences,
                 weights=weights,
-                criteria=criteria
+                criteria=criteria,
+                show_logs=self.show_logs
             )
 
             variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in
@@ -105,7 +107,8 @@ class Solver:
                 indifferences=indifferences,
                 weights=weights,
                 criteria=criteria,
-                number_of_points=number_of_points
+                number_of_points=number_of_points,
+                show_logs=self.show_logs
             )
 
             variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in problem.variables()}

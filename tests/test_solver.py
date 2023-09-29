@@ -56,17 +56,17 @@ def number_of_points_dummy():
 
 @pytest.fixture()
 def hasse_diagram_dict_dummy():
-    return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'B', 'D', 'F', 'H', 'K'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J', 'H'}}
+    return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'B', 'D', 'F', 'K', 'H'}, 'I': {'B'}, 'K': {'C'}, 'L': {'H', 'J'}}
 
 
 @pytest.fixture()
 def ranking_dict_dummy():
-    return {'E': 0.0, 'B': 0.15, 'H': 0.15, 'I': 0.35, 'C': 0.4, 'F': 0.4, 'J': 0.4, 'K': 0.4, 'L': 0.4, 'A': 0.55, 'D':0.8, 'G': 0.8}
+    return {'E': 0.0, 'B': 0.15, 'H': 0.15, 'C': 0.2, 'J': 0.2, 'I': 0.35, 'F': 0.4, 'K': 0.4, 'L': 0.4, 'A': 0.55, 'D': 0.8, 'G': 0.8}
 
 
 @pytest.fixture()
 def predefined_linear_segments_ranking_dict_dummy():
-    return {'C': 0.0, 'F': 0.0, 'J': 0.0, 'K': 0.0, 'A': 0.06666666666666667, 'B': 0.126, 'H': 0.16099999999999998, 'E': 0.19166667, 'D': 0.301612903, 'I': 0.35, 'L': 0.4916666666666667, 'G': 0.516}
+    return {'C': 0.0, 'F': 0.0, 'J': 0.0, 'K': 0.0, 'A': 0.06666666666666667, 'B': 0.126, 'H': 0.16099999999999998, 'E': 0.191667, 'D': 0.3016129, 'I': 0.35, 'L': 0.4916666666666667, 'G': 0.516}
 
 
 def test_get_hasse_diagram_dict(
@@ -101,7 +101,6 @@ def test_get_ranking_dict(
         criteria_list_dummy,
         number_of_points_dummy,
         ranking_dict_dummy,
-        predefined_linear_segments_ranking_dict_dummy
 ):
     solver = Solver()
 
@@ -114,6 +113,21 @@ def test_get_ranking_dict(
         criteria_list_dummy
     )
 
+    assert ranking == ranking_dict_dummy
+
+
+def test_predefined_get_ranking_dict(
+        performance_table_list_dummy,
+        alternatives_id_list_dummy,
+        preferences_list_dummy,
+        indifferences_list_dummy,
+        weights_list_dummy,
+        criteria_list_dummy,
+        number_of_points_dummy,
+        predefined_linear_segments_ranking_dict_dummy
+):
+    solver = Solver()
+
     ranking_predefined_number_of_linear_segments = solver.get_ranking_dict(
         performance_table_list_dummy,
         alternatives_id_list_dummy,
@@ -124,5 +138,4 @@ def test_get_ranking_dict(
         number_of_points_dummy
     )
 
-    assert ranking == ranking_dict_dummy
     assert ranking_predefined_number_of_linear_segments == predefined_linear_segments_ranking_dict_dummy
