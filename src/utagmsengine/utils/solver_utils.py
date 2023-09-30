@@ -1,6 +1,6 @@
 from typing import Tuple, List, Dict
 
-from pulp import LpVariable, LpProblem, LpMaximize, lpSum, LpAffineExpression
+from pulp import LpVariable, LpProblem, LpMaximize, lpSum, LpAffineExpression, GLPK
 
 
 class SolverUtils:
@@ -13,13 +13,15 @@ class SolverUtils:
             weights: List[float],
             criteria: List[int],
             alternative_id_1: int = -1,
-            alternative_id_2: int = -1
+            alternative_id_2: int = -1,
+            show_logs: bool = False,
     ) -> LpProblem:
         """
         Main calculation method for problem-solving.
         The idea is that this should be a generic method used across different problems
         using general function
 
+        :param show_logs:
         :param performance_table_list:
         :param preferences:
         :param indifferences:
@@ -132,7 +134,7 @@ class SolverUtils:
 
         problem += epsilon
 
-        problem.solve()
+        problem.solve(solver=GLPK(msg=show_logs))
 
         return problem
 
@@ -145,13 +147,15 @@ class SolverUtils:
             criteria: List[int],
             number_of_points: List[int],
             alternative_id_1: int = -1,
-            alternative_id_2: int = -1
+            alternative_id_2: int = -1,
+            show_logs: bool = False,
     ) -> LpProblem:
         """
         Main calculation method for problem-solving.
         The idea is that this should be a generic method used across different problems
         using predefined number of linear segments/characteristic points
 
+        :param show_logs:
         :param performance_table_list:
         :param preferences:
         :param indifferences:
@@ -292,7 +296,10 @@ class SolverUtils:
 
         problem += epsilon
 
-        problem.solve()
+        glpk_solver = GLPK(msg=show_logs)
+        glpk_solver.options += ['--nopresol']
+
+        problem.solve(glpk_solver)
 
         return problem
 
