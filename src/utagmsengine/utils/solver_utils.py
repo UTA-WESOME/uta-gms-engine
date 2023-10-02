@@ -255,6 +255,35 @@ class SolverUtils:
                         break
                 if exist == 0:
                     u_list_of_characteristic_points[i].append(right_side[i])
+        # code only for hasse graph calculation
+        if alternative_id_1 >= 0 and alternative_id_2 >= 0:
+            left_alternative: List[float] = performance_table_list[alternative_id_1]
+            right_alternative: List[float] = performance_table_list[alternative_id_2]
+
+            left_side: List[LpVariable] = []
+            right_side: List[LpVariable] = []
+            for i in range(len(u_list_dict)):
+                left_side.append(u_list_dict[i][left_alternative[i]])
+                right_side.append(u_list_dict[i][right_alternative[i]])
+
+            # Check if preference is a characteristic point, if not add it to characteristic points
+            for i in range(len(left_side)):
+                exist = 0
+                for j in range(len(u_list_of_characteristic_points[i])):
+                    if left_side[i].name == u_list_of_characteristic_points[i][j].name:
+                        exist = 1
+                        break
+                if exist == 0:
+                    u_list_of_characteristic_points[i].append(left_side[i])
+
+            for i in range(len(right_side)):
+                exist = 0
+                for j in range(len(u_list_of_characteristic_points[i])):
+                    if right_side[i].name == u_list_of_characteristic_points[i][j].name:
+                        exist = 1
+                        break
+                if exist == 0:
+                    u_list_of_characteristic_points[i].append(right_side[i])
 
         sorted_u_list_of_characteristic_points = [sorted(lp_var_list, key=lambda var: float(var.name.split("_")[-1]))
                                                   for lp_var_list in u_list_of_characteristic_points]

@@ -21,11 +21,13 @@ class Solver:
             preferences: List[List[int]],
             indifferences: List[List[int]],
             weights: List[float],
-            criteria: List[int]
+            criteria: List[int],
+            number_of_points: Optional[List[int]] = None
     ) -> Dict[str, set]:
         """
         Method for getting hasse diagram dict
 
+        :param number_of_points:
         :param performance_table_list:
         :param alternatives_id_list:
         :param preferences:
@@ -35,26 +37,52 @@ class Solver:
 
         :return refined_necessary:
         """
-        necessary: List[List[str]] = []
-        for i in range(len(performance_table_list)):
-            for j in range(len(performance_table_list)):
-                if i == j:
-                    continue
+        if number_of_points is None:
+            necessary: List[List[str]] = []
+            for i in range(len(performance_table_list)):
+                for j in range(len(performance_table_list)):
+                    if i == j:
+                        continue
 
-                problem: LpProblem = SolverUtils.calculate_solved_problem(
-                    performance_table_list=performance_table_list,
-                    preferences=preferences,
-                    indifferences=indifferences,
-                    weights=weights,
-                    criteria=criteria,
-                    alternative_id_1=i,
-                    alternative_id_2=j
-                )
+                    problem: LpProblem = SolverUtils.calculate_solved_problem(
+                        performance_table_list=performance_table_list,
+                        preferences=preferences,
+                        indifferences=indifferences,
+                        weights=weights,
+                        criteria=criteria,
+                        alternative_id_1=i,
+                        alternative_id_2=j,
+                        show_logs=self.show_logs
+                    )
 
-                if problem.variables()[0].varValue <= 0:
-                    necessary.append([alternatives_id_list[i], alternatives_id_list[j]])
+                    if problem.variables()[0].varValue <= 0:
+                        necessary.append([alternatives_id_list[i], alternatives_id_list[j]])
 
-        direct_relations: Dict[str, set] = SolverUtils.calculate_direct_relations(necessary)
+            direct_relations: Dict[str, set] = SolverUtils.calculate_direct_relations(necessary)
+        else:
+            necessary: List[List[str]] = []
+            for i in range(len(performance_table_list)):
+                for j in range(len(performance_table_list)):
+                    if i == j:
+                        continue
+
+                    problem: LpProblem = SolverUtils.calculate_solved_problem_with_predefined_number_of_characteristic_points(
+                        performance_table_list=performance_table_list,
+                        preferences=preferences,
+                        indifferences=indifferences,
+                        weights=weights,
+                        criteria=criteria,
+                        number_of_points=number_of_points,
+                        alternative_id_1=i,
+                        alternative_id_2=j,
+                        show_logs=self.show_logs
+                    )
+
+                    if problem.variables()[0].varValue <= 0:
+                        necessary.append([alternatives_id_list[i], alternatives_id_list[j]])
+
+            direct_relations: Dict[str, set] = SolverUtils.calculate_direct_relations(necessary)
+
         return direct_relations
 
     def get_ranking_dict(

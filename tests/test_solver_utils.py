@@ -114,9 +114,7 @@ def test_calculate_solved_problem_with_predefined_number_of_characteristic_point
         indifferences=indifferences_list_dummy,
         weights=weights_list_dummy,
         criteria=criteria_list_dummy,
-        number_of_points=number_of_points_dummy,
-        alternative_id_1=1,
-        alternative_id_2=2
+        number_of_points=number_of_points_dummy
     )
 
     variable_values = []

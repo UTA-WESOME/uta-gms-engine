@@ -60,6 +60,11 @@ def hasse_diagram_dict_dummy():
 
 
 @pytest.fixture()
+def predefined_hasse_diagram_dict_dummy():
+    return {'A': set(), 'B': set(), 'C': set(), 'D': set(), 'E': set(), 'F': set(), 'G': set(), 'H': set(), 'I': set(), 'J': set(), 'K': {'L'}, 'L': {'C', 'E', 'D', 'G', 'J', 'F', 'B', 'I', 'K', 'H', 'A'}}
+
+
+@pytest.fixture()
 def ranking_dict_dummy():
     return {'E': 0.0, 'B': 0.15, 'H': 0.15, 'C': 0.2, 'J': 0.2, 'I': 0.35, 'F': 0.4, 'K': 0.4, 'L': 0.4, 'A': 0.55, 'D': 0.8, 'G': 0.8}
 
@@ -139,3 +144,28 @@ def test_predefined_get_ranking_dict(
     )
 
     assert ranking_predefined_number_of_linear_segments == predefined_linear_segments_ranking_dict_dummy
+
+
+def test_predefined_get_hasse_diagram_dict(
+        performance_table_list_dummy,
+        alternatives_id_list_dummy,
+        preferences_list_dummy,
+        indifferences_list_dummy,
+        weights_list_dummy,
+        criteria_list_dummy,
+        number_of_points_dummy,
+        predefined_hasse_diagram_dict_dummy
+):
+    solver = Solver(show_logs=True)
+
+    hasse_diagram_list = solver.get_hasse_diagram_dict(
+        performance_table_list_dummy,
+        alternatives_id_list_dummy,
+        preferences_list_dummy,
+        indifferences_list_dummy,
+        weights_list_dummy,
+        criteria_list_dummy,
+        number_of_points_dummy
+    )
+
+    assert hasse_diagram_list == predefined_hasse_diagram_dict_dummy
