@@ -81,15 +81,7 @@ class SolverUtils:
                 left_side.append(u_list_dict[i][left_alternative[i]])
                 right_side.append(u_list_dict[i][right_alternative[i]])
 
-            weighted_left_side: List[LpAffineExpression] = []
-            weighted_right_side: List[LpAffineExpression] = []
-            for u in left_side:
-                weighted_left_side.append(u)
-
-            for u in right_side:
-                weighted_right_side.append(u)
-
-            problem += lpSum(weighted_left_side) >= lpSum(weighted_right_side) + epsilon
+            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
 
         # Indifference constraint
         for indifference in indifferences:
@@ -102,15 +94,7 @@ class SolverUtils:
                 left_side.append(u_list_dict[i][left_alternative[i]])
                 right_side.append(u_list_dict[i][right_alternative[i]])
 
-            weighted_left_side: List[LpAffineExpression] = []
-            weighted_right_side: List[LpAffineExpression] = []
-            for u in left_side:
-                weighted_left_side.append(u)
-
-            for u in right_side:
-                weighted_right_side.append(u)
-
-            problem += lpSum(weighted_left_side) == lpSum(weighted_right_side)
+            problem += lpSum(left_side) == lpSum(right_side)
 
         if alternative_id_1 >= 0 and alternative_id_2 >= 0:
             left_alternative: List[float] = performance_table_list[alternative_id_2]
@@ -122,15 +106,7 @@ class SolverUtils:
                 left_side.append(u_list_dict[i][left_alternative[i]])
                 right_side.append(u_list_dict[i][right_alternative[i]])
 
-            weighted_left_side: List[LpAffineExpression] = []
-            weighted_right_side: List[LpAffineExpression] = []
-            for u in left_side:
-                weighted_left_side.append(u)
-
-            for u in right_side:
-                weighted_right_side.append(u)
-
-            problem += lpSum(weighted_left_side) >= lpSum(weighted_right_side) + epsilon
+            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
 
         problem += epsilon
 
@@ -207,6 +183,8 @@ class SolverUtils:
                 left_side.append(u_list_dict[i][left_alternative[i]])
                 right_side.append(u_list_dict[i][right_alternative[i]])
 
+            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
+
             # Check if preference is a characteristic point, if not add it to characteristic points
             for i in range(len(left_side)):
                 exist = 0
@@ -237,7 +215,40 @@ class SolverUtils:
                 left_side.append(u_list_dict[i][left_alternative[i]])
                 right_side.append(u_list_dict[i][right_alternative[i]])
 
+            problem += lpSum(left_side) == lpSum(right_side)
+
             # Check if indifference is a characteristic point, if not add it to characteristic points
+            for i in range(len(left_side)):
+                exist = 0
+                for j in range(len(u_list_of_characteristic_points[i])):
+                    if left_side[i].name == u_list_of_characteristic_points[i][j].name:
+                        exist = 1
+                        break
+                if exist == 0:
+                    u_list_of_characteristic_points[i].append(left_side[i])
+
+            for i in range(len(right_side)):
+                exist = 0
+                for j in range(len(u_list_of_characteristic_points[i])):
+                    if right_side[i].name == u_list_of_characteristic_points[i][j].name:
+                        exist = 1
+                        break
+                if exist == 0:
+                    u_list_of_characteristic_points[i].append(right_side[i])
+        # code only for hasse graph calculation
+        if alternative_id_1 >= 0 and alternative_id_2 >= 0:
+            left_alternative: List[float] = performance_table_list[alternative_id_2]
+            right_alternative: List[float] = performance_table_list[alternative_id_1]
+
+            left_side: List[LpVariable] = []
+            right_side: List[LpVariable] = []
+            for i in range(len(u_list_dict)):
+                left_side.append(u_list_dict[i][left_alternative[i]])
+                right_side.append(u_list_dict[i][right_alternative[i]])
+
+            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
+
+            # Check if preference is a characteristic point, if not add it to characteristic points
             for i in range(len(left_side)):
                 exist = 0
                 for j in range(len(u_list_of_characteristic_points[i])):
@@ -289,10 +300,19 @@ class SolverUtils:
                     problem += sorted_u_list_of_characteristic_points[i][j - 1] >= \
                                sorted_u_list_of_characteristic_points[i][j]
 
-        # Non-negativity constraint
+        # Bounds constraint
         for i in range(len(sorted_u_list_of_characteristic_points)):
-            for j in range(len(sorted_u_list_of_characteristic_points[i])):
-                problem += sorted_u_list_of_characteristic_points[i][j] >= 0
+            for j in range(1, len(sorted_u_list_of_characteristic_points[i]) - 1):
+                if criteria[i] == 1:
+                    problem += sorted_u_list_of_characteristic_points[i][-1] >= \
+                               sorted_u_list_of_characteristic_points[i][j]
+                    problem += sorted_u_list_of_characteristic_points[i][j] >= \
+                               sorted_u_list_of_characteristic_points[i][0]
+                else:
+                    problem += sorted_u_list_of_characteristic_points[i][0] >= \
+                               sorted_u_list_of_characteristic_points[i][j]
+                    problem += sorted_u_list_of_characteristic_points[i][j] >= \
+                               sorted_u_list_of_characteristic_points[i][-1]
 
         problem += epsilon
 
