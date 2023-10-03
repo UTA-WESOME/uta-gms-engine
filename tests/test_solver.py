@@ -61,7 +61,7 @@ def hasse_diagram_dict_dummy():
 
 @pytest.fixture()
 def predefined_hasse_diagram_dict_dummy():
-    return {'A': set(), 'B': set(), 'C': set(), 'D': set(), 'E': set(), 'F': set(), 'G': set(), 'H': set(), 'I': set(), 'J': set(), 'K': {'L'}, 'L': {'C', 'E', 'D', 'G', 'J', 'F', 'B', 'I', 'K', 'H', 'A'}}
+    return {'A': {'H', 'F', 'K'}, 'C': {'J'}, 'D': {'G'}, 'E': {'J'}, 'F': {'C', 'E'}, 'G': {'F', 'I', 'K', 'H'}, 'H': {'B'}, 'I': {'B', 'C', 'E'}, 'K': {'C'}, 'L': {'H', 'I'}}
 
 
 @pytest.fixture()
@@ -71,7 +71,7 @@ def ranking_dict_dummy():
 
 @pytest.fixture()
 def predefined_linear_segments_ranking_dict_dummy():
-    return {'C': 0.0, 'F': 0.0, 'J': 0.0, 'K': 0.0, 'A': 0.06666666666666667, 'B': 0.126, 'H': 0.16099999999999998, 'E': 0.191667, 'D': 0.3016129, 'I': 0.35, 'L': 0.4916666666666667, 'G': 0.516}
+    return {'J': 0.22921145956989247, 'B': 0.3758064516129032, 'C': 0.379029164516129, 'E': 0.38874960000000003, 'H': 0.42153094666666663, 'I': 0.46968764150537634, 'F': 0.4976204, 'K': 0.503254970967742, 'L': 0.5534433933333334, 'G': 0.716129, 'A': 0.7816814843010753, 'D': 0.825}
 
 
 def test_get_hasse_diagram_dict(

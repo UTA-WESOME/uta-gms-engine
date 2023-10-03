@@ -59,7 +59,7 @@ def problem_variable_values_dummy():
 
 @pytest.fixture()
 def predefined_number_of_linear_segments_problem_variable_values_dummy():
-    return [0.0, 0.0, 0.0, 0.0, 0.0516129, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.191667, 0.25, 0.0, 0.35, 0.0, 0.0, 0.0, 0.266]
+    return [0.108871, 0.0, 0.322581, 0.4, 0.4, 0.4, 0.0903226, 0.116129, 0.0, 0.0910394, 0.0975422, 0.214427, 0.25, 0.0, 0.35, 0.084, 0.175, 0.35, 0.35]
 
 
 @pytest.fixture()
