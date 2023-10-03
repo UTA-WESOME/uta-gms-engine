@@ -215,7 +215,7 @@ class SolverUtils:
                 left_side.append(u_list_dict[i][left_alternative[i]])
                 right_side.append(u_list_dict[i][right_alternative[i]])
 
-            problem += lpSum(left_side) == lpSum(right_side) + epsilon
+            problem += lpSum(left_side) == lpSum(right_side)
 
             # Check if indifference is a characteristic point, if not add it to characteristic points
             for i in range(len(left_side)):
