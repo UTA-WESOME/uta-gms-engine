@@ -1,6 +1,6 @@
 from typing import Tuple, List, Dict
 
-from pulp import LpVariable, LpProblem, LpMaximize, lpSum, LpAffineExpression, GLPK
+from pulp import LpVariable, LpProblem, LpMaximize, lpSum, GLPK
 
 
 class SolverUtils:
@@ -11,26 +11,25 @@ class SolverUtils:
             preferences: List[List[int]],
             indifferences: List[List[int]],
             weights: List[float],
-            criteria: List[int],
+            criteria: List[bool],
             alternative_id_1: int = -1,
             alternative_id_2: int = -1,
             show_logs: bool = False,
     ) -> LpProblem:
         """
-        Main calculation method for problem-solving.
+        Main calculation method for problem-solving using general function
         The idea is that this should be a generic method used across different problems
-        using general function
 
-        :param show_logs:
         :param performance_table_list:
         :param preferences:
         :param indifferences:
         :param weights:
         :param criteria:
-        :param alternative_id_1:
-        :param alternative_id_2:
+        :param alternative_id_1: used only in calculation for hasse graphs
+        :param alternative_id_2: used only in calculation for hasse graphs
+        :param show_logs: default None
 
-        :return:
+        :return problem:
         """
         problem: LpProblem = LpProblem("UTA-GMS", LpMaximize)
 
@@ -41,7 +40,7 @@ class SolverUtils:
         # Normalization constraints
         the_greatest_performance: List[LpVariable] = []
         for i in range(len(u_list)):
-            if criteria[i] == 1:
+            if criteria[i]:
                 the_greatest_performance.append(u_list[i][-1])
                 problem += u_list[i][-1] == weights[i]
                 problem += u_list[i][0] == 0
@@ -55,7 +54,7 @@ class SolverUtils:
         # Monotonicity constraint
         for i in range(len(u_list)):
             for j in range(1, len(u_list[i])):
-                if criteria[i] == 1:
+                if criteria[i]:
                     problem += u_list[i][j] >= u_list[i][j - 1]
                 else:
                     problem += u_list[i][j - 1] >= u_list[i][j]
@@ -63,7 +62,7 @@ class SolverUtils:
         # Bounds constraint
         for i in range(len(u_list)):
             for j in range(1, len(u_list[i]) - 1):
-                if criteria[i] == 1:
+                if criteria[i]:
                     problem += u_list[i][-1] >= u_list[i][j]
                     problem += u_list[i][j] >= u_list[i][0]
                 else:
@@ -120,28 +119,27 @@ class SolverUtils:
             preferences: List[List[int]],
             indifferences: List[List[int]],
             weights: List[float],
-            criteria: List[int],
+            criteria: List[bool],
             number_of_points: List[int],
             alternative_id_1: int = -1,
             alternative_id_2: int = -1,
             show_logs: bool = False,
     ) -> LpProblem:
         """
-        Main calculation method for problem-solving.
+        Main calculation method for problem-solving using predefined number of linear segments/characteristic points.
         The idea is that this should be a generic method used across different problems
-        using predefined number of linear segments/characteristic points
 
-        :param show_logs:
         :param performance_table_list:
         :param preferences:
         :param indifferences:
         :param weights:
         :param criteria:
         :param number_of_points:
-        :param alternative_id_1:
-        :param alternative_id_2:
+        :param alternative_id_1: used only in calculation for hasse graphs
+        :param alternative_id_2: used only in calculation for hasse graphs
+        :param show_logs: default None
 
-        :return:
+        :return problem:
         """
         problem: LpProblem = LpProblem("UTA-GMS", LpMaximize)
 
@@ -156,7 +154,7 @@ class SolverUtils:
         # Normalization constraints
         the_greatest_performance: List[LpVariable] = []
         for i in range(len(u_list)):
-            if criteria[i] == 1:
+            if criteria[i]:
                 the_greatest_performance.append(u_list[i][-1])
                 problem += u_list[i][-1] == weights[i]
                 problem += u_list[i][0] == 0
@@ -293,7 +291,7 @@ class SolverUtils:
         # Monotonicity constraint
         for i in range(len(sorted_u_list_of_characteristic_points)):
             for j in range(1, len(sorted_u_list_of_characteristic_points[i])):
-                if criteria[i] == 1:
+                if criteria[i]:
                     problem += sorted_u_list_of_characteristic_points[i][j] >= \
                                sorted_u_list_of_characteristic_points[i][j - 1]
                 else:
@@ -303,7 +301,7 @@ class SolverUtils:
         # Bounds constraint
         for i in range(len(sorted_u_list_of_characteristic_points)):
             for j in range(1, len(sorted_u_list_of_characteristic_points[i]) - 1):
-                if criteria[i] == 1:
+                if criteria[i]:
                     problem += sorted_u_list_of_characteristic_points[i][-1] >= \
                                sorted_u_list_of_characteristic_points[i][j]
                     problem += sorted_u_list_of_characteristic_points[i][j] >= \
@@ -331,7 +329,7 @@ class SolverUtils:
 
         :param performance_table:
 
-        :return: ex. Tuple([[u_0_0.0, u_0_2.0], [u_1_2.0, u_1_9.0]], [{26.0: u_0_26.0, 2.0: u_0_2.0}, {40.0: u_1_40.0, 2.0: u_1_2.0}])
+        :return u_list, u_list_dict: ex. Tuple([[u_0_0.0, u_0_2.0], [u_1_2.0, u_1_9.0]], [{26.0: u_0_26.0, 2.0: u_0_2.0}, {40.0: u_1_40.0, 2.0: u_1_2.0}])
         """
         u_list: List[List[LpVariable]] = []
         u_list_dict: List[Dict[float, LpVariable]] = []
@@ -368,7 +366,7 @@ class SolverUtils:
 
         :param necessary:
 
-        :return:
+        :return direct_relations:
         """
         direct_relations: Dict[str, set] = {}
 
@@ -396,6 +394,16 @@ class SolverUtils:
             alternatives_id_list,
             weights
     ) -> Dict[str, float]:
+        """
+        Method for getting alternatives_and_utilities_dict
+
+        :param variables_and_values_dict:
+        :param performance_table_list:
+        :param alternatives_id_list:
+        :param weights:
+
+        :return sorted_dict:
+        """
 
         utilities: List[float] = []
         for i in range(len(performance_table_list)):
@@ -420,6 +428,15 @@ class SolverUtils:
             performance_table_list,
             u_list_dict
     ) -> List[List[float]]:
+        """
+        Method for calculating characteristic points
+
+        :param number_of_points:
+        :param performance_table_list:
+        :param u_list_dict:
+
+        :return characteristic_points:
+        """
         columns: List[Tuple[float]] = list(zip(*performance_table_list))
         min_values: List[float] = [min(col) for col in columns]
         max_values: List[float] = [max(col) for col in columns]
@@ -441,6 +458,7 @@ class SolverUtils:
 
     @staticmethod
     def linear_interpolation(x, x1, y1, x2, y2) -> float:
+        """Perform linear interpolation to estimate a value at a specific point on a straight line"""
         result = y1 + ((x - x1) * (y2 - y1)) / (x2 - x1)
         return result
 
@@ -452,6 +470,18 @@ class SolverUtils:
             characteristic_points,
             alternatives_id_list
     ) -> Dict[str, float]:
+        """
+        Method for getting alternatives_and_utilities_dict using interpolation.
+        Used for calculations with predefined number of linear segments
+
+        :param variables_and_values_dict:
+        :param performance_table_list:
+        :param weights:
+        :param characteristic_points:
+        :param alternatives_id_list:
+
+        :return sorted_dict:
+        """
         utilities = []
         for i in range(len(performance_table_list)):
             utility = 0.0
