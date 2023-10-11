@@ -18,3 +18,8 @@
 ### Removed
 - Weights from problem calculation
 
+### Important Notes
+- solver.get_ranking_dict seems not needed according to the latest information
+
+- For now solver.get_hasse_diagram_dict will only work correctly for general function (all linear_segments set to 0)
+
