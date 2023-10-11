@@ -1,7 +1,7 @@
 # This file contains simple example of how to use uta-gms-engine package to make a ranking of variants
 from typing import List
-from src.utagmsengine.solver import Solver
-from src.utagmsengine.dataclasses import Preference, Indifference, Criterion
+from utagmsengine.solver import Solver
+from utagmsengine.dataclasses import Preference, Indifference, Criterion
 
 
 performance_table_list_dummy = {
