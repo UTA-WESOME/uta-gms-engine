@@ -10,7 +10,6 @@ class SolverUtils:
             performance_table_list: List[List[float]],
             preferences: List[List[int]],
             indifferences: List[List[int]],
-            weights: List[float],
             criteria: List[bool],
             alternative_id_1: int = -1,
             alternative_id_2: int = -1,
@@ -23,7 +22,6 @@ class SolverUtils:
         :param performance_table_list:
         :param preferences:
         :param indifferences:
-        :param weights:
         :param criteria:
         :param alternative_id_1: used only in calculation for hasse graphs
         :param alternative_id_2: used only in calculation for hasse graphs
@@ -42,11 +40,11 @@ class SolverUtils:
         for i in range(len(u_list)):
             if criteria[i]:
                 the_greatest_performance.append(u_list[i][-1])
-                problem += u_list[i][-1] == weights[i]
+                #problem += u_list[i][-1] == weights[i]
                 problem += u_list[i][0] == 0
             else:
                 the_greatest_performance.append(u_list[i][0])
-                problem += u_list[i][0] == weights[i]
+                #problem += u_list[i][0] == weights[i]
                 problem += u_list[i][-1] == 0
 
         problem += lpSum(the_greatest_performance) == 1
@@ -118,7 +116,6 @@ class SolverUtils:
             performance_table_list: List[List[float]],
             preferences: List[List[int]],
             indifferences: List[List[int]],
-            weights: List[float],
             criteria: List[bool],
             number_of_points: List[int],
             alternative_id_1: int = -1,
@@ -132,7 +129,6 @@ class SolverUtils:
         :param performance_table_list:
         :param preferences:
         :param indifferences:
-        :param weights:
         :param criteria:
         :param number_of_points:
         :param alternative_id_1: used only in calculation for hasse graphs
@@ -156,11 +152,11 @@ class SolverUtils:
         for i in range(len(u_list)):
             if criteria[i]:
                 the_greatest_performance.append(u_list[i][-1])
-                problem += u_list[i][-1] == weights[i]
+                #problem += u_list[i][-1] == weights[i]
                 problem += u_list[i][0] == 0
             else:
                 the_greatest_performance.append(u_list[i][0])
-                problem += u_list[i][0] == weights[i]
+                #problem += u_list[i][0] == weights[i]
                 problem += u_list[i][-1] == 0
 
         problem += lpSum(the_greatest_performance) == 1
@@ -394,7 +390,6 @@ class SolverUtils:
             variables_and_values_dict,
             performance_table_list,
             alternatives_id_list,
-            weights
     ) -> Dict[str, float]:
         """
         Method for getting alternatives_and_utilities_dict
@@ -402,7 +397,6 @@ class SolverUtils:
         :param variables_and_values_dict:
         :param performance_table_list:
         :param alternatives_id_list:
-        :param weights:
 
         :return sorted_dict:
         """
@@ -410,7 +404,7 @@ class SolverUtils:
         utilities: List[float] = []
         for i in range(len(performance_table_list)):
             utility: float = 0.0
-            for j in range(len(weights)):
+            for j in range(len(performance_table_list[i])):
                 variable_name: str = f"u_{j}_{performance_table_list[i][j]}"
                 utility += round(variables_and_values_dict[variable_name], 4)
 
@@ -468,7 +462,6 @@ class SolverUtils:
     def get_alternatives_and_utilities_using_interpolation_dict(
             variables_and_values_dict,
             performance_table_list,
-            weights,
             characteristic_points,
             alternatives_id_list
     ) -> Dict[str, float]:
@@ -478,7 +471,6 @@ class SolverUtils:
 
         :param variables_and_values_dict:
         :param performance_table_list:
-        :param weights:
         :param characteristic_points:
         :param alternatives_id_list:
 
@@ -487,7 +479,7 @@ class SolverUtils:
         utilities = []
         for i in range(len(performance_table_list)):
             utility = 0.0
-            for j in range(len(weights)):
+            for j in range(len(performance_table_list[i])):
                 variable_name = f"u_{j}_{performance_table_list[i][j]}"
 
                 if variable_name in variables_and_values_dict:

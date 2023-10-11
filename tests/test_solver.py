@@ -34,7 +34,7 @@ def indifferences_dummy():
 
 @pytest.fixture()
 def criterions_dummy():
-    return [Criterion(criterion_id='g1', weight=0.4, gain=True), Criterion(criterion_id='g2', weight=0.25, gain=True), Criterion(criterion_id='g3', weight=0.35, gain=True)]
+    return [Criterion(criterion_id='g1', gain=True), Criterion(criterion_id='g2', gain=True), Criterion(criterion_id='g3', gain=True)]
 
 
 @pytest.fixture()
@@ -44,22 +44,22 @@ def number_of_points_dummy():
 
 @pytest.fixture()
 def hasse_diagram_dict_dummy():
-    return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'B', 'D', 'F', 'K', 'H'}, 'I': {'B'}, 'K': {'C'}, 'L': {'H', 'J'}}
+    return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'J', 'E'}, 'G': {'K', 'F', 'D', 'H', 'B'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J'}}
 
 
 @pytest.fixture()
 def predefined_hasse_diagram_dict_dummy():
-    return {'A': {'F', 'K', 'H'}, 'C': {'J'}, 'D': {'G'}, 'E': {'J'}, 'F': {'C', 'E'}, 'G': {'F', 'I', 'H', 'D'}, 'H': {'B'}, 'I': {'B', 'K', 'E'}, 'K': {'C'}, 'L': {'F', 'I', 'H'}}
+    return {'A': {'F', 'K'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'B', 'F', 'H', 'D', 'K'}, 'I': {'B', 'J'}, 'K': {'C'}, 'L': {'E', 'C'}}
 
 
 @pytest.fixture()
 def ranking_dict_dummy():
-    return {'E': 0.0, 'B': 0.15, 'H': 0.15, 'C': 0.2, 'J': 0.2, 'I': 0.35, 'F': 0.4, 'K': 0.4, 'L': 0.4, 'A': 0.55, 'D': 0.8, 'G': 0.8}
+    return {'B': 0.0, 'E': 0.0, 'H': 0.0, 'I': 0.0, 'A': 0.5, 'C': 0.5, 'F': 0.5, 'J': 0.5, 'K': 0.5, 'L': 0.5, 'D': 1.0, 'G': 1.0}
 
 
 @pytest.fixture()
 def predefined_linear_segments_ranking_dict_dummy():
-    return {'B': 0.1498207741935484, 'J': 0.2338110268817204, 'H': 0.29691233333333333, 'C': 0.3070544677419355, 'E': 0.3182838, 'K': 0.40233756451612906, 'F': 0.470739, 'I': 0.5017741559139784, 'A': 0.5122490645161291, 'L': 0.6090455, 'D': 0.623194, 'G': 0.623194}
+    return {'J': 0.21243561290322582, 'E': 0.23637411, 'C': 0.40256550451612905, 'L': 0.41313716433333336, 'F': 0.47213700000000003, 'K': 0.543835190967742, 'H': 0.584198, 'B': 0.6107524516129033, 'I': 0.6638613548387097, 'D': 0.7079016300000001, 'G': 0.7079016300000001, 'A': 0.8604244123010754}
 
 
 def test_get_hasse_diagram_dict(

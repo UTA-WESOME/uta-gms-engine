@@ -38,9 +38,9 @@ def indifferences_list_dummy():
 @pytest.fixture()
 def criterion_list_dummy():
     return [
-        {'criterion_id': 'g1', 'weight': 0.4, 'gain': True},
-        {'criterion_id': 'g2', 'weight': 0.25, 'gain': True},
-        {'criterion_id': 'g3', 'weight': 0.35, 'gain': True},
+        {'criterion_id': 'g1', 'gain': True},
+        {'criterion_id': 'g2', 'gain': True},
+        {'criterion_id': 'g3', 'gain': True},
     ]
 
 
@@ -56,7 +56,7 @@ def indifferences_dummy():
 
 @pytest.fixture()
 def criterions_dummy():
-    return [Criterion(criterion_id='g1', weight=0.4, gain=True), Criterion(criterion_id='g2', weight=0.25, gain=True), Criterion(criterion_id='g3', weight=0.35, gain=True)]
+    return [Criterion(criterion_id='g1', gain=True), Criterion(criterion_id='g2', gain=True), Criterion(criterion_id='g3', gain=True)]
 
 
 def test_preferences(
@@ -96,9 +96,9 @@ def test_indifference_validation():
         Indifference(equal1='A', equal2='A')
 
 
-def test_criterion_weight_validation():
-    with pytest.raises(ValueError, match="Weight must be between 0 and 1."):
-        Criterion(criterion_id='g1', weight=1.01, gain=True)
+def test_criterion_linear_segments_validation():
+    with pytest.raises(ValueError, match="Number of linear segments can't be negative."):
+        Criterion(criterion_id='g1', gain=True, number_of_linear_segments=-1)
 
 
 def test_data_validator_validate_criteria(
@@ -114,14 +114,3 @@ def test_data_validator_validate_performance_table(
 ):
     with pytest.raises(ValueError, match="Keys inside the inner dictionaries are not consistent."):
         DataValidator.validate_performance_table(performance_table_list_dummy)
-
-
-def test_data_validator_validate_weights(
-        performance_table_list_dummy
-):
-    with pytest.raises(ValueError, match="The sum of all weights must be 1 or all weights must be equal to 1."):
-        DataValidator.validate_weights([
-            Criterion(criterion_id='g1', weight=0.99, gain=True),
-            Criterion(criterion_id='g2', weight=1, gain=True),
-            Criterion(criterion_id='g3', weight=1, gain=True)
-        ])

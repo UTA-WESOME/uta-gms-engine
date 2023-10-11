@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, field_validator
 
 
@@ -42,18 +43,20 @@ class Criterion(BaseModel):
 
     Attributes:
         criterion_id (str): The unique identifier for the criterion.
-        weight (float): The weight or importance of the criterion.
         gain (bool): Whether the criterion represents a gain (True) or cost (False).
+        number_of_linear_segments (int): The number of linear segments that the criterion has
     """
     criterion_id: str
-    weight: float
     gain: bool
+    number_of_linear_segments: Optional[int] = None
 
-    @field_validator("weight")
-    def check_weight(cls, weight):
-        if weight <= 0 or weight > 1:
-            raise ValueError("Weight must be between 0 and 1.")
-        return weight
+    @field_validator("number_of_linear_segments")
+    def check_number_of_linear_segments(cls, number_of_linear_segments):
+        if number_of_linear_segments is None:
+            return number_of_linear_segments
+        if number_of_linear_segments < 0:
+            raise ValueError("Number of linear segments can't be negative.")
+        return number_of_linear_segments
 
 
 class DataValidator:
@@ -65,15 +68,6 @@ class DataValidator:
 
         if criteria_ids != performance_table_ids:
             raise ValueError("Criterion IDs in the list and the data dictionary do not match.")
-
-    @staticmethod
-    def validate_weights(criteria_list):
-        """Validate whether Criterion weights sum up to 1 or that all are equal to 1"""
-        weights = [criterion.weight for criterion in criteria_list]
-        total_weight = sum(weights)
-
-        if not (0.99 <= total_weight <= 1.01) and not all(weight == 1 for weight in weights):
-            raise ValueError("The sum of all weights must be 1 or all weights must be equal to 1.")
 
     @staticmethod
     def validate_performance_table(performance_table):

@@ -65,24 +65,6 @@ class DataclassesUtils:
         return output
 
     @staticmethod
-    def refine_weights(
-            criterions
-    ) -> List[float]:
-        """
-        Extract weights from a list of Criterion objects.
-
-        :param criterions:
-
-        :return output:
-        """
-        output = []
-
-        for criterion in criterions:
-            output.append(criterion.weight)
-
-        return output
-
-    @staticmethod
     def refine_gains(
             criterions
     ) -> List[bool]:
@@ -97,5 +79,23 @@ class DataclassesUtils:
 
         for criterion in criterions:
             output.append(criterion.gain)
+
+        return output
+
+    @staticmethod
+    def refine_linear_segments(
+            criterions
+    ) -> List[int]:
+        """
+        Extract number of linear segments from a list of Criterion objects.
+
+        :param criterions:
+
+        :return output:
+        """
+        output = []
+
+        for criterion in criterions:
+            output.append(criterion.number_of_linear_segments)
 
         return output

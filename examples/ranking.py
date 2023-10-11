@@ -23,9 +23,9 @@ preferences_dummy: List[Preference] = [Preference(superior='G', inferior='F'), P
 indifferences_dummy: List[Indifference] = [Indifference(equal1='D', equal2='G')]
 
 criteria_dummy: List[Criterion] = [
-    Criterion(criterion_id='g1', weight=0.4, gain=True),
-    Criterion(criterion_id='g2', weight=0.25, gain=True),
-    Criterion(criterion_id='g3', weight=0.35, gain=True)
+    Criterion(criterion_id='g1', gain=True),
+    Criterion(criterion_id='g2', gain=True),
+    Criterion(criterion_id='g3', gain=True)
 ]
 
 solver = Solver(show_logs=False)

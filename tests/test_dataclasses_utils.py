@@ -53,11 +53,6 @@ def refined_indifferences_dummy():
 
 
 @pytest.fixture()
-def weights_list_dummy():
-    return [0.4, 0.25, 0.35]
-
-
-@pytest.fixture()
 def preferences_dummy():
     return [Preference(superior='G', inferior='F'), Preference(superior='F', inferior='E')]
 
@@ -69,7 +64,7 @@ def indifferences_dummy():
 
 @pytest.fixture()
 def criterions_dummy():
-    return [Criterion(criterion_id='1', weight=0.4, gain=True), Criterion(criterion_id='1', weight=0.25, gain=True), Criterion(criterion_id='1', weight=0.35, gain=True)]
+    return [Criterion(criterion_id='1', gain=True), Criterion(criterion_id='1', gain=True), Criterion(criterion_id='1', gain=True)]
 
 
 def test_refine_performance_table_dict(

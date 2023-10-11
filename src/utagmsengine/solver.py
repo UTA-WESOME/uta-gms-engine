@@ -35,7 +35,6 @@ class Solver:
 
         :return direct_relations:
         """
-        DataValidator.validate_weights(criteria)
         DataValidator.validate_criteria(performance_table_dict, criteria)
         DataValidator.validate_performance_table(performance_table_dict)
 
@@ -53,11 +52,11 @@ class Solver:
             indifferences=indifferences
         )
 
-        refined_weights: List[float] = DataclassesUtils.refine_weights(
+        refined_gains: List[bool] = DataclassesUtils.refine_gains(
             criterions=criteria
         )
 
-        refined_gains: List[bool] = DataclassesUtils.refine_gains(
+        refined_linear_segments: List[int] = DataclassesUtils.refine_linear_segments(
             criterions=criteria
         )
 
@@ -74,7 +73,6 @@ class Solver:
                         performance_table_list=refined_performance_table_dict,
                         preferences=refined_preferences,
                         indifferences=refined_indifferences,
-                        weights=refined_weights,
                         criteria=refined_gains,
                         alternative_id_1=i,
                         alternative_id_2=j,
@@ -96,7 +94,6 @@ class Solver:
                         performance_table_list=refined_performance_table_dict,
                         preferences=refined_preferences,
                         indifferences=refined_indifferences,
-                        weights=refined_weights,
                         criteria=refined_gains,
                         number_of_points=number_of_points,
                         alternative_id_1=i,
@@ -130,7 +127,6 @@ class Solver:
 
         :return alternatives_and_utilities_dict:
         """
-        DataValidator.validate_weights(criteria)
         DataValidator.validate_criteria(performance_table_dict, criteria)
         DataValidator.validate_performance_table(performance_table_dict)
 
@@ -148,10 +144,6 @@ class Solver:
             indifferences=indifferences
         )
 
-        refined_weights: List[float] = DataclassesUtils.refine_weights(
-            criterions=criteria
-        )
-
         refined_gains: List[bool] = DataclassesUtils.refine_gains(
             criterions=criteria
         )
@@ -163,7 +155,6 @@ class Solver:
                 performance_table_list=refined_performance_table_dict,
                 preferences=refined_preferences,
                 indifferences=refined_indifferences,
-                weights=refined_weights,
                 criteria=refined_gains,
                 show_logs=self.show_logs
             )
@@ -174,14 +165,12 @@ class Solver:
                 variables_and_values_dict=variables_and_values_dict,
                 performance_table_list=refined_performance_table_dict,
                 alternatives_id_list=alternatives_id_list,
-                weights=refined_weights
             )
         else:
             problem: LpProblem = SolverUtils.calculate_solved_problem_with_predefined_number_of_characteristic_points(
                 performance_table_list=refined_performance_table_dict,
                 preferences=refined_preferences,
                 indifferences=refined_indifferences,
-                weights=refined_weights,
                 criteria=refined_gains,
                 number_of_points=number_of_points,
                 show_logs=self.show_logs
@@ -198,7 +187,6 @@ class Solver:
             alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_using_interpolation_dict(
                 variables_and_values_dict=variables_and_values_dict,
                 performance_table_list=refined_performance_table_dict,
-                weights=refined_weights,
                 characteristic_points=characteristic_points,
                 alternatives_id_list=alternatives_id_list,
             )
