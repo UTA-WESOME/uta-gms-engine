@@ -1,40 +1,39 @@
 from typing import List, Dict
-from src.utagmsengine.dataclasses import Preference, Indifference, Criterion
 
 
 class DataclassesUtils:
 
     @staticmethod
-    def refine_performance_table_list(
-            performance_table_list: Dict[str, Dict[str, float]]
+    def refine_performance_table_dict(
+            performance_table_dict: Dict[str, Dict[str, float]]
     ) -> List[List[float]]:
         """
         Convert a dictionary of performance table values into a 2D list of floats.
 
-        :param performance_table_list:
+        :param performance_table_dict:
         :return output_list:
         """
         output_list = []
-        for key in performance_table_list:
-            inner_list = list(performance_table_list[key].values())
+        for key in performance_table_dict:
+            inner_list = list(performance_table_dict[key].values())
             output_list.append(inner_list)
 
         return output_list
 
     @staticmethod
     def refine_preferences(
-            performance_table_list: Dict[str, Dict[str, float]],
-            preferences: List[Preference]
+            performance_table_dict: Dict[str, Dict[str, float]],
+            preferences
     ) -> List[List[int]]:
         """
         Convert a list of Preferences into a list of indices corresponding to alternatives.
 
-        :param performance_table_list:
+        :param performance_table_dict:
         :param preferences:
         :return output:
         """
         output = []
-        keys = list(performance_table_list.keys())
+        keys = list(performance_table_dict.keys())
 
         for preference in preferences:
             superior_index = keys.index(preference.superior)
@@ -45,18 +44,18 @@ class DataclassesUtils:
 
     @staticmethod
     def refine_indifferences(
-            performance_table_list: Dict[str, Dict[str, float]],
-            indifferences: List[Indifference]
+            performance_table_dict: Dict[str, Dict[str, float]],
+            indifferences
     ) -> List[List[int]]:
         """
         Convert a list of Indifferences into a list of indices corresponding to alternatives.
 
-        :param performance_table_list:
+        :param performance_table_dict:
         :param indifferences:
         :return output:
         """
         output = []
-        keys = list(performance_table_list.keys())
+        keys = list(performance_table_dict.keys())
 
         for indifference in indifferences:
             equal1_index = keys.index(indifference.equal1)
@@ -67,7 +66,7 @@ class DataclassesUtils:
 
     @staticmethod
     def refine_weights(
-            criterions: List[Criterion],
+            criterions
     ) -> List[float]:
         """
         Extract weights from a list of Criterion objects.
@@ -85,7 +84,7 @@ class DataclassesUtils:
 
     @staticmethod
     def refine_gains(
-            criterions: List[Criterion],
+            criterions
     ) -> List[bool]:
         """
         Extract gains/costs from a list of Criterion objects.

@@ -4,7 +4,7 @@ from src.utagmsengine.dataclasses import Preference, Indifference, Criterion
 
 
 @pytest.fixture()
-def refined_performance_table_list_dummy():
+def refined_performance_table_dict_dummy():
     return [[26.0, 40.0, 44.0],  # 0 - A
             [2.0, 2.0, 68.0],  # 1 - B
             [18.0, 17.0, 14.0],  # 2 - C
@@ -20,7 +20,7 @@ def refined_performance_table_list_dummy():
 
 
 @pytest.fixture()
-def performance_table_list_dummy():
+def performance_table_dict_dummy():
     return {
         'A': {'g1': 26.0, 'g2': 40.0, 'g3': 44.0},
         'B': {'g1': 2.0, 'g2': 2.0, 'g3': 68.0},
@@ -72,24 +72,24 @@ def criterions_dummy():
     return [Criterion(criterion_id='1', weight=0.4, gain=True), Criterion(criterion_id='1', weight=0.25, gain=True), Criterion(criterion_id='1', weight=0.35, gain=True)]
 
 
-def test_refine_performance_table_list(
-        performance_table_list_dummy,
-        refined_performance_table_list_dummy
+def test_refine_performance_table_dict(
+        performance_table_dict_dummy,
+        refined_performance_table_dict_dummy
 ):
-    refined_performance_table_list = DataclassesUtils.refine_performance_table_list(
-        performance_table_list=performance_table_list_dummy
+    refined_performance_table_dict = DataclassesUtils.refine_performance_table_dict(
+        performance_table_dict=performance_table_dict_dummy
     )
 
-    assert refined_performance_table_list == refined_performance_table_list_dummy
+    assert refined_performance_table_dict == refined_performance_table_dict_dummy
 
 
 def test_refine_preferences(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         preferences_dummy,
         refined_preferences_dummy
 ):
     refined_preferences = DataclassesUtils.refine_preferences(
-        performance_table_list=performance_table_list_dummy,
+        performance_table_dict=performance_table_dict_dummy,
         preferences=preferences_dummy
     )
 
@@ -97,12 +97,12 @@ def test_refine_preferences(
 
 
 def test_refine_indifferences(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         indifferences_dummy,
         refined_indifferences_dummy
 ):
     refined_indifferences = DataclassesUtils.refine_indifferences(
-        performance_table_list=performance_table_list_dummy,
+        performance_table_dict=performance_table_dict_dummy,
         indifferences=indifferences_dummy
     )
 

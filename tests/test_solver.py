@@ -5,7 +5,7 @@ from src.utagmsengine.dataclasses import Preference, Indifference, Criterion
 
 
 @pytest.fixture()
-def performance_table_list_dummy():
+def performance_table_dict_dummy():
     return {
         'A': {'g1': 26.0, 'g2': 40.0, 'g3': 44.0},
         'B': {'g1': 2.0, 'g2': 2.0, 'g3': 68.0},
@@ -63,7 +63,7 @@ def predefined_linear_segments_ranking_dict_dummy():
 
 
 def test_get_hasse_diagram_dict(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy,
@@ -72,7 +72,7 @@ def test_get_hasse_diagram_dict(
     solver = Solver(show_logs=True)
 
     hasse_diagram_list = solver.get_hasse_diagram_dict(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy
@@ -82,7 +82,7 @@ def test_get_hasse_diagram_dict(
 
 
 def test_get_ranking_dict(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy,
@@ -91,7 +91,7 @@ def test_get_ranking_dict(
     solver = Solver(show_logs=True)
 
     ranking = solver.get_ranking_dict(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy
@@ -101,7 +101,7 @@ def test_get_ranking_dict(
 
 
 def test_predefined_get_ranking_dict(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy,
@@ -111,7 +111,7 @@ def test_predefined_get_ranking_dict(
     solver = Solver(show_logs=True)
 
     ranking_predefined_number_of_linear_segments = solver.get_ranking_dict(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy,
@@ -122,7 +122,7 @@ def test_predefined_get_ranking_dict(
 
 
 def test_predefined_get_hasse_diagram_dict(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy,
@@ -132,7 +132,7 @@ def test_predefined_get_hasse_diagram_dict(
     solver = Solver(show_logs=True)
 
     hasse_diagram_list = solver.get_hasse_diagram_dict(
-        performance_table_list_dummy,
+        performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy,
