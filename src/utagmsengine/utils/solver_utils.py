@@ -163,6 +163,8 @@ class SolverUtils:
                 problem += u_list[i][0] == weights[i]
                 problem += u_list[i][-1] == 0
 
+        problem += lpSum(the_greatest_performance) == 1
+
         u_list_of_characteristic_points = []
         for i in range(len(characteristic_points)):
             pom = []
