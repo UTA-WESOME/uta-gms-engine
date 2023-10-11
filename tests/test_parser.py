@@ -2,7 +2,25 @@ import pytest
 
 from src.utagmsengine.parser import Parser
 
-from typing import List
+from typing import List, Dict
+
+
+@pytest.fixture()
+def performance_table_dict_dummy():
+    return {
+        'A': {'g1': 26.0, 'g2': 40.0, 'g3': 44.0},
+        'B': {'g1': 2.0, 'g2': 2.0, 'g3': 68.0},
+        'C': {'g1': 18.0, 'g2': 17.0, 'g3': 14.0},
+        'D': {'g1': 35.0, 'g2': 62.0, 'g3': 25.0},
+        'E': {'g1': 7.0, 'g2': 55.0, 'g3': 12.0},
+        'F': {'g1': 25.0, 'g2': 30.0, 'g3': 12.0},
+        'G': {'g1': 9.0, 'g2': 62.0, 'g3': 88.0},
+        'H': {'g1': 0.0, 'g2': 24.0, 'g3': 73.0},
+        'I': {'g1': 6.0, 'g2': 15.0, 'g3': 100.0},
+        'J': {'g1': 16.0, 'g2': 9.0, 'g3': 0.0},
+        'K': {'g1': 26.0, 'g2': 17.0, 'g3': 17.0},
+        'L': {'g1': 62.0, 'g2': 43.0, 'g3': 0.0}
+    }
 
 
 @pytest.fixture()
@@ -53,24 +71,25 @@ def test_get_criteria_xml(criteria_list_dummy):
     assert criteria_list == criteria_list_dummy
 
 
-def test_get_performance_table_list_csv(performance_table_list_dummy):
+def test_get_performance_table_dict_csv(performance_table_dict_dummy):
     parser = Parser()
-    performance_table_list: List[List[float]] = parser.get_performance_table_list_csv('../tests/files/alternatives.csv')
+    with open('../tests/files/alternatives.csv', 'r') as csvfile:
+        performance_table_dict: Dict[str, Dict[str, float]] = parser.get_performance_table_dict_csv(csvfile)
 
-    assert performance_table_list == performance_table_list_dummy
+    assert performance_table_dict == performance_table_dict_dummy
 
 
 def test_get_alternatives_id_list_csv(alternatives_id_list_dummy):
     parser = Parser()
-    alternatives_id_list: List[str] = parser.get_alternatives_id_list_csv('../tests/files/alternatives.csv')
+    with open('../tests/files/alternatives.csv', 'r') as csvfile:
+        alternatives_id_list: List[str] = parser.get_alternatives_id_list_csv(csvfile)
 
     assert alternatives_id_list == alternatives_id_list_dummy
 
 
 def test_get_criteria_csv(criteria_list_dummy):
     parser = Parser()
-
-    criteria_list: List[str] = parser.get_criteria_csv('../tests/files/alternatives.csv')
+    with open('../tests/files/alternatives.csv', 'r') as csvfile:
+        criteria_list: List[str] = parser.get_criteria_csv(csvfile)
 
     assert criteria_list == criteria_list_dummy
-

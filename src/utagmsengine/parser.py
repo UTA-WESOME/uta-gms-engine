@@ -2,12 +2,36 @@ from xmcda.criteria import Criteria
 from xmcda.XMCDA import XMCDA
 import csv
 import _io
-from typing import List
+from typing import List, Dict
 
 from .utils.parser_utils import ParserUtils
 
 
 class Parser:
+    @staticmethod
+    def get_performance_table_dict_csv(csvfile: _io.TextIOWrapper) -> Dict[str,Dict[str,float]]:
+        """
+        Method responsible for getting dict of performances from CSV file
+
+        :param csvfile: python file object of csv file
+
+        :return: Dictionary of performances
+        """
+        performance_table_list: List[List[float]] = []
+        csv_reader = csv.reader(csvfile, delimiter=';')
+        criteria_ids: List[str] = next(csv_reader)
+        alternatives: List[str] = next(csv_reader)
+        for row in csv_reader:
+            performance_list: List[float] = [float(value) for value in row]
+            performance_table_list.append(performance_list)
+
+        result = {}
+        for idx, alternative in enumerate(alternatives):
+            result[alternative] = {criteria_id: performance for criteria_id, performance in
+                                   zip(criteria_ids, performance_table_list[idx])}
+
+        return result
+
     def get_performance_table_list_xml(self, path: str) -> List[List]:
         """
         Method responsible for getting list of performances
@@ -70,26 +94,6 @@ class Parser:
                 type_of_criterion.append(0)
 
         return type_of_criterion
-
-    @staticmethod
-    def get_performance_table_list_csv(csvfile: _io.TextIOWrapper) -> List[List[float]]:
-        """
-        Method responsible for getting list of performances from CSV file
-
-        :param csvfile: python file object of csv file
-
-        :return: List of alternatives ex. [[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...]
-        """
-        performance_table_list: List[List[float]] = []
-
-        csv_reader = csv.reader(csvfile, delimiter=';')
-        next(csv_reader)  # Skip the header row
-        next(csv_reader)
-        for row in csv_reader:
-            performance_list = [float(value) for value in row]
-            performance_table_list.append(performance_list)
-
-        return performance_table_list
 
     @staticmethod
     def get_alternatives_id_list_csv(csvfile: _io.TextIOWrapper) -> List[str]:
