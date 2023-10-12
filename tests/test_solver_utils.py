@@ -38,11 +38,6 @@ def indifferences_list_dummy():
 
 
 @pytest.fixture()
-def weights_list_dummy():
-    return [0.4, 0.25, 0.35]
-
-
-@pytest.fixture()
 def criteria_list_dummy():
     return [1, 1, 1]
 
@@ -54,12 +49,12 @@ def alternatives_id_list_dummy():
 
 @pytest.fixture()
 def problem_variable_values_dummy():
-    return [0.4, 0.0, 0.2, 0.4, 0.0, 0.4, 0.4, 0.4, 0.0, 0.4, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.35, 0.0, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.35]
+    return [0.5, 0.0, 0.5, 0.5, 0.0, 0.5, 0.5, 0.5, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
 @pytest.fixture()
 def predefined_number_of_linear_segments_problem_variable_values_dummy():
-    return [0.152455, 0.0, 0.29776, 0.369222, 0.373194, 0.4, 0.0833728, 0.107194, 0.0, 0.172979, 0.185335, 0.234911, 0.25, 0.0, 0.35, 0.0, 0.0, 0.0, 0.266]
+    return [0.235763, 0.0, 0.33193, 0.411594, 0.411594, 0.411594, 0.0929405, 0.119495, 0.0, 0.0, 0.0, 0.00322661, 0.00420863, 0.0, 0.584198, 0.140207, 0.292099, 0.584198, 0.584198]
 
 
 @pytest.fixture()
@@ -103,7 +98,6 @@ def test_calculate_solved_problem_with_predefined_number_of_characteristic_point
     performance_table_list_dummy,
     preferences_list_dummy,
     indifferences_list_dummy,
-    weights_list_dummy,
     criteria_list_dummy,
     number_of_points_dummy,
     predefined_number_of_linear_segments_problem_variable_values_dummy
@@ -112,7 +106,6 @@ def test_calculate_solved_problem_with_predefined_number_of_characteristic_point
         performance_table_list=performance_table_list_dummy,
         preferences=preferences_list_dummy,
         indifferences=indifferences_list_dummy,
-        weights=weights_list_dummy,
         criteria=criteria_list_dummy,
         number_of_points=number_of_points_dummy
     )
@@ -128,7 +121,6 @@ def test_calculate_solved_problem(
     performance_table_list_dummy,
     preferences_list_dummy,
     indifferences_list_dummy,
-    weights_list_dummy,
     criteria_list_dummy,
     problem_variable_values_dummy
 ):
@@ -136,7 +128,6 @@ def test_calculate_solved_problem(
         performance_table_list=performance_table_list_dummy,
         preferences=preferences_list_dummy,
         indifferences=indifferences_list_dummy,
-        weights=weights_list_dummy,
         criteria=criteria_list_dummy,
         alternative_id_1=1,
         alternative_id_2=2
@@ -159,14 +150,12 @@ def test_get_alternatives_and_utilities_dict(
         variables_and_values_dict_dummy,
         performance_table_list_dummy,
         alternatives_id_list_dummy,
-        weights_list_dummy,
         alternatives_and_utilities_dict_dummy
 ):
     alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_dict(
         variables_and_values_dict=variables_and_values_dict_dummy,
         performance_table_list=performance_table_list_dummy,
         alternatives_id_list=alternatives_id_list_dummy,
-        weights=weights_list_dummy
     )
 
     assert alternatives_and_utilities_dict == alternatives_and_utilities_dict_dummy
