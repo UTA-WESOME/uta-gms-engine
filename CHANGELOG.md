@@ -1,4 +1,4 @@
-#Changelog
+# Changelog
 ## v0.0.11 - 11-10-2023
 ### Added
 
@@ -13,7 +13,7 @@
     - Criterion
 
 
-- New solver method usage (using pydatnic dataclasses):
+- New solver method usage (using pydantic dataclasses):
 
 ### Removed
 - Weights from problem calculation
