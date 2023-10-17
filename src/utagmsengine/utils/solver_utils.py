@@ -40,11 +40,11 @@ class SolverUtils:
         for i in range(len(u_list)):
             if criteria[i]:
                 the_greatest_performance.append(u_list[i][-1])
-                #problem += u_list[i][-1] == weights[i]
+                # problem += u_list[i][-1] == weights[i]
                 problem += u_list[i][0] == 0
             else:
                 the_greatest_performance.append(u_list[i][0])
-                #problem += u_list[i][0] == weights[i]
+                # problem += u_list[i][0] == weights[i]
                 problem += u_list[i][-1] == 0
 
         problem += lpSum(the_greatest_performance) == 1
@@ -152,11 +152,11 @@ class SolverUtils:
         for i in range(len(u_list)):
             if criteria[i]:
                 the_greatest_performance.append(u_list[i][-1])
-                #problem += u_list[i][-1] == weights[i]
+                # problem += u_list[i][-1] == weights[i]
                 problem += u_list[i][0] == 0
             else:
                 the_greatest_performance.append(u_list[i][0])
-                #problem += u_list[i][0] == weights[i]
+                # problem += u_list[i][0] == weights[i]
                 problem += u_list[i][-1] == 0
 
         problem += lpSum(the_greatest_performance) == 1
@@ -320,6 +320,152 @@ class SolverUtils:
         return problem
 
     @staticmethod
+    def calculate_the_most_representative_function(
+            performance_table_list: List[List[float]],
+            alternatives_id_list: List[str],
+            preferences: List[List[int]],
+            indifferences: List[List[int]],
+            criteria: List[bool],
+            show_logs: bool = False,
+    ) -> LpProblem:
+
+        problem: LpProblem = LpProblem("UTA-GMS", LpMaximize)
+
+        epsilon: LpVariable = LpVariable("epsilon")
+
+        delta: LpVariable = LpVariable("delta")
+
+        u_list, u_list_dict = SolverUtils.create_variables_list_and_dict(performance_table_list)
+
+        # Normalization constraints
+        the_greatest_performance: List[LpVariable] = []
+        for i in range(len(u_list)):
+            if criteria[i] == 1:
+                the_greatest_performance.append(u_list[i][-1])
+                problem += u_list[i][0] == 0
+            else:
+                the_greatest_performance.append(u_list[i][0])
+                problem += u_list[i][-1] == 0
+
+        problem += lpSum(the_greatest_performance) == 1
+
+        # Monotonicity constraint
+        for i in range(len(u_list)):
+            for j in range(1, len(u_list[i])):
+                if criteria[i] == 1:
+                    problem += u_list[i][j] >= u_list[i][j - 1]
+                else:
+                    problem += u_list[i][j - 1] >= u_list[i][j]
+
+        # Bounds constraint
+        for i in range(len(u_list)):
+            for j in range(1, len(u_list[i]) - 1):
+                if criteria[i] == 1:
+                    problem += u_list[i][-1] >= u_list[i][j]
+                    problem += u_list[i][j] >= u_list[i][0]
+                else:
+                    problem += u_list[i][0] >= u_list[i][j]
+                    problem += u_list[i][j] >= u_list[i][-1]
+
+        # Preference constraint
+        for preference in preferences:
+            left_alternative: List[float] = performance_table_list[preference[0]]
+            right_alternative: List[float] = performance_table_list[preference[1]]
+
+            left_side: List[LpVariable] = []
+            right_side: List[LpVariable] = []
+            for i in range(len(u_list_dict)):
+                left_side.append(u_list_dict[i][left_alternative[i]])
+                right_side.append(u_list_dict[i][right_alternative[i]])
+
+            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
+
+        # Indifference constraint
+        for indifference in indifferences:
+            left_alternative: List[float] = performance_table_list[indifference[0]]
+            right_alternative: List[float] = performance_table_list[indifference[1]]
+
+            left_side: List[LpVariable] = []
+            right_side: List[LpVariable] = []
+            for i in range(len(u_list_dict)):
+                left_side.append(u_list_dict[i][left_alternative[i]])
+                right_side.append(u_list_dict[i][right_alternative[i]])
+
+            problem += lpSum(left_side) == lpSum(right_side)
+
+        necessary_preference = SolverUtils.get_necessary_relations(
+            performance_table_list=performance_table_list,
+            alternatives_id_list=alternatives_id_list,
+            preferences=preferences,
+            indifferences=indifferences,
+            criteria=criteria
+        )
+
+        for i in range(len(alternatives_id_list) - 1):
+            for j in range(i + 1, len(alternatives_id_list)):
+                name_i = alternatives_id_list[i]
+                name_j = alternatives_id_list[j]
+                pom1 = []
+                pom2 = []
+                for k in range(len(performance_table_list[i])):
+                    pom1.append(u_list_dict[k][float(performance_table_list[i][k])])
+                    pom2.append(u_list_dict[k][float(performance_table_list[j][k])])
+                sum_i = lpSum(pom1[:])
+                sum_j = lpSum(pom2[:])
+
+                if (name_i not in necessary_preference and name_j in necessary_preference and name_i in necessary_preference[name_j]) or \
+                (name_i in necessary_preference and name_j in necessary_preference and name_i in necessary_preference[name_j] and name_j not in necessary_preference[name_i]):
+                    problem += sum_j >= sum_i + epsilon
+                elif (name_j not in necessary_preference and name_i in necessary_preference and name_j in necessary_preference[name_i]) or \
+                (name_i in necessary_preference and name_j in necessary_preference and name_j in necessary_preference[name_i] and name_i not in necessary_preference[name_j]):
+                    problem += sum_i >= sum_j + epsilon
+                elif (name_i not in necessary_preference and name_j not in necessary_preference) or \
+                (name_i not in necessary_preference and name_j in necessary_preference and name_i not in necessary_preference[name_j]) or \
+                (name_j not in necessary_preference and name_i in necessary_preference and name_j not in necessary_preference[name_i]) or \
+                (name_i in necessary_preference and name_j not in necessary_preference[name_i] and name_j in necessary_preference and name_i not in necessary_preference[name_j]):
+                    problem += sum_i <= delta + sum_j
+                    problem += sum_j <= delta + sum_i
+
+        big_m: int = 1e20
+        problem += big_m * epsilon - delta
+
+        problem.solve(solver=GLPK(msg=show_logs))
+
+        return problem
+
+    @staticmethod
+    def get_necessary_relations(
+            performance_table_list: List[List[float]],
+            alternatives_id_list: List[str],
+            preferences: List[List[int]],
+            indifferences: List[List[int]],
+            criteria: List[int],
+            show_logs: bool = False
+    ):
+        necessary: Dict[str, List[str]] = {}
+        for i in range(len(performance_table_list)):
+            for j in range(len(performance_table_list)):
+                if i == j:
+                    continue
+
+                problem: LpProblem = SolverUtils.calculate_solved_problem(
+                    performance_table_list=performance_table_list,
+                    preferences=preferences,
+                    indifferences=indifferences,
+                    criteria=criteria,
+                    alternative_id_1=i,
+                    alternative_id_2=j,
+                    show_logs=show_logs
+                )
+
+                if problem.variables()[0].varValue <= 0:
+                    if alternatives_id_list[i] not in necessary:
+                        necessary[alternatives_id_list[i]] = []
+                    necessary[alternatives_id_list[i]].append(alternatives_id_list[j])
+
+        return necessary
+
+    @staticmethod
     def create_variables_list_and_dict(performance_table: List[list]) -> Tuple[List[list], List[dict]]:
         """
         Method responsible for creating a technical list of variables and a technical dict of variables that are used
@@ -337,7 +483,7 @@ class SolverUtils:
             row_dict: Dict[float, LpVariable] = {}
 
             for j in range(len(performance_table)):
-                variable_name: str = f"u_{i}_{performance_table[j][i]}"
+                variable_name: str = f"u_{i}_{float(performance_table[j][i])}"
                 variable: LpVariable = LpVariable(variable_name)
 
                 if performance_table[j][i] not in row_dict:
@@ -358,22 +504,19 @@ class SolverUtils:
         return u_list, u_list_dict
 
     @staticmethod
-    def calculate_direct_relations(necessary: List[List[str]]) -> Dict[str, set]:
+    def calculate_direct_relations(necessary: Dict[str, List[str]]) -> Dict[str, List[str]]:
         """
         Method for getting only direct relations in Hasse Diagram
-
         :param necessary:
-
         :return direct_relations:
         """
-        direct_relations: Dict[str, set] = {}
-
-        for relation in necessary:
-            node1, node2 = relation
-            direct_relations.setdefault(node1, set()).add(node2)
-
-        for node1, related_nodes in direct_relations.items():
-            related_nodes_copy: Dict[str] = related_nodes.copy()
+        direct_relations: Dict[str, List[str]] = {}
+        # first create the relation list for each node
+        for node1, relations in necessary.items():
+            direct_relations[node1] = sorted(relations)
+        # then prune the indirect relations
+        for node1, related_nodes in list(direct_relations.items()):  # make a copy of items
+            related_nodes_copy: List[str] = related_nodes.copy()
             for node2 in related_nodes:
                 # Check if node2 is also related to any other node that is related to node1
                 for other_node in related_nodes:
@@ -381,7 +524,7 @@ class SolverUtils:
                         # If such a relationship exists, remove the relation between node1 and node2
                         related_nodes_copy.remove(node2)
                         break
-            direct_relations[node1]: Dict[str] = related_nodes_copy
+            direct_relations[node1] = sorted(related_nodes_copy)  # sort the list
 
         return direct_relations
 
