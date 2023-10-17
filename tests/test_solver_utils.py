@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 import pytest
 from pulp import LpProblem, value
@@ -59,12 +59,12 @@ def predefined_number_of_linear_segments_problem_variable_values_dummy():
 
 @pytest.fixture()
 def necessary_dummy():
-    return [['A', 'C'], ['A', 'E'], ['A', 'F'], ['A', 'J'], ['A', 'K'], ['C', 'J'], ['D', 'B'], ['D', 'C'], ['D', 'E'], ['D', 'F'], ['D', 'G'], ['D', 'H'], ['D', 'J'], ['D', 'K'], ['F', 'E'], ['F', 'J'], ['G', 'B'], ['G', 'C'], ['G', 'D'], ['G', 'E'], ['G', 'F'], ['G', 'H'], ['G', 'J'], ['G', 'K'], ['I', 'B'], ['K', 'C'], ['K', 'J'], ['L', 'J']]
+    return {'A': ['C', 'E', 'F', 'J', 'K'], 'C': ['J'], 'D': ['B', 'C', 'E', 'F', 'G', 'H', 'J', 'K'], 'F': ['E', 'J'], 'G': ['B', 'C', 'D', 'E', 'F', 'H', 'J', 'K'], 'I': ['B'], 'K': ['C', 'J'], 'L': ['J']}
 
 
 @pytest.fixture()
 def direct_relations_dummy():
-    return {'A': {'F', 'K'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'B', 'H', 'D', 'F', 'K'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J'}}
+    return {'A': ['F', 'K'], 'C': ['J'], 'D': ['G'], 'F': ['E', 'J'], 'G': ['B', 'D', 'F', 'H', 'K'], 'I': ['B'], 'K': ['C'], 'L': ['J']}
 
 
 @pytest.fixture()
@@ -141,7 +141,7 @@ def test_calculate_solved_problem(
 
 
 def test_calculate_direct_relations(necessary_dummy, direct_relations_dummy):
-    direct_relations: Dict[str, set] = SolverUtils.calculate_direct_relations(necessary_dummy)
+    direct_relations: Dict[str, List[str]] = SolverUtils.calculate_direct_relations(necessary_dummy)
 
     assert direct_relations == direct_relations_dummy
 
