@@ -2,6 +2,14 @@
 ## v0.0.12 - 17-10-2023
 ### Added
 - get_representative_value_function_dict method
+- get_hasse_diagram_dict now returns whole graph
+  - example:
+    {
+    1: [3],
+    2: [3],
+    3: []
+    }
+  
 
 ### Fixed
 - get_hasse_diagram_dict now returns Dict[str, List[str]]
