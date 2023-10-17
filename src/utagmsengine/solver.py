@@ -108,8 +108,6 @@ class Solver:
                 if alternatives_id not in direct_relations.keys():
                     direct_relations[alternatives_id] = []
 
-            #direct_relations: Dict[str, List[str]] = SolverUtils.calculate_direct_relations(necessary)
-
         return direct_relations
 
     def get_representative_value_function_dict(
