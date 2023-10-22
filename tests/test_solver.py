@@ -44,12 +44,17 @@ def number_of_points_dummy():
 
 @pytest.fixture()
 def hasse_diagram_dict_dummy():
-    return {'A': {'K', 'F'}, 'C': {'J'}, 'D': {'G'}, 'F': {'J', 'E'}, 'G': {'K', 'F', 'D', 'H', 'B'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J'}}
+    return {'A': ['F', 'K'], 'C': ['J'], 'D': ['G'], 'F': ['E', 'J'], 'G': ['B', 'D', 'F', 'H', 'K'], 'I': ['B'], 'K': ['C'], 'L': ['J'], 'B': [], 'E': [], 'H': [], 'J': []}
+
+
+@pytest.fixture()
+def representative_value_function_dict_dummy():
+    return {'E': 0.0, 'J': 0.0, 'C': 0.25, 'F': 0.25, 'L': 0.25, 'B': 0.5, 'H': 0.5, 'K': 0.5, 'A': 0.75, 'D': 0.75, 'G': 0.75, 'I': 0.75}
 
 
 @pytest.fixture()
 def predefined_hasse_diagram_dict_dummy():
-    return {'A': {'F', 'K'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'B', 'F', 'H', 'D', 'K'}, 'I': {'B', 'J'}, 'K': {'C'}, 'L': {'E', 'C'}}
+    return {'A': ['F', 'K'], 'C': ['J'], 'D': ['G'], 'F': ['E', 'J'], 'G': ['B', 'D', 'F', 'H', 'K'], 'I': ['B', 'J'], 'K': ['C'], 'L': ['C', 'E'], 'B': [], 'E': [], 'H': [], 'J': []}
 
 
 @pytest.fixture()
@@ -79,6 +84,25 @@ def test_get_hasse_diagram_dict(
     )
 
     assert hasse_diagram_list == hasse_diagram_dict_dummy
+
+
+def test_get_representative_value_function_dict(
+        performance_table_dict_dummy,
+        preferences_dummy,
+        indifferences_dummy,
+        criterions_dummy,
+        representative_value_function_dict_dummy
+):
+    solver = Solver(show_logs=True)
+
+    representative_value_function_dict = solver.get_representative_value_function_dict(
+        performance_table_dict_dummy,
+        preferences_dummy,
+        indifferences_dummy,
+        criterions_dummy
+    )
+
+    assert representative_value_function_dict == representative_value_function_dict_dummy
 
 
 def test_get_ranking_dict(
