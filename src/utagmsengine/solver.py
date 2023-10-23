@@ -4,7 +4,7 @@ from pulp import LpProblem
 
 from .utils.solver_utils import SolverUtils
 from .utils.dataclasses_utils import DataclassesUtils
-from .dataclasses import Preference, Indifference, Criterion, DataValidator
+from .dataclasses import Preference, Indifference, Criterion, DataValidator, Position
 
 
 class Solver:
@@ -22,7 +22,7 @@ class Solver:
             preferences: List[Preference],
             indifferences: List[Indifference],
             criteria: List[Criterion],
-            number_of_points: Optional[List[int]] = None
+            positions: Optional[List[Position]] = []
     ) -> Dict[str, List[str]]:
         """
         Method for getting hasse diagram dict
@@ -31,12 +31,13 @@ class Solver:
         :param preferences: List of Preference objects
         :param indifferences: List of Indifference objects
         :param criteria: List of Criterion objects
-        :param number_of_points: default None
+        :param positions: List of Position objects
 
         :return direct_relations:
         """
         DataValidator.validate_criteria(performance_table_dict, criteria)
         DataValidator.validate_performance_table(performance_table_dict)
+        DataValidator.validate_positions(positions, performance_table_dict)
 
         refined_performance_table_dict: List[List[float]] = DataclassesUtils.refine_performance_table_dict(
             performance_table_dict=performance_table_dict
@@ -60,53 +61,29 @@ class Solver:
             criterions=criteria
         )
 
+        refined_min_max_position: List[List[int]] = DataclassesUtils.refine_positions(
+            positions=positions,
+            performance_table_dict=performance_table_dict
+        )
+
         alternatives_id_list: List[str] = list(performance_table_dict.keys())
 
-        if number_of_points is None:
-            necessary_preference = SolverUtils.get_necessary_relations(
-                performance_table_list=refined_performance_table_dict,
-                alternatives_id_list=alternatives_id_list,
-                preferences=refined_preferences,
-                indifferences=refined_indifferences,
-                criteria=refined_gains,
-                show_logs=self.show_logs
-            )
+        necessary_preference = SolverUtils.get_necessary_relations(
+            performance_table_list=refined_performance_table_dict,
+            alternatives_id_list=alternatives_id_list,
+            preferences=refined_preferences,
+            indifferences=refined_indifferences,
+            criteria=refined_gains,
+            min_max_position=refined_min_max_position,
+            number_of_points=refined_linear_segments,
+            show_logs=self.show_logs
+        )
 
-            direct_relations: Dict[str, List[str]] = SolverUtils.calculate_direct_relations(necessary_preference)
+        direct_relations: Dict[str, List[str]] = SolverUtils.calculate_direct_relations(necessary_preference)
 
-            for alternatives_id in alternatives_id_list:
-                if alternatives_id not in direct_relations.keys():
-                    direct_relations[alternatives_id] = []
-        else:
-            necessary: Dict[str, List[str]] = {}
-            for i in range(len(refined_performance_table_dict)):
-                for j in range(len(refined_performance_table_dict)):
-                    if i == j:
-                        continue
-
-                    problem: LpProblem = SolverUtils.calculate_solved_problem_with_predefined_number_of_characteristic_points(
-                        performance_table_list=refined_performance_table_dict,
-                        preferences=refined_preferences,
-                        indifferences=refined_indifferences,
-                        criteria=refined_gains,
-                        number_of_points=number_of_points,
-                        alternative_id_1=i,
-                        alternative_id_2=j,
-                        show_logs=self.show_logs
-                    )
-
-                    # if problem.variables()[0].varValue <= 0:
-                    #     necessary.append([alternatives_id_list[i], alternatives_id_list[j]])
-                    if problem.variables()[0].varValue <= 0:
-                        if alternatives_id_list[i] not in necessary:
-                            necessary[alternatives_id_list[i]] = []
-                        necessary[alternatives_id_list[i]].append(alternatives_id_list[j])
-
-            direct_relations: Dict[str, List[str]] = SolverUtils.calculate_direct_relations(necessary)
-
-            for alternatives_id in alternatives_id_list:
-                if alternatives_id not in direct_relations.keys():
-                    direct_relations[alternatives_id] = []
+        for alternatives_id in alternatives_id_list:
+            if alternatives_id not in direct_relations.keys():
+                direct_relations[alternatives_id] = []
 
         return direct_relations
 
@@ -116,6 +93,7 @@ class Solver:
             preferences: List[Preference],
             indifferences: List[Indifference],
             criteria: List[Criterion],
+            positions: Optional[List[Position]] = []
     ) -> Dict[str, float]:
         """
         Method for getting The Most Representative Value Function
@@ -124,11 +102,13 @@ class Solver:
         :param preferences: List of Preference objects
         :param indifferences: List of Indifference objects
         :param criteria: List of Criterion objects
+        :param positions: List of Position objects
 
         :return:
         """
         DataValidator.validate_criteria(performance_table_dict, criteria)
         DataValidator.validate_performance_table(performance_table_dict)
+        DataValidator.validate_positions(positions, performance_table_dict)
 
         refined_performance_table_dict: List[List[float]] = DataclassesUtils.refine_performance_table_dict(
             performance_table_dict=performance_table_dict
@@ -150,6 +130,11 @@ class Solver:
 
         refined_linear_segments: List[int] = DataclassesUtils.refine_linear_segments(
             criterions=criteria
+        )
+
+        refined_min_max_position: List[List[int]] = DataclassesUtils.refine_positions(
+            positions=positions,
+            performance_table_dict=performance_table_dict
         )
 
         alternatives_id_list: List[str] = list(performance_table_dict.keys())
@@ -160,6 +145,8 @@ class Solver:
             preferences=refined_preferences,
             indifferences=refined_indifferences,
             criteria=refined_gains,
+            min_max_position=refined_min_max_position,
+            number_of_points=refined_linear_segments,
             show_logs=self.show_logs
         )
 
