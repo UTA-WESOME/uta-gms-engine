@@ -78,7 +78,7 @@ def number_of_points_dummy():
 
 
 @pytest.fixture()
-def min_max_positions_dummy():
+def worst_best_positions_dummy():
     return [] #[[0, 6, 1]]
 
 
@@ -100,7 +100,7 @@ def test_calculate_solved_problem(
     indifferences_list_dummy,
     criteria_list_dummy,
     number_of_points_dummy,
-    min_max_positions_dummy,
+    worst_best_positions_dummy,
     problem_variable_values_dummy
 ):
     problem: LpProblem = SolverUtils.calculate_solved_problem(
@@ -108,7 +108,7 @@ def test_calculate_solved_problem(
         preferences=preferences_list_dummy,
         indifferences=indifferences_list_dummy,
         criteria=criteria_list_dummy,
-        min_max_position=min_max_positions_dummy,
+        worst_best_position=worst_best_positions_dummy,
         number_of_points=number_of_points_dummy,
         alternative_id_1=1,
         alternative_id_2=2

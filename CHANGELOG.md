@@ -1,4 +1,15 @@
 # Changelog
+## v0.0.14 - 24-10-2023
+### Changed
+- min/max positions renamed to best/worst
+
+### Fixed
+- Fixed issue with best/worst positions, now should work properly
+
+### Important Notes
+- If there is given preference regarding worst/best position, 
+the formula from the master's thesis is such that it makes it impossible for the given attribute to be equal to someone else,
+
 ## v0.0.13 - 24-10-2023
 ### Added
 - Position object

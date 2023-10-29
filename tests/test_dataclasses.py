@@ -61,7 +61,7 @@ def criterions_dummy():
 
 @pytest.fixture()
 def positions_list_dummy():
-    return [Position(alternative_id='M', min_position=1, max_position=3)]
+    return [Position(alternative_id='M', worst_position=1, best_position=3)]
 
 
 def test_preferences(
@@ -128,8 +128,8 @@ def test_data_validator_validate_positions(
     with pytest.raises(ValueError, match="Alternative IDs in the Position list and the data dictionary do not match."):
         DataValidator.validate_positions(positions_list_dummy, performance_table_list_dummy)
 
-    with pytest.raises(ValueError, match="min_position can't be negative."):
-        Position(alternative_id='A', min_position=-1, max_position=2)
+    with pytest.raises(ValueError, match="worst_position can't be negative."):
+        Position(alternative_id='A', worst_position=-1, best_position=2)
 
-    with pytest.raises(ValueError, match="max_position can't be negative."):
-        Position(alternative_id='A', min_position=1, max_position=-2)
+    with pytest.raises(ValueError, match="best_position can't be negative."):
+        Position(alternative_id='A', worst_position=1, best_position=-2)

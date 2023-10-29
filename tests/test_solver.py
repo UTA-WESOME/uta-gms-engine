@@ -44,7 +44,7 @@ def predefined_criterions_dummy():
 
 @pytest.fixture()
 def positions_dummy():
-    return [Position(alternative_id='A', min_position=6, max_position=1)]
+    return [Position(alternative_id='A', worst_position=6, best_position=1)]
 
 
 @pytest.fixture()

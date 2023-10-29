@@ -106,7 +106,7 @@ class DataclassesUtils:
             performance_table_dict
     ) -> List[List[int]]:
         """
-        Refined list[Positions] to [[alternative_ID, min_position, max_position], ...] format
+        Refined list[Positions] to [[alternative_ID, worst_position, best_position], ...] format
 
         :param positions:
         :param performance_table_dict:
@@ -120,6 +120,6 @@ class DataclassesUtils:
             tmp[key] = i
 
         for position in positions:
-            output.append([tmp[position.alternative_id], position.min_position, position.max_position])
+            output.append([tmp[position.alternative_id], position.worst_position, position.best_position])
 
         return output

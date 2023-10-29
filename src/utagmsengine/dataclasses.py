@@ -58,20 +58,20 @@ class Criterion(BaseModel):
 
 class Position(BaseModel):
     alternative_id: str
-    min_position: int
-    max_position: int
+    worst_position: int
+    best_position: int
 
-    @field_validator("min_position")
-    def check_min_position(cls, min_position):
-        if min_position < 0:
-            raise ValueError("min_position can't be negative.")
-        return min_position
+    @field_validator("worst_position")
+    def check_worst_position(cls, worst_position):
+        if worst_position < 0:
+            raise ValueError("worst_position can't be negative.")
+        return worst_position
 
-    @field_validator("max_position")
-    def check_max_position(cls, max_position):
-        if max_position < 0:
-            raise ValueError("max_position can't be negative.")
-        return max_position
+    @field_validator("best_position")
+    def check_max_position(cls, best_position):
+        if best_position < 0:
+            raise ValueError("best_position can't be negative.")
+        return best_position
 
 
 class DataValidator:
@@ -105,5 +105,5 @@ class DataValidator:
                 raise ValueError("Alternative IDs in the Position list and the data dictionary do not match.")
 
         for position in positions_list:
-            if position.min_position < position.max_position:
-                raise ValueError(f"min_position can't be lower than max_position")
+            if position.worst_position < position.best_position:
+                raise ValueError(f"worst_position can't be lower than best_position")
