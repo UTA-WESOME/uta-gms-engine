@@ -1,7 +1,7 @@
 import pytest
 
 from src.utagmsengine.solver import Solver
-from src.utagmsengine.dataclasses import Preference, Indifference, Criterion
+from src.utagmsengine.dataclasses import Preference, Indifference, Criterion, Position
 
 
 @pytest.fixture()
@@ -34,12 +34,17 @@ def indifferences_dummy():
 
 @pytest.fixture()
 def criterions_dummy():
-    return [Criterion(criterion_id='g1', gain=True), Criterion(criterion_id='g2', gain=True), Criterion(criterion_id='g3', gain=True)]
+    return [Criterion(criterion_id='g1', gain=True, number_of_linear_segments=0), Criterion(criterion_id='g2', gain=True, number_of_linear_segments=0), Criterion(criterion_id='g3', gain=True, number_of_linear_segments=0)]
 
 
 @pytest.fixture()
-def number_of_points_dummy():
-    return [3, 3, 3]
+def predefined_criterions_dummy():
+    return [Criterion(criterion_id='g1', gain=True, number_of_linear_segments=3), Criterion(criterion_id='g2', gain=True, number_of_linear_segments=3), Criterion(criterion_id='g3', gain=True, number_of_linear_segments=3)]
+
+
+@pytest.fixture()
+def positions_dummy():
+    return [Position(alternative_id='A', min_position=6, max_position=1)]
 
 
 @pytest.fixture()
@@ -57,21 +62,12 @@ def predefined_hasse_diagram_dict_dummy():
     return {'A': ['F', 'K'], 'C': ['J'], 'D': ['G'], 'F': ['E', 'J'], 'G': ['B', 'D', 'F', 'H', 'K'], 'I': ['B', 'J'], 'K': ['C'], 'L': ['C', 'E'], 'B': [], 'E': [], 'H': [], 'J': []}
 
 
-@pytest.fixture()
-def ranking_dict_dummy():
-    return {'B': 0.0, 'E': 0.0, 'H': 0.0, 'I': 0.0, 'A': 0.5, 'C': 0.5, 'F': 0.5, 'J': 0.5, 'K': 0.5, 'L': 0.5, 'D': 1.0, 'G': 1.0}
-
-
-@pytest.fixture()
-def predefined_linear_segments_ranking_dict_dummy():
-    return {'J': 0.21243561290322582, 'E': 0.23637411, 'C': 0.40256550451612905, 'L': 0.41313716433333336, 'F': 0.47213700000000003, 'K': 0.543835190967742, 'H': 0.584198, 'B': 0.6107524516129033, 'I': 0.6638613548387097, 'D': 0.7079016300000001, 'G': 0.7079016300000001, 'A': 0.8604244123010754}
-
-
 def test_get_hasse_diagram_dict(
         performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy,
+        positions_dummy,
         hasse_diagram_dict_dummy
 ):
     solver = Solver(show_logs=True)
@@ -80,7 +76,8 @@ def test_get_hasse_diagram_dict(
         performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
-        criterions_dummy
+        criterions_dummy,
+        #positions_dummy
     )
 
     assert hasse_diagram_list == hasse_diagram_dict_dummy
@@ -91,6 +88,7 @@ def test_get_representative_value_function_dict(
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy,
+        positions_dummy,
         representative_value_function_dict_dummy
 ):
     solver = Solver(show_logs=True)
@@ -99,58 +97,19 @@ def test_get_representative_value_function_dict(
         performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
-        criterions_dummy
+        criterions_dummy,
+        #positions_dummy
     )
 
     assert representative_value_function_dict == representative_value_function_dict_dummy
-
-
-def test_get_ranking_dict(
-        performance_table_dict_dummy,
-        preferences_dummy,
-        indifferences_dummy,
-        criterions_dummy,
-        ranking_dict_dummy,
-):
-    solver = Solver(show_logs=True)
-
-    ranking = solver.get_ranking_dict(
-        performance_table_dict_dummy,
-        preferences_dummy,
-        indifferences_dummy,
-        criterions_dummy
-    )
-
-    assert ranking == ranking_dict_dummy
-
-
-def test_predefined_get_ranking_dict(
-        performance_table_dict_dummy,
-        preferences_dummy,
-        indifferences_dummy,
-        criterions_dummy,
-        number_of_points_dummy,
-        predefined_linear_segments_ranking_dict_dummy
-):
-    solver = Solver(show_logs=True)
-
-    ranking_predefined_number_of_linear_segments = solver.get_ranking_dict(
-        performance_table_dict_dummy,
-        preferences_dummy,
-        indifferences_dummy,
-        criterions_dummy,
-        number_of_points_dummy
-    )
-
-    assert ranking_predefined_number_of_linear_segments == predefined_linear_segments_ranking_dict_dummy
 
 
 def test_predefined_get_hasse_diagram_dict(
         performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
-        criterions_dummy,
-        number_of_points_dummy,
+        predefined_criterions_dummy,
+        positions_dummy,
         predefined_hasse_diagram_dict_dummy
 ):
     solver = Solver(show_logs=True)
@@ -159,8 +118,8 @@ def test_predefined_get_hasse_diagram_dict(
         performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
-        criterions_dummy,
-        number_of_points_dummy
+        predefined_criterions_dummy,
+        positions_dummy
     )
 
     assert hasse_diagram_list == predefined_hasse_diagram_dict_dummy

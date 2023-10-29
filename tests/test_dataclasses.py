@@ -1,5 +1,5 @@
 import pytest
-from src.utagmsengine.dataclasses import Preference, Indifference, Criterion, DataValidator
+from src.utagmsengine.dataclasses import Preference, Indifference, Criterion, DataValidator, Position
 
 
 @pytest.fixture()
@@ -38,9 +38,9 @@ def indifferences_list_dummy():
 @pytest.fixture()
 def criterion_list_dummy():
     return [
-        {'criterion_id': 'g1', 'gain': True},
-        {'criterion_id': 'g2', 'gain': True},
-        {'criterion_id': 'g3', 'gain': True},
+        {'criterion_id': 'g1', 'gain': True, 'number_of_linear_segments': 0},
+        {'criterion_id': 'g2', 'gain': True, 'number_of_linear_segments': 0},
+        {'criterion_id': 'g3', 'gain': True, 'number_of_linear_segments': 0},
     ]
 
 
@@ -56,7 +56,12 @@ def indifferences_dummy():
 
 @pytest.fixture()
 def criterions_dummy():
-    return [Criterion(criterion_id='g1', gain=True), Criterion(criterion_id='g2', gain=True), Criterion(criterion_id='g3', gain=True)]
+    return [Criterion(criterion_id='g1', gain=True, number_of_linear_segments=0), Criterion(criterion_id='g2', gain=True, number_of_linear_segments=0), Criterion(criterion_id='g3', gain=True, number_of_linear_segments=0)]
+
+
+@pytest.fixture()
+def positions_list_dummy():
+    return [Position(alternative_id='M', min_position=1, max_position=3)]
 
 
 def test_preferences(
@@ -114,3 +119,17 @@ def test_data_validator_validate_performance_table(
 ):
     with pytest.raises(ValueError, match="Keys inside the inner dictionaries are not consistent."):
         DataValidator.validate_performance_table(performance_table_list_dummy)
+
+
+def test_data_validator_validate_positions(
+        positions_list_dummy,
+        performance_table_list_dummy
+):
+    with pytest.raises(ValueError, match="Alternative IDs in the Position list and the data dictionary do not match."):
+        DataValidator.validate_positions(positions_list_dummy, performance_table_list_dummy)
+
+    with pytest.raises(ValueError, match="min_position can't be negative."):
+        Position(alternative_id='A', min_position=-1, max_position=2)
+
+    with pytest.raises(ValueError, match="max_position can't be negative."):
+        Position(alternative_id='A', min_position=1, max_position=-2)

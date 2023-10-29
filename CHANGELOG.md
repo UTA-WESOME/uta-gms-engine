@@ -1,4 +1,24 @@
 # Changelog
+## v0.0.13 - 24-10-2023
+### Added
+- Position object
+    - min and max positions can't be negative
+- get_hasse_diagram_dict and get_representative_value_function_dict now can take additional parameter 'positions',
+which is a list of Position objects
+
+### Changed
+- parser.get_criterion_list_csv now returns list of Criterion objects with number_of_linear_segments = 0
+
+### Fixed
+- get_hasse_diagram_dict and get_representative_value_function_dict now works
+for general functions and with predefined number of linear segments
+
+### Deleted
+- solver.get_ranking_dict method
+
+### Important Notes
+- positions in get_hasse_diagram_dict and get_representative_value_function_dict might not work properly
+
 ## v0.0.12 - 17-10-2023
 ### Added
 - get_representative_value_function_dict method

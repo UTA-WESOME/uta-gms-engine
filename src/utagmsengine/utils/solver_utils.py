@@ -11,18 +11,22 @@ class SolverUtils:
             preferences: List[List[int]],
             indifferences: List[List[int]],
             criteria: List[bool],
+            min_max_position: List[List[int]],
+            number_of_points: List[int],
             alternative_id_1: int = -1,
             alternative_id_2: int = -1,
             show_logs: bool = False,
     ) -> LpProblem:
         """
-        Main calculation method for problem-solving using general function
+        Main calculation method for problem-solving.
         The idea is that this should be a generic method used across different problems
 
         :param performance_table_list:
         :param preferences:
         :param indifferences:
         :param criteria:
+        :param min_max_position:
+        :param number_of_points:
         :param alternative_id_1: used only in calculation for hasse graphs
         :param alternative_id_2: used only in calculation for hasse graphs
         :param show_logs: default None
@@ -35,19 +39,30 @@ class SolverUtils:
 
         u_list, u_list_dict = SolverUtils.create_variables_list_and_dict(performance_table_list)
 
+        characteristic_points: List[List[float]] = SolverUtils.calculate_characteristic_points(
+            number_of_points, performance_table_list, u_list_dict, u_list
+        )
+
+        u_list = [sorted(lp_var_list, key=lambda var: float(var.name.split("_")[-1])) for lp_var_list in u_list]
+
         # Normalization constraints
         the_greatest_performance: List[LpVariable] = []
         for i in range(len(u_list)):
             if criteria[i]:
                 the_greatest_performance.append(u_list[i][-1])
-                # problem += u_list[i][-1] == weights[i]
                 problem += u_list[i][0] == 0
             else:
                 the_greatest_performance.append(u_list[i][0])
-                # problem += u_list[i][0] == weights[i]
                 problem += u_list[i][-1] == 0
 
         problem += lpSum(the_greatest_performance) == 1
+
+        u_list_of_characteristic_points: List[List[LpVariable]] = []
+        for i in range(len(characteristic_points)):
+            pom = []
+            for j in range(len(characteristic_points[i])):
+                pom.append(u_list_dict[i][float(characteristic_points[i][j])])
+            u_list_of_characteristic_points.append(pom[:])
 
         # Monotonicity constraint
         for i in range(len(u_list)):
@@ -105,217 +120,89 @@ class SolverUtils:
 
             problem += lpSum(left_side) >= lpSum(right_side) + epsilon
 
-        problem += epsilon
-
-        problem.solve(solver=GLPK(msg=show_logs))
-
-        return problem
-
-    @staticmethod
-    def calculate_solved_problem_with_predefined_number_of_characteristic_points(
-            performance_table_list: List[List[float]],
-            preferences: List[List[int]],
-            indifferences: List[List[int]],
-            criteria: List[bool],
-            number_of_points: List[int],
-            alternative_id_1: int = -1,
-            alternative_id_2: int = -1,
-            show_logs: bool = False,
-    ) -> LpProblem:
-        """
-        Main calculation method for problem-solving using predefined number of linear segments/characteristic points.
-        The idea is that this should be a generic method used across different problems
-
-        :param performance_table_list:
-        :param preferences:
-        :param indifferences:
-        :param criteria:
-        :param number_of_points:
-        :param alternative_id_1: used only in calculation for hasse graphs
-        :param alternative_id_2: used only in calculation for hasse graphs
-        :param show_logs: default None
-
-        :return problem:
-        """
-        problem: LpProblem = LpProblem("UTA-GMS", LpMaximize)
-
-        epsilon: LpVariable = LpVariable("epsilon")
-
-        u_list, u_list_dict = SolverUtils.create_variables_list_and_dict(performance_table_list)
-
-        characteristic_points: List[List[float]] = SolverUtils.calculate_characteristic_points(
-            number_of_points, performance_table_list, u_list_dict
-        )
-
-        # Normalization constraints
-        the_greatest_performance: List[LpVariable] = []
-        for i in range(len(u_list)):
-            if criteria[i]:
-                the_greatest_performance.append(u_list[i][-1])
-                # problem += u_list[i][-1] == weights[i]
-                problem += u_list[i][0] == 0
-            else:
-                the_greatest_performance.append(u_list[i][0])
-                # problem += u_list[i][0] == weights[i]
-                problem += u_list[i][-1] == 0
-
-        problem += lpSum(the_greatest_performance) == 1
-
-        u_list_of_characteristic_points = []
-        for i in range(len(characteristic_points)):
+        # Min and Max position
+        alternatives_variables: List[List[LpVariable]] = []
+        for i in range(len(performance_table_list)):
             pom = []
-            for j in range(len(characteristic_points[i])):
-                pom.append(u_list_dict[i][characteristic_points[i][j]])
-            u_list_of_characteristic_points.append(pom[:])
+            for j in range(len(u_list_dict)):
+                pom.append(u_list_dict[j][performance_table_list[i][j]])
+            alternatives_variables.append(pom[:])
 
-        # Preference constraint
-        for preference in preferences:
-            left_alternative: List[float] = performance_table_list[preference[0]]
-            right_alternative: List[float] = performance_table_list[preference[1]]
+        alternatives_binary_variables: Dict[int, Dict[int, List[LpVariable]]] = {}
+        all_binary_variables = {}
+        for i in min_max_position:
+            pom_dict = {}
+            for j in range(len(performance_table_list)):
+                pom = []
+                if i[0] != j:
+                    variable_1_name: str = f"v_{i[0]}_higher_than_{j}"
+                    if variable_1_name not in all_binary_variables:
+                        variable_1: LpVariable = LpVariable(variable_1_name, cat='Binary')
+                        pom.append(variable_1)
+                        all_binary_variables[variable_1_name] = variable_1
+                    else:
+                        pom.append(all_binary_variables[variable_1_name])
+                    variable_2_name: str = f"v_{j}_higher_than_{i[0]}"
+                    if variable_2_name not in all_binary_variables:
+                        variable_2: LpVariable = LpVariable(variable_2_name, cat='Binary')
+                        pom.append(variable_2)
+                        all_binary_variables[variable_2_name] = variable_2
+                    else:
+                        pom.append(all_binary_variables[variable_2_name])
+                    pom_dict[j] = pom[:]
 
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(u_list_dict)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
+            alternatives_binary_variables[i[0]] = pom_dict
 
-            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
+        big_M: int = 1e20
+        for min_max in min_max_position:
+            for i in range(len(performance_table_list)):
+                if i != min_max[0]:
+                    problem += lpSum(alternatives_variables[min_max[0]]) - lpSum(alternatives_variables[i]) + big_M * \
+                               alternatives_binary_variables[min_max[0]][i][0] >= epsilon
 
-            # Check if preference is a characteristic point, if not add it to characteristic points
-            for i in range(len(left_side)):
-                exist = 0
-                for j in range(len(u_list_of_characteristic_points[i])):
-                    if left_side[i].name == u_list_of_characteristic_points[i][j].name:
-                        exist = 1
-                        break
-                if exist == 0:
-                    u_list_of_characteristic_points[i].append(left_side[i])
+                    problem += lpSum(alternatives_variables[i]) - lpSum(alternatives_variables[min_max[0]]) + big_M * \
+                               alternatives_binary_variables[min_max[0]][i][1] >= epsilon
 
-            for i in range(len(right_side)):
-                exist = 0
-                for j in range(len(u_list_of_characteristic_points[i])):
-                    if right_side[i].name == u_list_of_characteristic_points[i][j].name:
-                        exist = 1
-                        break
-                if exist == 0:
-                    u_list_of_characteristic_points[i].append(right_side[i])
+                    problem += alternatives_binary_variables[min_max[0]][i][0] + \
+                               alternatives_binary_variables[min_max[0]][i][1] <= 1
 
-        # Indifference constraint
-        for indifference in indifferences:
-            left_alternative: List[float] = performance_table_list[indifference[0]]
-            right_alternative: List[float] = performance_table_list[indifference[1]]
-
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(u_list_dict)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
-
-            problem += lpSum(left_side) == lpSum(right_side)
-
-            # Check if indifference is a characteristic point, if not add it to characteristic points
-            for i in range(len(left_side)):
-                exist = 0
-                for j in range(len(u_list_of_characteristic_points[i])):
-                    if left_side[i].name == u_list_of_characteristic_points[i][j].name:
-                        exist = 1
-                        break
-                if exist == 0:
-                    u_list_of_characteristic_points[i].append(left_side[i])
-
-            for i in range(len(right_side)):
-                exist = 0
-                for j in range(len(u_list_of_characteristic_points[i])):
-                    if right_side[i].name == u_list_of_characteristic_points[i][j].name:
-                        exist = 1
-                        break
-                if exist == 0:
-                    u_list_of_characteristic_points[i].append(right_side[i])
-        # code only for hasse graph calculation
-        if alternative_id_1 >= 0 and alternative_id_2 >= 0:
-            left_alternative: List[float] = performance_table_list[alternative_id_2]
-            right_alternative: List[float] = performance_table_list[alternative_id_1]
-
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(u_list_dict)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
-
-            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
-
-            # Check if preference is a characteristic point, if not add it to characteristic points
-            for i in range(len(left_side)):
-                exist = 0
-                for j in range(len(u_list_of_characteristic_points[i])):
-                    if left_side[i].name == u_list_of_characteristic_points[i][j].name:
-                        exist = 1
-                        break
-                if exist == 0:
-                    u_list_of_characteristic_points[i].append(left_side[i])
-
-            for i in range(len(right_side)):
-                exist = 0
-                for j in range(len(u_list_of_characteristic_points[i])):
-                    if right_side[i].name == u_list_of_characteristic_points[i][j].name:
-                        exist = 1
-                        break
-                if exist == 0:
-                    u_list_of_characteristic_points[i].append(right_side[i])
-
-        sorted_u_list_of_characteristic_points = [sorted(lp_var_list, key=lambda var: float(var.name.split("_")[-1]))
-                                                  for lp_var_list in u_list_of_characteristic_points]
+            pom_higher = []
+            pom_lower = []
+            for j in alternatives_binary_variables[min_max[0]]:
+                pom_higher.append(alternatives_binary_variables[min_max[0]][j][0])
+                pom_lower.append(alternatives_binary_variables[min_max[0]][j][1])
+            problem += lpSum(pom_higher) <= min_max[1] - 1
+            problem += lpSum(pom_lower) <= len(performance_table_list) - min_max[2]
 
         # Use linear interpolation to create constraints
         for i in range(len(u_list_of_characteristic_points)):
-            for j in range(len(characteristic_points[i]), len(u_list_of_characteristic_points[i])):
-                point_before = 0
-                point_after = 1
-                while characteristic_points[i][point_before] > float(
-                        u_list_of_characteristic_points[i][j].name.split("_")[-1]) or float(
-                    u_list_of_characteristic_points[i][j].name.split("_")[-1]) > characteristic_points[i][point_after]:
-                    point_before += 1
-                    point_after += 1
-                value = u_list_of_characteristic_points[i][point_before] + (
-                        (u_list_of_characteristic_points[i][point_after] - u_list_of_characteristic_points[i][
-                            point_before]) *
-                        (float(u_list_of_characteristic_points[i][j].name.split("_")[-1]) - characteristic_points[i][
-                            point_before]) /
-                        (characteristic_points[i][point_after] - characteristic_points[i][point_before])
-                )
+            for j in u_list_dict[i]:
+                if_characteristic = 0
 
-                problem += u_list_of_characteristic_points[i][j] == value
+                for z in range(len(u_list_of_characteristic_points[i])):
+                    if u_list_dict[i][j].name == u_list_of_characteristic_points[i][z].name:
+                        if_characteristic = 1
+                        break
 
-        # Monotonicity constraint
-        for i in range(len(sorted_u_list_of_characteristic_points)):
-            for j in range(1, len(sorted_u_list_of_characteristic_points[i])):
-                if criteria[i]:
-                    problem += sorted_u_list_of_characteristic_points[i][j] >= \
-                               sorted_u_list_of_characteristic_points[i][j - 1]
-                else:
-                    problem += sorted_u_list_of_characteristic_points[i][j - 1] >= \
-                               sorted_u_list_of_characteristic_points[i][j]
+                if if_characteristic == 0:
+                    point_before = 0
+                    point_after = 1
+                    while characteristic_points[i][point_before] > float(
+                            u_list_dict[i][j].name.split("_")[-1]) or float(u_list_dict[i][j].name.split("_")[-1]) > \
+                            characteristic_points[i][point_after]:
+                        point_before += 1
+                        point_after += 1
+                    value = SolverUtils.linear_interpolation(float(u_list_dict[i][j].name.split("_")[-1]),
+                                                             characteristic_points[i][point_before], u_list_dict[i][
+                                                                 float(characteristic_points[i][point_before])],
+                                                             characteristic_points[i][point_after], u_list_dict[i][
+                                                                 float(characteristic_points[i][point_after])])
 
-        # Bounds constraint
-        for i in range(len(sorted_u_list_of_characteristic_points)):
-            for j in range(1, len(sorted_u_list_of_characteristic_points[i]) - 1):
-                if criteria[i]:
-                    problem += sorted_u_list_of_characteristic_points[i][-1] >= \
-                               sorted_u_list_of_characteristic_points[i][j]
-                    problem += sorted_u_list_of_characteristic_points[i][j] >= \
-                               sorted_u_list_of_characteristic_points[i][0]
-                else:
-                    problem += sorted_u_list_of_characteristic_points[i][0] >= \
-                               sorted_u_list_of_characteristic_points[i][j]
-                    problem += sorted_u_list_of_characteristic_points[i][j] >= \
-                               sorted_u_list_of_characteristic_points[i][-1]
+                    problem += u_list_dict[i][j] == value
 
         problem += epsilon
 
-        glpk_solver = GLPK(msg=show_logs)
-        glpk_solver.options += ['--nopresol']
-
-        problem.solve(glpk_solver)
+        problem.solve(solver=GLPK(msg=show_logs))
 
         return problem
 
@@ -326,9 +213,24 @@ class SolverUtils:
             preferences: List[List[int]],
             indifferences: List[List[int]],
             criteria: List[bool],
+            min_max_position: List[List[int]],
+            number_of_points: List[int],
             show_logs: bool = False,
     ) -> LpProblem:
+        """
+        Main method used in getting the most representative value function.
 
+        :param performance_table_list:
+        :param alternatives_id_list:
+        :param preferences:
+        :param indifferences:
+        :param criteria:
+        :param min_max_position:
+        :param number_of_points:
+        :param show_logs: default None
+
+        :return problem:
+        """
         problem: LpProblem = LpProblem("UTA-GMS", LpMaximize)
 
         epsilon: LpVariable = LpVariable("epsilon")
@@ -393,12 +295,14 @@ class SolverUtils:
 
             problem += lpSum(left_side) == lpSum(right_side)
 
-        necessary_preference = SolverUtils.get_necessary_relations(
+        necessary_preference: Dict[str, List[str]] = SolverUtils.get_necessary_relations(
             performance_table_list=performance_table_list,
             alternatives_id_list=alternatives_id_list,
             preferences=preferences,
             indifferences=indifferences,
-            criteria=criteria
+            criteria=criteria,
+            min_max_position=min_max_position,
+            number_of_points=number_of_points,
         )
 
         for i in range(len(alternatives_id_list) - 1):
@@ -413,21 +317,79 @@ class SolverUtils:
                 sum_i = lpSum(pom1[:])
                 sum_j = lpSum(pom2[:])
 
-                if (name_i not in necessary_preference and name_j in necessary_preference and name_i in necessary_preference[name_j]) or \
-                (name_i in necessary_preference and name_j in necessary_preference and name_i in necessary_preference[name_j] and name_j not in necessary_preference[name_i]):
+                if (name_i not in necessary_preference and name_j in necessary_preference and name_i in
+                    necessary_preference[name_j]) or \
+                        (name_i in necessary_preference and name_j in necessary_preference and name_i in
+                         necessary_preference[name_j] and name_j not in necessary_preference[name_i]):
                     problem += sum_j >= sum_i + epsilon
-                elif (name_j not in necessary_preference and name_i in necessary_preference and name_j in necessary_preference[name_i]) or \
-                (name_i in necessary_preference and name_j in necessary_preference and name_j in necessary_preference[name_i] and name_i not in necessary_preference[name_j]):
+                elif (name_j not in necessary_preference and name_i in necessary_preference and name_j in
+                      necessary_preference[name_i]) or \
+                        (name_i in necessary_preference and name_j in necessary_preference and name_j in
+                         necessary_preference[name_i] and name_i not in necessary_preference[name_j]):
                     problem += sum_i >= sum_j + epsilon
                 elif (name_i not in necessary_preference and name_j not in necessary_preference) or \
-                (name_i not in necessary_preference and name_j in necessary_preference and name_i not in necessary_preference[name_j]) or \
-                (name_j not in necessary_preference and name_i in necessary_preference and name_j not in necessary_preference[name_i]) or \
-                (name_i in necessary_preference and name_j not in necessary_preference[name_i] and name_j in necessary_preference and name_i not in necessary_preference[name_j]):
+                        (name_i not in necessary_preference and name_j in necessary_preference and name_i not in
+                         necessary_preference[name_j]) or \
+                        (name_j not in necessary_preference and name_i in necessary_preference and name_j not in
+                         necessary_preference[name_i]) or \
+                        (name_i in necessary_preference and name_j not in necessary_preference[
+                            name_i] and name_j in necessary_preference and name_i not in necessary_preference[name_j]):
                     problem += sum_i <= delta + sum_j
                     problem += sum_j <= delta + sum_i
 
-        big_m: int = 1e20
-        problem += big_m * epsilon - delta
+        # Min and Max position
+        alternatives_variables: List[List[LpVariable]] = []
+        for i in range(len(performance_table_list)):
+            pom = []
+            for j in range(len(u_list_dict)):
+                pom.append(u_list_dict[j][performance_table_list[i][j]])
+            alternatives_variables.append(pom[:])
+
+        alternatives_binary_variables: Dict[int, Dict[int, LpVariable]] = {}
+        all_binary_variables = {}
+        for i in min_max_position:
+            pom_dict = {}
+            for j in range(len(performance_table_list)):
+                pom = []
+                if i[0] != j:
+                    variable_1_name: str = f"v_{i[0]}_higher_than_{j}"
+                    if variable_1_name not in all_binary_variables:
+                        variable_1: LpVariable = LpVariable(variable_1_name, cat='Binary')
+                        pom.append(variable_1)
+                        all_binary_variables[variable_1_name] = variable_1
+                    else:
+                        pom.append(all_binary_variables[variable_1_name])
+                    variable_2_name: str = f"v_{j}_higher_than_{i[0]}"
+                    if variable_2_name not in all_binary_variables:
+                        variable_2: LpVariable = LpVariable(variable_2_name, cat='Binary')
+                        pom.append(variable_2)
+                        all_binary_variables[variable_2_name] = variable_2
+                    else:
+                        pom.append(all_binary_variables[variable_2_name])
+                    pom_dict[j] = pom[:]
+
+            alternatives_binary_variables[i[0]] = pom_dict
+
+        big_M: int = 1e20
+        for min_max in min_max_position:
+            for i in range(len(performance_table_list)):
+                if i != min_max[0]:
+                    problem += lpSum(alternatives_variables[min_max[0]]) - lpSum(alternatives_variables[i]) + big_M * \
+                               alternatives_binary_variables[min_max[0]][i][0] >= epsilon
+                    problem += lpSum(alternatives_variables[i]) - lpSum(alternatives_variables[min_max[0]]) + big_M * \
+                               alternatives_binary_variables[min_max[0]][i][1] >= epsilon
+                    problem += alternatives_binary_variables[min_max[0]][i][0] + \
+                               alternatives_binary_variables[min_max[0]][i][1] <= 1
+
+            pom_higher = []
+            pom_lower = []
+            for j in alternatives_binary_variables[min_max[0]]:
+                pom_higher.append(alternatives_binary_variables[min_max[0]][j][0])
+                pom_lower.append(alternatives_binary_variables[min_max[0]][j][1])
+            problem += lpSum(pom_higher) <= min_max[1] - 1
+            problem += lpSum(pom_lower) <= len(performance_table_list) - min_max[2]
+
+        problem += big_M * epsilon - delta
 
         problem.solve(solver=GLPK(msg=show_logs))
 
@@ -439,9 +401,25 @@ class SolverUtils:
             alternatives_id_list: List[str],
             preferences: List[List[int]],
             indifferences: List[List[int]],
-            criteria: List[int],
+            criteria: List[bool],
+            min_max_position: List[List[int]],
+            number_of_points: List[int],
             show_logs: bool = False
-    ):
+    ) -> Dict[str, List[str]]:
+        """
+        Method used for getting necessary relations.
+
+        :param performance_table_list:
+        :param alternatives_id_list:
+        :param preferences:
+        :param indifferences:
+        :param criteria:
+        :param min_max_position:
+        :param number_of_points:
+        :param show_logs: default None
+
+        :return necessary:
+        """
         necessary: Dict[str, List[str]] = {}
         for i in range(len(performance_table_list)):
             for j in range(len(performance_table_list)):
@@ -453,6 +431,8 @@ class SolverUtils:
                     preferences=preferences,
                     indifferences=indifferences,
                     criteria=criteria,
+                    min_max_position=min_max_position,
+                    number_of_points=number_of_points,
                     alternative_id_1=i,
                     alternative_id_2=j,
                     show_logs=show_logs
@@ -487,7 +467,7 @@ class SolverUtils:
                 variable: LpVariable = LpVariable(variable_name)
 
                 if performance_table[j][i] not in row_dict:
-                    row_dict[performance_table[j][i]] = variable
+                    row_dict[float(performance_table[j][i])] = variable
 
                 flag: int = 1
                 for var in row:
@@ -551,7 +531,7 @@ class SolverUtils:
                 variable_name: str = f"u_{j}_{performance_table_list[i][j]}"
                 utility += round(variables_and_values_dict[variable_name], 4)
 
-            utilities.append(utility)
+            utilities.append(round(utility, 4))
 
         utilities_dict: Dict[str, float] = {}
         # TODO: Sorting possibly unnecessary, but for now it's nicer for human eye :)
@@ -565,7 +545,8 @@ class SolverUtils:
     def calculate_characteristic_points(
             number_of_points,
             performance_table_list,
-            u_list_dict
+            u_list_dict,
+            u_list
     ) -> List[List[float]]:
         """
         Method for calculating characteristic points
@@ -573,26 +554,34 @@ class SolverUtils:
         :param number_of_points:
         :param performance_table_list:
         :param u_list_dict:
+        :param u_list:
 
         :return characteristic_points:
         """
         columns: List[Tuple[float]] = list(zip(*performance_table_list))
         min_values: List[float] = [min(col) for col in columns]
         max_values: List[float] = [max(col) for col in columns]
-
         characteristic_points: List[List[float]] = []
+
         for i in range(len(min_values)):
             pom = []
-            for j in range(number_of_points[i]):
-                x = min_values[i] + ((j) / (number_of_points[i] - 1)) * (max_values[i] - min_values[i])
-                if x not in u_list_dict[i]:
-                    new: str = f"u_{i}_{x}"
-                    variable: LpVariable = LpVariable(new)
-                    new: Dict[float, LpVariable] = {x: variable}
-                    u_list_dict[i].update(new)
-                pom.append(x)
-            characteristic_points.append(pom[:])
-
+            if number_of_points[i] != 0:
+                for j in range(number_of_points[i]):
+                    x = min_values[i] + (j / (number_of_points[i] - 1)) * (max_values[i] - min_values[i])
+                    if x not in u_list_dict[i]:
+                        new: str = f"u_{i}_{x}"
+                        variable: LpVariable = LpVariable(new)
+                        new: Dict[float, LpVariable] = {x: variable}
+                        u_list_dict[i].update(new)
+                        u_list[i].append(variable)
+                    pom.append(x)
+                characteristic_points.append(pom[:])
+            else:
+                for j in range(len(performance_table_list)):
+                    if float(performance_table_list[j][i]) not in pom:
+                        pom.append(float(performance_table_list[j][i]))
+                pom.sort()
+                characteristic_points.append(pom[:])
         return characteristic_points
 
     @staticmethod
@@ -600,57 +589,3 @@ class SolverUtils:
         """Perform linear interpolation to estimate a value at a specific point on a straight line"""
         result = y1 + ((x - x1) * (y2 - y1)) / (x2 - x1)
         return result
-
-    @staticmethod
-    def get_alternatives_and_utilities_using_interpolation_dict(
-            variables_and_values_dict,
-            performance_table_list,
-            characteristic_points,
-            alternatives_id_list
-    ) -> Dict[str, float]:
-        """
-        Method for getting alternatives_and_utilities_dict using interpolation.
-        Used for calculations with predefined number of linear segments
-
-        :param variables_and_values_dict:
-        :param performance_table_list:
-        :param characteristic_points:
-        :param alternatives_id_list:
-
-        :return sorted_dict:
-        """
-        utilities = []
-        for i in range(len(performance_table_list)):
-            utility = 0.0
-            for j in range(len(performance_table_list[i])):
-                variable_name = f"u_{j}_{performance_table_list[i][j]}"
-
-                if variable_name in variables_and_values_dict:
-                    utility += variables_and_values_dict[variable_name]
-                else:
-                    before_point = 0
-                    after_point = 1
-                    while characteristic_points[j][before_point] > performance_table_list[i][j] \
-                            or performance_table_list[i][j] > characteristic_points[j][after_point]:
-                        before_point += 1
-                        after_point += 1
-
-                    variable_name_1 = f"u_{j}_{characteristic_points[j][before_point]}"
-                    variable_name_2 = f"u_{j}_{characteristic_points[j][after_point]}"
-
-                    utility += SolverUtils.linear_interpolation(
-                        performance_table_list[i][j],
-                        characteristic_points[j][before_point],
-                        variables_and_values_dict[variable_name_1],
-                        characteristic_points[j][after_point],
-                        variables_and_values_dict[variable_name_2]
-                    )
-
-            utilities.append(utility)
-
-        utilities_dict: Dict[str, float] = {}
-        for i in range(len(utilities)):
-            utilities_dict[alternatives_id_list[i]] = utilities[i]
-        sorted_dict = dict(sorted(utilities_dict.items(), key=lambda item: item[1]))
-
-        return sorted_dict

@@ -99,3 +99,27 @@ class DataclassesUtils:
             output.append(criterion.number_of_linear_segments)
 
         return output
+
+    @staticmethod
+    def refine_positions(
+            positions,
+            performance_table_dict
+    ) -> List[List[int]]:
+        """
+        Refined list[Positions] to [[alternative_ID, min_position, max_position], ...] format
+
+        :param positions:
+        :param performance_table_dict:
+
+        :return output:
+        """
+        output = []
+        tmp = {}
+
+        for i, key in enumerate(performance_table_dict.keys()):
+            tmp[key] = i
+
+        for position in positions:
+            output.append([tmp[position.alternative_id], position.min_position, position.max_position])
+
+        return output

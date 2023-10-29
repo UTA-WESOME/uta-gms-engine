@@ -1,4 +1,3 @@
-from typing import Optional
 from pydantic import BaseModel, field_validator
 
 
@@ -44,19 +43,35 @@ class Criterion(BaseModel):
     Attributes:
         criterion_id (str): The unique identifier for the criterion.
         gain (bool): Whether the criterion represents a gain (True) or cost (False).
-        number_of_linear_segments (int): The number of linear segments that the criterion has
+        number_of_linear_segments (int): The number of linear segments that the criterion has, if 0 then general function will be used
     """
     criterion_id: str
     gain: bool
-    number_of_linear_segments: Optional[int] = None
+    number_of_linear_segments: int
 
     @field_validator("number_of_linear_segments")
     def check_number_of_linear_segments(cls, number_of_linear_segments):
-        if number_of_linear_segments is None:
-            return number_of_linear_segments
         if number_of_linear_segments < 0:
             raise ValueError("Number of linear segments can't be negative.")
         return number_of_linear_segments
+
+
+class Position(BaseModel):
+    alternative_id: str
+    min_position: int
+    max_position: int
+
+    @field_validator("min_position")
+    def check_min_position(cls, min_position):
+        if min_position < 0:
+            raise ValueError("min_position can't be negative.")
+        return min_position
+
+    @field_validator("max_position")
+    def check_max_position(cls, max_position):
+        if max_position < 0:
+            raise ValueError("max_position can't be negative.")
+        return max_position
 
 
 class DataValidator:
@@ -78,3 +93,17 @@ class DataValidator:
         for keys in keys_list[1:]:
             if keys != first_keys:
                 raise ValueError("Keys inside the inner dictionaries are not consistent.")
+
+    @staticmethod
+    def validate_positions(positions_list, performance_table):
+        """Validate whether Alternative IDs in positions_list and performance_table match."""
+        positions_ids = {position.alternative_id for position in positions_list}
+        performance_table_ids = {key for key in performance_table.keys()}
+
+        for position_id in positions_ids:
+            if position_id not in performance_table_ids:
+                raise ValueError("Alternative IDs in the Position list and the data dictionary do not match.")
+
+        for position in positions_list:
+            if position.min_position < position.max_position:
+                raise ValueError(f"min_position can't be lower than max_position")

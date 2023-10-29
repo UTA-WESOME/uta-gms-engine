@@ -47,7 +47,7 @@ class Parser:
         criteria_objects = []
         for i in range(len(criteria_ids)):
             gain = True if gains[i].lower() == 'gain' else False
-            criteria_objects.append(Criterion(criterion_id=criteria_ids[i], gain=gain))
+            criteria_objects.append(Criterion(criterion_id=criteria_ids[i], gain=gain, number_of_linear_segments=0))
 
         return criteria_objects
 
