@@ -27,9 +27,9 @@ def performance_table_dict_dummy():
 @pytest.fixture()
 def criteria_list_dummy():
     return [
-        Criterion(criterion_id='g1', gain=True),
-        Criterion(criterion_id='g2', gain=True),
-        Criterion(criterion_id='g3', gain=True)
+        Criterion(criterion_id='g1', gain=True, number_of_linear_segments=0),
+        Criterion(criterion_id='g2', gain=True, number_of_linear_segments=0),
+        Criterion(criterion_id='g3', gain=True, number_of_linear_segments=0)
     ]
 
 
