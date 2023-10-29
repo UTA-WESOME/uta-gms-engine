@@ -61,7 +61,7 @@ class Solver:
             criterions=criteria
         )
 
-        refined_min_max_position: List[List[int]] = DataclassesUtils.refine_positions(
+        refined_worst_best_position: List[List[int]] = DataclassesUtils.refine_positions(
             positions=positions,
             performance_table_dict=performance_table_dict
         )
@@ -74,7 +74,7 @@ class Solver:
             preferences=refined_preferences,
             indifferences=refined_indifferences,
             criteria=refined_gains,
-            min_max_position=refined_min_max_position,
+            worst_best_position=refined_worst_best_position,
             number_of_points=refined_linear_segments,
             show_logs=self.show_logs
         )
@@ -132,7 +132,7 @@ class Solver:
             criterions=criteria
         )
 
-        refined_min_max_position: List[List[int]] = DataclassesUtils.refine_positions(
+        refined_worst_best_position: List[List[int]] = DataclassesUtils.refine_positions(
             positions=positions,
             performance_table_dict=performance_table_dict
         )
@@ -145,7 +145,7 @@ class Solver:
             preferences=refined_preferences,
             indifferences=refined_indifferences,
             criteria=refined_gains,
-            min_max_position=refined_min_max_position,
+            worst_best_position=refined_worst_best_position,
             number_of_points=refined_linear_segments,
             show_logs=self.show_logs
         )
