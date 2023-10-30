@@ -1,4 +1,20 @@
 # Changelog
+## v0.0.16 - 31-10-2023
+### Added
+- sampler_metrics
+
+### Changed
+- get_representative_value_function_dict now returns sampler_metrics too.
+    - representative_value_function_dict
+    - criterion_functions
+    - sampler_metrics
+
+### Important Notes
+- Current sampler_metrics takes into account only preference and indifference
+
+- If there is given preference regarding worst/best position, 
+the formula from the master's thesis is such that it makes it impossible for the given attribute to be equal to someone else,
+
 ## v0.0.15 - 30-10-2023
 ### Added
 - criterion_functions to get_representative_value_function_dict
