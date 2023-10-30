@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 
 from pulp import LpProblem
 
@@ -94,7 +94,7 @@ class Solver:
             indifferences: List[Indifference],
             criteria: List[Criterion],
             positions: Optional[List[Position]] = []
-    ) -> Dict[str, float]:
+    ) -> Tuple[Dict[str, float], Dict[str, List[Tuple[float, float]]]]:
         """
         Method for getting The Most Representative Value Function
 
@@ -152,10 +152,15 @@ class Solver:
 
         variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in problem.variables()}
 
+        criterion_functions: Dict[str, List[Tuple[float, float]]] = SolverUtils.get_criterion_functions(
+            variables_and_values_dict=variables_and_values_dict,
+            criteria=criteria,
+        )
+
         alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_dict(
             variables_and_values_dict=variables_and_values_dict,
             performance_table_list=refined_performance_table_dict,
             alternatives_id_list=alternatives_id_list,
         )
 
-        return alternatives_and_utilities_dict
+        return alternatives_and_utilities_dict, criterion_functions

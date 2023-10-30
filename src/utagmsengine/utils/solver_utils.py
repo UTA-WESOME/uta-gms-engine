@@ -1,6 +1,7 @@
 from typing import Tuple, List, Dict
 
 from pulp import LpVariable, LpProblem, LpMaximize, lpSum, GLPK
+from collections import defaultdict
 
 
 class SolverUtils:
@@ -639,3 +640,33 @@ class SolverUtils:
         """Perform linear interpolation to estimate a value at a specific point on a straight line"""
         result = y1 + ((x - x1) * (y2 - y1)) / (x2 - x1)
         return result
+
+    @staticmethod
+    def get_criterion_functions(
+            variables_and_values_dict,
+            criteria
+    ) -> Dict[str, List[Tuple[float, float]]]:
+        """
+        Method responsible for getting criterion functions
+
+        :param variables_and_values_dict:
+        :param criteria:
+        :return:
+        """
+        criterion_functions: Dict[str, List[Tuple[float, float]]] = defaultdict(list)
+
+        criterion_ids: List[str] = []
+        for crit in criteria:
+            criterion_ids.append(crit.criterion_id)
+
+        for key, value in variables_and_values_dict.items():
+            if key.startswith('u'):
+                first_part, x_value = key.rsplit('_', 1)
+                _, i = first_part.rsplit('_', 1)
+
+                criterion_functions[criterion_ids[int(i)]].append((float(x_value), value))
+
+        for key, values in criterion_functions.items():
+            criterion_functions[key] = sorted(values, key=lambda x: x[0])
+
+        return dict(criterion_functions)
