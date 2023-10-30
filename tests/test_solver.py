@@ -58,6 +58,11 @@ def representative_value_function_dict_dummy():
 
 
 @pytest.fixture()
+def criterion_functions_dummy():
+    return {'g1': [(0.0, 0.0), (2.0, 0.0), (6.0, 0.0), (7.0, 0.0), (9.0, 0.0), (16.0, 0.0), (18.0, 0.25), (25.0, 0.25), (26.0, 0.25), (35.0, 0.25), (62.0, 0.25)], 'g2': [(2.0, 0.0), (9.0, 0.0), (15.0, 0.0), (17.0, 0.0), (24.0, 0.0), (30.0, 0.0), (40.0, 0.0), (43.0, 0.0), (55.0, 0.0), (62.0, 0.0)], 'g3': [(0.0, 0.0), (12.0, 0.0), (14.0, 0.0), (17.0, 0.25), (25.0, 0.5), (44.0, 0.5), (68.0, 0.5), (73.0, 0.5), (88.0, 0.75), (100.0, 0.75)]}
+
+
+@pytest.fixture()
 def predefined_hasse_diagram_dict_dummy():
     return {'A': ['F', 'K'], 'C': ['J'], 'D': ['G'], 'F': ['E', 'J'], 'G': ['B', 'D', 'F', 'H', 'K'], 'I': ['B', 'J'], 'K': ['C'], 'L': ['C', 'E'], 'B': [], 'E': [], 'H': [], 'J': []}
 
@@ -89,11 +94,12 @@ def test_get_representative_value_function_dict(
         indifferences_dummy,
         criterions_dummy,
         positions_dummy,
-        representative_value_function_dict_dummy
+        representative_value_function_dict_dummy,
+        criterion_functions_dummy
 ):
     solver = Solver(show_logs=True)
 
-    representative_value_function_dict = solver.get_representative_value_function_dict(
+    representative_value_function_dict, criterion_functions = solver.get_representative_value_function_dict(
         performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
@@ -102,6 +108,7 @@ def test_get_representative_value_function_dict(
     )
 
     assert representative_value_function_dict == representative_value_function_dict_dummy
+    assert criterion_functions == criterion_functions_dummy
 
 
 def test_predefined_get_hasse_diagram_dict(

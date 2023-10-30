@@ -1,5 +1,16 @@
 # Changelog
-## v0.0.14 - 24-10-2023
+## v0.0.15 - 30-10-2023
+### Added
+- criterion_functions to get_representative_value_function_dict
+
+### Changed
+- get_representative_value_function_dict now returns a Tuple
+
+### Important Notes
+- If there is given preference regarding worst/best position, 
+the formula from the master's thesis is such that it makes it impossible for the given attribute to be equal to someone else,
+
+## v0.0.14 - 29-10-2023
 ### Changed
 - min/max positions renamed to best/worst
 
