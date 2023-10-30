@@ -99,12 +99,14 @@ def test_get_representative_value_function_dict(
 ):
     solver = Solver(show_logs=True)
 
-    representative_value_function_dict, criterion_functions = solver.get_representative_value_function_dict(
+    representative_value_function_dict, criterion_functions, sampler_metrics = solver.get_representative_value_function_dict(
         performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
         criterions_dummy,
-        #positions_dummy
+        [],
+        'files/polyrun-1.1.0-jar-with-dependencies.jar',
+        '100'
     )
 
     assert representative_value_function_dict == representative_value_function_dict_dummy
