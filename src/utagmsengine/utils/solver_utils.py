@@ -245,7 +245,7 @@ class SolverUtils:
             show_logs: bool = False,
             sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
             number_of_samples: str = '100'
-    ) -> LpProblem:
+    ) -> Tuple[LpProblem, Dict[str, List[int]]]:
         """
         Main method used in getting the most representative value function.
 
