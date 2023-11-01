@@ -263,6 +263,20 @@ class SolverUtils:
         delta: LpVariable = LpVariable("delta")
 
         u_list, u_list_dict = SolverUtils.create_variables_list_and_dict(performance_table_list)
+        
+        characteristic_points: List[List[float]] = SolverUtils.calculate_characteristic_points(
+            number_of_points, performance_table_list, u_list_dict, u_list
+        )
+
+        u_list = [sorted(lp_var_list, key=lambda var: float(var.name.split("_")[-1])) for lp_var_list in u_list]
+        
+        u_list_of_characteristic_points: List[List[LpVariable]] = []
+        for i in range(len(characteristic_points)):
+            pom = []
+            for j in range(len(characteristic_points[i])):
+                pom.append(u_list_dict[i][float(characteristic_points[i][j])])
+            u_list_of_characteristic_points.append(pom[:])
+
 
         # Normalization constraints
         the_greatest_performance: List[LpVariable] = []
@@ -439,6 +453,32 @@ class SolverUtils:
                 pom_lower.append(alternatives_binary_variables[worst_best[0]][j][1])
             problem += lpSum(pom_higher) <= worst_best[1] - 1
             problem += lpSum(pom_lower) <= len(performance_table_list) - worst_best[2]
+
+        # Use linear interpolation to create constraints
+        for i in range(len(u_list_of_characteristic_points)):
+            for j in u_list_dict[i]:
+                if_characteristic = 0
+
+                for z in range(len(u_list_of_characteristic_points[i])):
+                    if u_list_dict[i][j].name == u_list_of_characteristic_points[i][z].name:
+                        if_characteristic = 1
+                        break
+
+                if if_characteristic == 0:
+                    point_before = 0
+                    point_after = 1
+                    while characteristic_points[i][point_before] > float(
+                            u_list_dict[i][j].name.split("_")[-1]) or float(u_list_dict[i][j].name.split("_")[-1]) > \
+                            characteristic_points[i][point_after]:
+                        point_before += 1
+                        point_after += 1
+                    value = SolverUtils.linear_interpolation(float(u_list_dict[i][j].name.split("_")[-1]),
+                                                             characteristic_points[i][point_before], u_list_dict[i][
+                                                                 float(characteristic_points[i][point_before])],
+                                                             characteristic_points[i][point_after], u_list_dict[i][
+                                                                 float(characteristic_points[i][point_after])])
+
+                    problem += u_list_dict[i][j] == value
 
         problem += big_M * epsilon - delta
 
