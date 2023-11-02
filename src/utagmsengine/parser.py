@@ -39,6 +39,13 @@ class Parser:
 
     @staticmethod
     def get_criterion_list_csv(csvfile: _io.TextIOWrapper) -> List[Criterion]:
+        """
+        Method responsible for getting list of criteria
+
+        :param csvfile: Content of file
+
+        :return: List of criteria ex. ['g1', 'g2', 'g3']
+        """
         csv_reader = csv.reader(csvfile, delimiter=';')
 
         gains: List[str] = next(csv_reader)[1:]
@@ -51,65 +58,55 @@ class Parser:
 
         return criteria_objects
 
-    def get_performance_table_list_xml(self, path: str) -> List[List]:
+    @staticmethod
+    def get_performance_table_dict_xmcda(xmcda_file: _io.TextIOWrapper) -> Dict[str, Dict[str, float]]:
         """
-        Method responsible for getting list of performances
+        Method responsible for getting dictionary representing performance table
 
-        :param path: Path to XMCDA file (performance_table.xml)
+        :param xmcda_file: XMCDA file
 
-        :return: List of alternatives ex. [[26.0, 40.0, 44.0], [2.0, 2.0, 68.0], [18.0, 17.0, 14.0], ...]
+        :return: Dictionary representing performance table
+            ex. {'id1': {'g1': 31.6, 'g2': 6.6, 'c3': 7.2}, 'id2': {'g1': 1.5, 'g2': 14.2, 'c3': 10.0}
         """
-        performance_table_list: List[List[float]] = []
-        xmcda: XMCDA = ParserUtils.load_file(path)
-        criteria_list: List = self.get_criteria_xml(path)
+        xmcda_data = ParserUtils.load_xmcda(xmcda_file)
+        performance_table_dict = {}
+        for alternative in xmcda_data.alternatives:
+            performance_list = {}
+            for criterion in xmcda_data.criteria:
+                performance_list[criterion.id] = xmcda_data.performance_tables[0][alternative][criterion]
+            performance_table_dict[alternative.id] = performance_list
 
-        for alternative in xmcda.alternatives:
-            performance_list: List[float] = []
-            for i in range(len(criteria_list)):
-                performance_list.append(xmcda.performance_tables[0][alternative][xmcda.criteria[i]])
-            performance_table_list.append(performance_list)
-
-        return performance_table_list
+        return performance_table_dict
 
     @staticmethod
-    def get_alternatives_id_list_xml(path: str) -> List[str]:
+    def get_alternative_dict_xmcda(xmcda_file: _io.TextIOWrapper) -> Dict[str, str]:
         """
-        Method responsible for getting list of alternatives ids
+        Method responsible for getting dictionary of alternative
 
-        :param path: Path to XMCDA file (alternatives.xml)
+        :param xmcda_file: XMCDA file
 
-        :return: List of alternatives ex. ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+        :return: Dictionary of alternatives ex. {'id1': 'Alternative1', 'id2': 'Alternative2', 'id3': 'Alternative3'}
         """
-        alternatives_id_list: List[str] = []
-        xmcda: XMCDA = ParserUtils.load_file(path)
+        xmcda_data = ParserUtils.load_xmcda(xmcda_file)
+        alternatives = {}
+        for alternative in xmcda_data.alternatives:
+            alternatives[alternative.id] = alternative.name
 
-        for alternative in xmcda.alternatives:
-            alternatives_id_list.append(alternative.id)
-
-        return alternatives_id_list
+        return alternatives
 
     @staticmethod
-    def get_criteria_xml(path: str):
+    def get_criterion_dict_xmcda(xmcda_file: _io.TextIOWrapper) -> Dict[str, Criterion]:
         """
-        Method responsible for getting list of criteria
+        Method responsible for getting dictionary of criteria
 
-        :param path: Path to XMCDA file
+        :param xmcda_file: XMCDA file
 
-        :return: List of criteria ex. ['g1', 'g2', 'g3']
+        :return: Dictionary of Criterion objects ex. ['id1': Criterion1,'id2': Criterion2,'id3': Criterion3]
         """
-        criteria_list: List = []
-        xmcda: XMCDA = ParserUtils.load_file(path)
-        criteria_xmcda: Criteria = xmcda.criteria
+        xmcda_data = ParserUtils.load_xmcda(xmcda_file)
+        criterion_dict = {}
+        for criterion in xmcda_data.criteria:
+            criterion_dict[criterion.id] = Criterion(criterion_id=criterion.name,
+                                                     gain=(1 if criterion.id[0] == 'g' else 0))
 
-        for criteria in criteria_xmcda:
-            criteria_list.append(criteria.id)
-
-        # Recognition of the type of criteria
-        type_of_criterion: List[int] = []
-        for i in range(len(criteria_list)):
-            if criteria_list[i][0] == 'g':
-                type_of_criterion.append(1)
-            else:
-                type_of_criterion.append(0)
-
-        return type_of_criterion
+        return criterion_dict
