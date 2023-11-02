@@ -1,3 +1,4 @@
+from tempfile import TemporaryFile
 from typing import Tuple, List, Dict
 
 from pulp import LpVariable, LpProblem, LpMaximize, lpSum, GLPK
@@ -694,7 +695,7 @@ class SolverUtils:
             number_of_samples
     ) -> Dict[str, List[int]]:
         # Write input file for Sampler
-        with open("files/constraints.txt", "w") as file:
+        with TemporaryFile("w+") as input_file, TemporaryFile("w+") as output_file:
             # Write header, useful only for testing
             variable_names = [var.name for var in problem.variables()]
 
@@ -707,21 +708,22 @@ class SolverUtils:
                         constraint_values.append("0")
                 constraint_values.append(re.search(r'([<>=]=?)', str(constraint)).group(1))
                 constraint_values.append(str(-constraint.constant))
-                file.write(" ".join(constraint_values) + "\n")
+                input_file.write(" ".join(constraint_values) + "\n")
 
-        # Write Sampler output file
-        with open('files/constraints.txt', 'r') as input_file, open('files/output.txt', 'w') as output_file:
+            input_file.seek(0)
+            # Write Sampler output file
             subprocess.call(
                 ['java', '-jar', sampler_path, '-n', number_of_samples],
                 stdin=input_file,
                 stdout=output_file
             )
 
-        output: Dict[str, List[int]] = {}
-        for alternative in alternatives_id_list:
-            output[alternative] = [0] * len(alternatives_id_list)
-        with open('files/output.txt', 'r') as file:
-            for line in file:
+            output: Dict[str, List[int]] = {}
+            for alternative in alternatives_id_list:
+                output[alternative] = [0] * len(alternatives_id_list)
+
+            output_file.seek(0)
+            for line in output_file:
                 values = line.strip().split('\t')[1:]
 
                 variables_and_values_dict: Dict[str, float] = {}
