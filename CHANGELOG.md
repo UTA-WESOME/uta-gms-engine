@@ -1,4 +1,12 @@
 # Changelog
+## v0.0.17 - 2-11-2023
+### Changed
+- xmcda parser functions do not receive a path now. They receive XMCDA file and return a dictionary. 
+  - get_performance_table_dict_xmcda has a new name. 
+  - get_alternative_dict_xmcda has a new name and now. 
+  - get_criterion_dict_xmcda has a new name and now.
+- load_xmcda function doesn't receive a path. It receives XMCDA file and returns loaded file. 
+
 ## v0.0.16 - 31-10-2023
 ### Added
 - sampler_metrics

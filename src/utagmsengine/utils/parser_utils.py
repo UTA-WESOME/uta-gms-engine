@@ -11,7 +11,7 @@ class ParserUtils:
         """
         Private method responsible for loading XMCDA files from python file objects.
 
-        :param file: Python file object of XMCDA
+        :param file: XMCDA file
 
         :return: XMCDA
         """
