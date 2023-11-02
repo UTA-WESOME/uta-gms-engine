@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 import pytest
 from pulp import LpProblem, value
@@ -53,18 +53,13 @@ def problem_variable_values_dummy():
 
 
 @pytest.fixture()
-def predefined_number_of_linear_segments_problem_variable_values_dummy():
-    return [0.235763, 0.0, 0.33193, 0.411594, 0.411594, 0.411594, 0.0929405, 0.119495, 0.0, 0.0, 0.0, 0.00322661, 0.00420863, 0.0, 0.584198, 0.140207, 0.292099, 0.584198, 0.584198]
-
-
-@pytest.fixture()
 def necessary_dummy():
-    return [['A', 'C'], ['A', 'E'], ['A', 'F'], ['A', 'J'], ['A', 'K'], ['C', 'J'], ['D', 'B'], ['D', 'C'], ['D', 'E'], ['D', 'F'], ['D', 'G'], ['D', 'H'], ['D', 'J'], ['D', 'K'], ['F', 'E'], ['F', 'J'], ['G', 'B'], ['G', 'C'], ['G', 'D'], ['G', 'E'], ['G', 'F'], ['G', 'H'], ['G', 'J'], ['G', 'K'], ['I', 'B'], ['K', 'C'], ['K', 'J'], ['L', 'J']]
+    return {'A': ['C', 'E', 'F', 'J', 'K'], 'C': ['J'], 'D': ['B', 'C', 'E', 'F', 'G', 'H', 'J', 'K'], 'F': ['E', 'J'], 'G': ['B', 'C', 'D', 'E', 'F', 'H', 'J', 'K'], 'I': ['B'], 'K': ['C', 'J'], 'L': ['J']}
 
 
 @pytest.fixture()
 def direct_relations_dummy():
-    return {'A': {'F', 'K'}, 'C': {'J'}, 'D': {'G'}, 'F': {'E', 'J'}, 'G': {'B', 'H', 'D', 'F', 'K'}, 'I': {'B'}, 'K': {'C'}, 'L': {'J'}}
+    return {'A': ['F', 'K'], 'C': ['J'], 'D': ['G'], 'F': ['E', 'J'], 'G': ['B', 'D', 'F', 'H', 'K'], 'I': ['B'], 'K': ['C'], 'L': ['J']}
 
 
 @pytest.fixture()
@@ -79,7 +74,12 @@ def variables_and_values_dict_dummy():
 
 @pytest.fixture()
 def number_of_points_dummy():
-    return [3, 3, 3]
+    return [0, 0, 0]
+
+
+@pytest.fixture()
+def worst_best_positions_dummy():
+    return [] #[[0, 6, 1]]
 
 
 def test_create_variables_list_and_dict(performance_table_list_dummy):
@@ -94,34 +94,13 @@ def test_create_variables_list_and_dict(performance_table_list_dummy):
     assert u_arr_dict[0][26.0].name == 'u_0_26.0'
 
 
-def test_calculate_solved_problem_with_predefined_number_of_characteristic_points(
-    performance_table_list_dummy,
-    preferences_list_dummy,
-    indifferences_list_dummy,
-    criteria_list_dummy,
-    number_of_points_dummy,
-    predefined_number_of_linear_segments_problem_variable_values_dummy
-):
-    problem: LpProblem = SolverUtils.calculate_solved_problem_with_predefined_number_of_characteristic_points(
-        performance_table_list=performance_table_list_dummy,
-        preferences=preferences_list_dummy,
-        indifferences=indifferences_list_dummy,
-        criteria=criteria_list_dummy,
-        number_of_points=number_of_points_dummy
-    )
-
-    variable_values = []
-    for var in problem.variables():
-        variable_values.append(value(var))
-
-    assert variable_values == predefined_number_of_linear_segments_problem_variable_values_dummy
-
-
 def test_calculate_solved_problem(
     performance_table_list_dummy,
     preferences_list_dummy,
     indifferences_list_dummy,
     criteria_list_dummy,
+    number_of_points_dummy,
+    worst_best_positions_dummy,
     problem_variable_values_dummy
 ):
     problem: LpProblem = SolverUtils.calculate_solved_problem(
@@ -129,6 +108,8 @@ def test_calculate_solved_problem(
         preferences=preferences_list_dummy,
         indifferences=indifferences_list_dummy,
         criteria=criteria_list_dummy,
+        worst_best_position=worst_best_positions_dummy,
+        number_of_points=number_of_points_dummy,
         alternative_id_1=1,
         alternative_id_2=2
     )
@@ -141,7 +122,7 @@ def test_calculate_solved_problem(
 
 
 def test_calculate_direct_relations(necessary_dummy, direct_relations_dummy):
-    direct_relations: Dict[str, set] = SolverUtils.calculate_direct_relations(necessary_dummy)
+    direct_relations: Dict[str, List[str]] = SolverUtils.calculate_direct_relations(necessary_dummy)
 
     assert direct_relations == direct_relations_dummy
 
