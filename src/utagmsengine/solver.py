@@ -93,8 +93,10 @@ class Solver:
             preferences: List[Preference],
             indifferences: List[Indifference],
             criteria: List[Criterion],
-            positions: Optional[List[Position]] = []
-    ) -> Tuple[Dict[str, float], Dict[str, List[Tuple[float, float]]]]:
+            positions: Optional[List[Position]] = [],
+            sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
+            number_of_samples: str = '100'
+    ) -> Tuple[Dict[str, float], Dict[str, List[Tuple[float, float]]], Dict[str, List[int]]]:
         """
         Method for getting The Most Representative Value Function
 
@@ -103,6 +105,9 @@ class Solver:
         :param indifferences: List of Indifference objects
         :param criteria: List of Criterion objects
         :param positions: List of Position objects
+        :param sampler_path:
+        :param number_of_samples:
+
 
         :return:
         """
@@ -139,7 +144,7 @@ class Solver:
 
         alternatives_id_list: List[str] = list(performance_table_dict.keys())
 
-        problem: LpProblem = SolverUtils.calculate_the_most_representative_function(
+        problem, sampler_metrics = SolverUtils.calculate_the_most_representative_function(
             performance_table_list=refined_performance_table_dict,
             alternatives_id_list=alternatives_id_list,
             preferences=refined_preferences,
@@ -147,7 +152,9 @@ class Solver:
             criteria=refined_gains,
             worst_best_position=refined_worst_best_position,
             number_of_points=refined_linear_segments,
-            show_logs=self.show_logs
+            show_logs=self.show_logs,
+            sampler_path=sampler_path,
+            number_of_samples=number_of_samples
         )
 
         variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in problem.variables()}
@@ -163,4 +170,4 @@ class Solver:
             alternatives_id_list=alternatives_id_list,
         )
 
-        return alternatives_and_utilities_dict, criterion_functions
+        return alternatives_and_utilities_dict, criterion_functions, sampler_metrics

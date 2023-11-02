@@ -1,7 +1,10 @@
+from tempfile import TemporaryFile
 from typing import Tuple, List, Dict
 
 from pulp import LpVariable, LpProblem, LpMaximize, lpSum, GLPK
 from collections import defaultdict
+import re
+import subprocess
 
 
 class SolverUtils:
@@ -241,7 +244,9 @@ class SolverUtils:
             worst_best_position: List[List[int]],
             number_of_points: List[int],
             show_logs: bool = False,
-    ) -> LpProblem:
+            sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
+            number_of_samples: str = '100'
+    ) -> Tuple[LpProblem, Dict[str, List[int]]]:
         """
         Main method used in getting the most representative value function.
 
@@ -253,6 +258,8 @@ class SolverUtils:
         :param worst_best_position:
         :param number_of_points:
         :param show_logs: default None
+        :param sampler_path:
+        :param number_of_samples:
 
         :return problem:
         """
@@ -333,6 +340,14 @@ class SolverUtils:
                 right_side.append(u_list_dict[i][right_alternative[i]])
 
             problem += lpSum(left_side) == lpSum(right_side)
+
+        sampler_metrics: Dict[str, List[int]] = SolverUtils.get_sampler_metrics(
+            problem=problem,
+            performance_table_list=performance_table_list,
+            alternatives_id_list=alternatives_id_list,
+            sampler_path=sampler_path,
+            number_of_samples=number_of_samples
+        )
 
         necessary_preference: Dict[str, List[str]] = SolverUtils.get_necessary_relations(
             performance_table_list=performance_table_list,
@@ -484,7 +499,7 @@ class SolverUtils:
 
         problem.solve(solver=GLPK(msg=show_logs))
 
-        return problem
+        return problem, sampler_metrics
 
     @staticmethod
     def get_necessary_relations(
@@ -710,3 +725,78 @@ class SolverUtils:
             criterion_functions[key] = sorted(values, key=lambda x: x[0])
 
         return dict(criterion_functions)
+
+    @staticmethod
+    def get_sampler_metrics(
+            problem,
+            performance_table_list,
+            alternatives_id_list,
+            sampler_path,
+            number_of_samples
+    ) -> Dict[str, List[int]]:
+        # Write input file for Sampler
+        with TemporaryFile("w+") as input_file, TemporaryFile("w+") as output_file:
+            # Write header, useful only for testing
+            variable_names = [var.name for var in problem.variables()]
+
+            for constraint in problem.constraints.values():
+                constraint_values = []
+                for var in problem.variables():
+                    if var in constraint:
+                        constraint_values.append(str(constraint[var]))
+                    else:
+                        constraint_values.append("0")
+                constraint_values.append(re.search(r'([<>=]=?)', str(constraint)).group(1))
+                constraint_values.append(str(-constraint.constant))
+                input_file.write(" ".join(constraint_values) + "\n")
+
+            input_file.seek(0)
+            # Write Sampler output file
+            subprocess.call(
+                ['java', '-jar', sampler_path, '-n', number_of_samples],
+                stdin=input_file,
+                stdout=output_file
+            )
+
+            output: Dict[str, List[int]] = {}
+            for alternative in alternatives_id_list:
+                output[alternative] = [0] * len(alternatives_id_list)
+
+            output_file.seek(0)
+            for line in output_file:
+                values = line.strip().split('\t')[1:]
+
+                variables_and_values_dict: Dict[str, float] = {}
+                for var_name, var_value in zip(variable_names[1:], values):
+                    variables_and_values_dict[var_name] = float(var_value)
+
+                alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_dict(
+                    variables_and_values_dict=variables_and_values_dict,
+                    performance_table_list=performance_table_list,
+                    alternatives_id_list=alternatives_id_list,
+                )
+
+                letter_value_pairs = [(letter, value) for letter, value in alternatives_and_utilities_dict.items()]
+
+                letter_value_pairs.sort(key=lambda x: x[1], reverse=True)
+
+                single_ranking = {}
+                place = 1
+                for i in range(len(letter_value_pairs)):
+                    letter, value = letter_value_pairs[i]
+
+                    # Check if the current value is the same as the previous value
+                    if i > 0 and value == letter_value_pairs[i - 1][1]:
+                        single_ranking[letter] = single_ranking[letter_value_pairs[i - 1][0]]
+                    else:
+                        single_ranking[letter] = place
+
+                    place += 1
+
+                for key, value in single_ranking.items():
+                    output[key][value-1] = output[key][value-1] + 1
+
+            for key, value in output.items():
+                output[key] = [round(val / sum(output[key]) * 100, 10) for val in value]
+
+            return output
