@@ -11,12 +11,12 @@ def performance_table_dict_dummy():
         'B': {'g1': 2.0, 'g2': 2.0, 'g3': 68.0},
         'C': {'g1': 18.0, 'g2': 17.0, 'g3': 14.0},
         'D': {'g1': 35.0, 'g2': 62.0, 'g3': 25.0},
-        'E': {'g1': 7.0, 'g2': 55.0, 'g3': 12.0},
+        'E': {'g1': -7.0, 'g2': 55.0, 'g3': 12.0},
         'F': {'g1': 25.0, 'g2': 30.0, 'g3': 12.0},
         'G': {'g1': 9.0, 'g2': 62.0, 'g3': 88.0},
         'H': {'g1': 0.0, 'g2': 24.0, 'g3': 73.0},
         'I': {'g1': 6.0, 'g2': 15.0, 'g3': 100.0},
-        'J': {'g1': 16.0, 'g2': 9.0, 'g3': 0.0},
+        'J': {'g1': 16.0, 'g2': -9.0, 'g3': 0.0},
         'K': {'g1': 26.0, 'g2': 17.0, 'g3': 17.0},
         'L': {'g1': 62.0, 'g2': 43.0, 'g3': 0.0}
     }
@@ -106,7 +106,7 @@ def test_get_representative_value_function_dict(
         criterions_dummy,
         [],
         'files/polyrun-1.1.0-jar-with-dependencies.jar',
-        '100'
+        '10'
     )
 
     assert representative_value_function_dict == representative_value_function_dict_dummy

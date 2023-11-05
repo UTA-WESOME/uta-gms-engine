@@ -284,7 +284,6 @@ class SolverUtils:
                 pom.append(u_list_dict[i][float(characteristic_points[i][j])])
             u_list_of_characteristic_points.append(pom[:])
 
-
         # Normalization constraints
         the_greatest_performance: List[LpVariable] = []
         for i in range(len(u_list)):
@@ -584,7 +583,7 @@ class SolverUtils:
 
             u_list_dict.append(row_dict)
 
-            row: List[LpVariable] = sorted(row, key=lambda var: float(var.name.split("_")[-1]))
+            row = sorted(row, key=lambda var: -float(var.name.split("_")[-1]) if len(var.name.split("_")) == 4 else float(var.name.split("_")[-1]))
             u_list.append(row)
 
         return u_list, u_list_dict
@@ -635,6 +634,8 @@ class SolverUtils:
             utility: float = 0.0
             for j in range(len(performance_table_list[i])):
                 variable_name: str = f"u_{j}_{performance_table_list[i][j]}"
+                if '-' in variable_name:
+                    variable_name: str = variable_name.replace('-', '_')
                 utility += round(variables_and_values_dict[variable_name], 4)
 
             utilities.append(round(utility, 4))
@@ -717,7 +718,10 @@ class SolverUtils:
         for key, value in variables_and_values_dict.items():
             if key.startswith('u'):
                 first_part, x_value = key.rsplit('_', 1)
-                _, i = first_part.rsplit('_', 1)
+                if first_part.endswith('_'):
+                    _, i, __ = first_part.rsplit('_', 2)
+                else:
+                    _, i = first_part.rsplit('_', 1)
 
                 criterion_functions[criterion_ids[int(i)]].append((float(x_value), value))
 
