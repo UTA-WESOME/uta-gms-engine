@@ -30,4 +30,13 @@ jobs:
 
       - name: Run Tests
         run: |
-          python -c "import sys; sys.path.append('${GITHUB_WORKSPACE}/src'); import pytest; pytest.main(['tests/'])"
+          python -c "import sys; sys.path.append('${GITHUB_WORKSPACE}/src'); import pytest; sys.exit(pytest.main(['tests/']))"
+
+      - name: Check Test Results
+        run: |
+          if [ $? -ne 0 ]; then
+            echo "Tests failed"
+            exit 1
+          else
+            echo "Tests passed"
+          fi
