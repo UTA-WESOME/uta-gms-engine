@@ -28,10 +28,12 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
 
-      - name: Copy CSV files
+      - name: Check if CSV files exist
         run: |
-          mkdir -p $GITHUB_WORKSPACE/tests/files
-          cp tests/files/* $GITHUB_WORKSPACE/tests/files/
+          if [ ! -f $GITHUB_WORKSPACE/tests/files/alternatives.csv ]; then
+            mkdir -p $GITHUB_WORKSPACE/tests/files
+            cp path/to/your/csv/files/* $GITHUB_WORKSPACE/tests/files/
+          fi
 
       - name: Run Tests
         run: |
@@ -44,4 +46,3 @@ jobs:
             exit 1
           else
             echo "Tests passed"
-          fi
