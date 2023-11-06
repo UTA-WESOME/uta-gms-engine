@@ -2,11 +2,6 @@ import pytest
 from src.utagmsengine.dataclasses import Criterion
 from src.utagmsengine.parser import Parser
 from typing import List, Dict
-import sys
-import os
-
-src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../src"))
-sys.path.append(src_dir)
 
 
 @pytest.fixture()

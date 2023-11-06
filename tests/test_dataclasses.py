@@ -1,10 +1,5 @@
 import pytest
 from src.utagmsengine.dataclasses import Preference, Indifference, Criterion, DataValidator, Position
-import sys
-import os
-
-src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../src"))
-sys.path.append(src_dir)
 
 
 @pytest.fixture()
