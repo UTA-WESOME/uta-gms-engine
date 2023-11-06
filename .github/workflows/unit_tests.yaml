@@ -30,7 +30,7 @@ jobs:
 
       - name: Change working directory to the project code and copy CSV files
         run: |
-          cd $GITHUB_WORKSPACE/src
+          cd $GITHUB_WORKSPACE
           mkdir -p $GITHUB_WORKSPACE/tests/files
           cp tests/files/* $GITHUB_WORKSPACE/tests/files/
 
