@@ -764,14 +764,11 @@ class SolverUtils:
 
             input_file.seek(0)
             # Write Sampler output file
-            import time
-            start = time.time()
             subprocess.call(
                 ['java', '-jar', sampler_path, '-n', number_of_samples],
                 stdin=input_file,
                 stdout=output_file
             )
-            end = time.time() - start
 
             output: Dict[str, List[int]] = {}
             for alternative in alternatives_id_list:
