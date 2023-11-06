@@ -4,6 +4,7 @@
 - sampler_metrics now correctly takes into account interpolation when using predefined number of linear segments
 - sampler_metrics now calculates much faster for predefined number of linear segments
 - all methods now can take negative values
+- github actions now correctly runs all the unit tests, when making push to remote repo
 
 ### Important Notes
 - Current sampler_metrics takes does not take into account worst/best positions

@@ -31,7 +31,7 @@ jobs:
       - name: Copy CSV files
         run: |
           mkdir -p $GITHUB_WORKSPACE/tests/files
-          cp path/to/your/csv/files/* $GITHUB_WORKSPACE/tests/files/
+          cp tests/files/* $GITHUB_WORKSPACE/tests/files/
 
       - name: Run Tests
         run: |
