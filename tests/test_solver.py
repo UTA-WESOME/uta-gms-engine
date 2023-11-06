@@ -1,7 +1,11 @@
 import pytest
-
 from src.utagmsengine.solver import Solver
 from src.utagmsengine.dataclasses import Preference, Indifference, Criterion, Position
+import sys
+import os
+
+src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../src"))
+sys.path.append(src_dir)
 
 
 @pytest.fixture()

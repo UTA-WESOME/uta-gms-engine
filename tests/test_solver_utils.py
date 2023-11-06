@@ -1,9 +1,12 @@
 from typing import Dict, List
-
 import pytest
 from pulp import LpProblem, value
-
 from src.utagmsengine.utils.solver_utils import SolverUtils
+import sys
+import os
+
+src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../src"))
+sys.path.append(src_dir)
 
 
 @pytest.fixture()
