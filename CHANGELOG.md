@@ -1,4 +1,16 @@
 # Changelog
+## v0.0.17 - 06-11-2023
+### Fixed
+- sampler_metrics now correctly takes into account interpolation when using predefined number of linear segments
+- sampler_metrics now calculates much faster for predefined number of linear segments
+- all methods now can take negative values
+
+### Important Notes
+- Current sampler_metrics takes does not take into account worst/best positions
+
+- If there is given preference regarding worst/best position, 
+the formula from the master's thesis is such that it makes it impossible for the given attribute to be equal to someone else,
+
 ## v0.0.16 - 31-10-2023
 ### Added
 - sampler_metrics
