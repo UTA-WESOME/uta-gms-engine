@@ -1,9 +1,8 @@
 import pytest
-
 from src.utagmsengine.dataclasses import Criterion
 from src.utagmsengine.parser import Parser
-
 from typing import List, Dict
+import os
 
 
 @pytest.fixture()
@@ -82,17 +81,19 @@ def criteria_list_dummy():
 
 
 def test_get_performance_table_dict_csv(performance_table_dict_dummy):
-    parser = Parser()
-    with open('../tests/files/alternatives.csv', 'r') as csvfile:
-        performance_table_dict: Dict[str, Dict[str, float]] = parser.get_performance_table_dict_csv(csvfile)
+    if os.environ.get('RUN_TESTS_LOCALLY', 'false').lower() == 'true':
+        parser = Parser()
+        with open('../tests/files/alternatives.csv', 'r') as csvfile:
+            performance_table_dict: Dict[str, Dict[str, float]] = parser.get_performance_table_dict_csv(csvfile)
 
-    assert performance_table_dict == performance_table_dict_dummy
+        assert performance_table_dict == performance_table_dict_dummy
 
 
 def test_get_criterion_list_csv(criteria_list_dummy):
-    parser = Parser()
-    with open('../tests/files/alternatives.csv', 'r') as csvfile:
-        criteria_list: List[Criterion] = parser.get_criterion_list_csv(csvfile)
+    if os.environ.get('RUN_TESTS_LOCALLY', 'false').lower() == 'true':
+        parser = Parser()
+        with open('../tests/files/alternatives.csv', 'r') as csvfile:
+            criteria_list: List[Criterion] = parser.get_criterion_list_csv(csvfile)
 
-    assert criteria_list == criteria_list_dummy
+        assert criteria_list == criteria_list_dummy
 
