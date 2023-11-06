@@ -81,7 +81,7 @@ def criteria_list_dummy():
 
 def test_get_performance_table_dict_csv(performance_table_dict_dummy):
     parser = Parser()
-    with open('../tests/files/alternatives.csv', 'r') as csvfile:
+    with open('{GITHUB_WORKSPACE}/tests/files/alternatives.csv', 'r') as csvfile:
         performance_table_dict: Dict[str, Dict[str, float]] = parser.get_performance_table_dict_csv(csvfile)
 
     assert performance_table_dict == performance_table_dict_dummy
