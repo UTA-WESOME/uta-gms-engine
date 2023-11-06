@@ -39,7 +39,7 @@ def criterions_dummy():
 
 @pytest.fixture()
 def predefined_criterions_dummy():
-    return [Criterion(criterion_id='g1', gain=True, number_of_linear_segments=3), Criterion(criterion_id='g2', gain=True, number_of_linear_segments=3), Criterion(criterion_id='g3', gain=True, number_of_linear_segments=3)]
+    return [Criterion(criterion_id='g1', gain=True, number_of_linear_segments=4), Criterion(criterion_id='g2', gain=True, number_of_linear_segments=4), Criterion(criterion_id='g3', gain=True, number_of_linear_segments=4)]
 
 
 @pytest.fixture()
@@ -92,6 +92,7 @@ def test_get_representative_value_function_dict(
         performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
+        predefined_criterions_dummy,
         criterions_dummy,
         positions_dummy,
         representative_value_function_dict_dummy,
@@ -103,7 +104,7 @@ def test_get_representative_value_function_dict(
         performance_table_dict_dummy,
         preferences_dummy,
         indifferences_dummy,
-        criterions_dummy,
+        predefined_criterions_dummy,
         [],
         'files/polyrun-1.1.0-jar-with-dependencies.jar',
         '10'
