@@ -1,7 +1,5 @@
 import pytest
-
 from xmcda.XMCDA import XMCDA
-
 from src.utagmsengine.utils.parser_utils import ParserUtils
 
 

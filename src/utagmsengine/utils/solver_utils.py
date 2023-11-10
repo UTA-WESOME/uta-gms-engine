@@ -47,7 +47,7 @@ class SolverUtils:
             number_of_points, performance_table_list, u_list_dict, u_list
         )
 
-        u_list = [sorted(lp_var_list, key=lambda var: float(var.name.split("_")[-1])) for lp_var_list in u_list]
+        u_list = [sorted(lp_var_list, key=lambda var: -float(var.name.split("_")[-1]) if len(var.name.split("_")) == 4 else float(var.name.split("_")[-1])) for lp_var_list in u_list]
 
         # Normalization constraints
         the_greatest_performance: List[LpVariable] = []
@@ -69,22 +69,22 @@ class SolverUtils:
             u_list_of_characteristic_points.append(pom[:])
 
         # Monotonicity constraint
-        for i in range(len(u_list)):
-            for j in range(1, len(u_list[i])):
+        for i in range(len(u_list_of_characteristic_points)):
+            for j in range(1, len(u_list_of_characteristic_points[i])):
                 if criteria[i]:
-                    problem += u_list[i][j] >= u_list[i][j - 1]
+                    problem += u_list_of_characteristic_points[i][j] >= u_list_of_characteristic_points[i][j - 1]
                 else:
-                    problem += u_list[i][j - 1] >= u_list[i][j]
+                    problem += u_list_of_characteristic_points[i][j - 1] >= u_list_of_characteristic_points[i][j]
 
         # Bounds constraint
-        for i in range(len(u_list)):
-            for j in range(1, len(u_list[i]) - 1):
+        for i in range(len(u_list_of_characteristic_points)):
+            for j in range(1, len(u_list_of_characteristic_points[i]) - 1):
                 if criteria[i]:
-                    problem += u_list[i][-1] >= u_list[i][j]
-                    problem += u_list[i][j] >= u_list[i][0]
+                    problem += u_list_of_characteristic_points[i][-1] >= u_list_of_characteristic_points[i][j]
+                    problem += u_list_of_characteristic_points[i][j] >= u_list_of_characteristic_points[i][0]
                 else:
-                    problem += u_list[i][0] >= u_list[i][j]
-                    problem += u_list[i][j] >= u_list[i][-1]
+                    problem += u_list_of_characteristic_points[i][0] >= u_list_of_characteristic_points[i][j]
+                    problem += u_list_of_characteristic_points[i][j] >= u_list_of_characteristic_points[i][-1]
 
         # Preference constraint
         for preference in preferences:
@@ -215,13 +215,16 @@ class SolverUtils:
                 if if_characteristic == 0:
                     point_before = 0
                     point_after = 1
-                    while characteristic_points[i][point_before] > float(
-                            u_list_dict[i][j].name.split("_")[-1]) or float(u_list_dict[i][j].name.split("_")[-1]) > \
-                            characteristic_points[i][point_after]:
+
+                    if len(u_list_dict[i][j].name.split("_")) == 4:
+                        val = -float(u_list_dict[i][j].name.split("_")[-1])
+                    else:
+                        val = float(u_list_dict[i][j].name.split("_")[-1])
+                    while characteristic_points[i][point_before] > val or val > characteristic_points[i][point_after]:
                         point_before += 1
                         point_after += 1
-                    value = SolverUtils.linear_interpolation(float(u_list_dict[i][j].name.split("_")[-1]),
-                                                             characteristic_points[i][point_before], u_list_dict[i][
+                    value = SolverUtils.linear_interpolation(val, characteristic_points[i][point_before],
+                                                             u_list_dict[i][
                                                                  float(characteristic_points[i][point_before])],
                                                              characteristic_points[i][point_after], u_list_dict[i][
                                                                  float(characteristic_points[i][point_after])])
@@ -270,13 +273,13 @@ class SolverUtils:
         delta: LpVariable = LpVariable("delta")
 
         u_list, u_list_dict = SolverUtils.create_variables_list_and_dict(performance_table_list)
-        
+
         characteristic_points: List[List[float]] = SolverUtils.calculate_characteristic_points(
             number_of_points, performance_table_list, u_list_dict, u_list
         )
 
-        u_list = [sorted(lp_var_list, key=lambda var: float(var.name.split("_")[-1])) for lp_var_list in u_list]
-        
+        u_list = [sorted(lp_var_list, key=lambda var: -float(var.name.split("_")[-1]) if len(var.name.split("_")) == 4 else float(var.name.split("_")[-1])) for lp_var_list in u_list]
+
         u_list_of_characteristic_points: List[List[LpVariable]] = []
         for i in range(len(characteristic_points)):
             pom = []
@@ -284,11 +287,10 @@ class SolverUtils:
                 pom.append(u_list_dict[i][float(characteristic_points[i][j])])
             u_list_of_characteristic_points.append(pom[:])
 
-
         # Normalization constraints
         the_greatest_performance: List[LpVariable] = []
         for i in range(len(u_list)):
-            if criteria[i] == 1:
+            if criteria[i]:
                 the_greatest_performance.append(u_list[i][-1])
                 problem += u_list[i][0] == 0
             else:
@@ -298,22 +300,22 @@ class SolverUtils:
         problem += lpSum(the_greatest_performance) == 1
 
         # Monotonicity constraint
-        for i in range(len(u_list)):
-            for j in range(1, len(u_list[i])):
-                if criteria[i] == 1:
-                    problem += u_list[i][j] >= u_list[i][j - 1]
+        for i in range(len(u_list_of_characteristic_points)):
+            for j in range(1, len(u_list_of_characteristic_points[i])):
+                if criteria[i]:
+                    problem += u_list_of_characteristic_points[i][j] >= u_list_of_characteristic_points[i][j - 1]
                 else:
-                    problem += u_list[i][j - 1] >= u_list[i][j]
+                    problem += u_list_of_characteristic_points[i][j - 1] >= u_list_of_characteristic_points[i][j]
 
         # Bounds constraint
-        for i in range(len(u_list)):
-            for j in range(1, len(u_list[i]) - 1):
-                if criteria[i] == 1:
-                    problem += u_list[i][-1] >= u_list[i][j]
-                    problem += u_list[i][j] >= u_list[i][0]
+        for i in range(len(u_list_of_characteristic_points)):
+            for j in range(1, len(u_list_of_characteristic_points[i]) - 1):
+                if criteria[i]:
+                    problem += u_list_of_characteristic_points[i][-1] >= u_list_of_characteristic_points[i][j]
+                    problem += u_list_of_characteristic_points[i][j] >= u_list_of_characteristic_points[i][0]
                 else:
-                    problem += u_list[i][0] >= u_list[i][j]
-                    problem += u_list[i][j] >= u_list[i][-1]
+                    problem += u_list_of_characteristic_points[i][0] >= u_list_of_characteristic_points[i][j]
+                    problem += u_list_of_characteristic_points[i][j] >= u_list_of_characteristic_points[i][-1]
 
         # Preference constraint
         for preference in preferences:
@@ -346,8 +348,36 @@ class SolverUtils:
             performance_table_list=performance_table_list,
             alternatives_id_list=alternatives_id_list,
             sampler_path=sampler_path,
-            number_of_samples=number_of_samples
+            number_of_samples=number_of_samples,
+            u_list_of_characteristic_points=u_list_of_characteristic_points,
+            u_list_dict=u_list_dict,
+            characteristic_points=characteristic_points
         )
+
+        # Use linear interpolation to create constraints
+        for i in range(len(u_list_of_characteristic_points)):
+            for j in u_list_dict[i]:
+                if_characteristic = 0
+
+                for z in range(len(u_list_of_characteristic_points[i])):
+                    if u_list_dict[i][j].name == u_list_of_characteristic_points[i][z].name:
+                        if_characteristic = 1
+                        break
+
+                if if_characteristic == 0:
+                    point_before = 0
+                    point_after = 1
+
+                    if len(u_list_dict[i][j].name.split("_")) == 4:
+                        val = -float(u_list_dict[i][j].name.split("_")[-1])
+                    else:
+                        val = float(u_list_dict[i][j].name.split("_")[-1])
+                    while characteristic_points[i][point_before] > val or val > characteristic_points[i][point_after]:
+                        point_before += 1
+                        point_after += 1
+                    value = SolverUtils.linear_interpolation(val, characteristic_points[i][point_before], u_list_dict[i][float(characteristic_points[i][point_before])], characteristic_points[i][point_after], u_list_dict[i][float(characteristic_points[i][point_after])])
+
+                    problem += u_list_dict[i][j] == value
 
         necessary_preference: Dict[str, List[str]] = SolverUtils.get_necessary_relations(
             performance_table_list=performance_table_list,
@@ -469,32 +499,6 @@ class SolverUtils:
             problem += lpSum(pom_higher) <= worst_best[1] - 1
             problem += lpSum(pom_lower) <= len(performance_table_list) - worst_best[2]
 
-        # Use linear interpolation to create constraints
-        for i in range(len(u_list_of_characteristic_points)):
-            for j in u_list_dict[i]:
-                if_characteristic = 0
-
-                for z in range(len(u_list_of_characteristic_points[i])):
-                    if u_list_dict[i][j].name == u_list_of_characteristic_points[i][z].name:
-                        if_characteristic = 1
-                        break
-
-                if if_characteristic == 0:
-                    point_before = 0
-                    point_after = 1
-                    while characteristic_points[i][point_before] > float(
-                            u_list_dict[i][j].name.split("_")[-1]) or float(u_list_dict[i][j].name.split("_")[-1]) > \
-                            characteristic_points[i][point_after]:
-                        point_before += 1
-                        point_after += 1
-                    value = SolverUtils.linear_interpolation(float(u_list_dict[i][j].name.split("_")[-1]),
-                                                             characteristic_points[i][point_before], u_list_dict[i][
-                                                                 float(characteristic_points[i][point_before])],
-                                                             characteristic_points[i][point_after], u_list_dict[i][
-                                                                 float(characteristic_points[i][point_after])])
-
-                    problem += u_list_dict[i][j] == value
-
         problem += big_M * epsilon - delta
 
         problem.solve(solver=GLPK(msg=show_logs))
@@ -584,7 +588,7 @@ class SolverUtils:
 
             u_list_dict.append(row_dict)
 
-            row: List[LpVariable] = sorted(row, key=lambda var: float(var.name.split("_")[-1]))
+            row = sorted(row, key=lambda var: -float(var.name.split("_")[-1]) if len(var.name.split("_")) == 4 else float(var.name.split("_")[-1]))
             u_list.append(row)
 
         return u_list, u_list_dict
@@ -635,6 +639,8 @@ class SolverUtils:
             utility: float = 0.0
             for j in range(len(performance_table_list[i])):
                 variable_name: str = f"u_{j}_{performance_table_list[i][j]}"
+                if '-' in variable_name:
+                    variable_name: str = variable_name.replace('-', '_')
                 utility += round(variables_and_values_dict[variable_name], 4)
 
             utilities.append(round(utility, 4))
@@ -717,7 +723,10 @@ class SolverUtils:
         for key, value in variables_and_values_dict.items():
             if key.startswith('u'):
                 first_part, x_value = key.rsplit('_', 1)
-                _, i = first_part.rsplit('_', 1)
+                if first_part.endswith('_'):
+                    _, i, __ = first_part.rsplit('_', 2)
+                else:
+                    _, i = first_part.rsplit('_', 1)
 
                 criterion_functions[criterion_ids[int(i)]].append((float(x_value), value))
 
@@ -732,7 +741,10 @@ class SolverUtils:
             performance_table_list,
             alternatives_id_list,
             sampler_path,
-            number_of_samples
+            number_of_samples,
+            u_list_of_characteristic_points,
+            u_list_dict,
+            characteristic_points
     ) -> Dict[str, List[int]]:
         # Write input file for Sampler
         with TemporaryFile("w+") as input_file, TemporaryFile("w+") as output_file:
@@ -770,6 +782,34 @@ class SolverUtils:
                 for var_name, var_value in zip(variable_names[1:], values):
                     variables_and_values_dict[var_name] = float(var_value)
 
+                # need to add interpolation here to variables_and_values_dict
+                # Use linear interpolation to create constraints
+                for i in range(len(u_list_of_characteristic_points)):
+                    for j in u_list_dict[i]:
+                        if_characteristic = 0
+
+                        for z in range(len(u_list_of_characteristic_points[i])):
+                            if u_list_dict[i][j].name == u_list_of_characteristic_points[i][z].name:
+                                if_characteristic = 1
+                                break
+
+                        if if_characteristic == 0:
+                            point_before = 0
+                            point_after = 1
+
+                            if len(u_list_dict[i][j].name.split("_")) == 4:
+                                val = -float(u_list_dict[i][j].name.split("_")[-1])
+                            else:
+                                val = float(u_list_dict[i][j].name.split("_")[-1])
+                            while characteristic_points[i][point_before] > val or val > characteristic_points[i][point_after]:
+                                point_before += 1
+                                point_after += 1
+                            value = SolverUtils.linear_interpolation(val, characteristic_points[i][point_before], u_list_dict[i][float(characteristic_points[i][point_before])], characteristic_points[i][point_after], u_list_dict[i][float(characteristic_points[i][point_after])])
+
+                            result: float  = sum(coef * variables_and_values_dict[var.name] for var, coef in value.items())
+                            variable_name: str = str(u_list_dict[i][j])
+                            variables_and_values_dict[variable_name] = result
+
                 alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_dict(
                     variables_and_values_dict=variables_and_values_dict,
                     performance_table_list=performance_table_list,
@@ -797,6 +837,9 @@ class SolverUtils:
                     output[key][value-1] = output[key][value-1] + 1
 
             for key, value in output.items():
-                output[key] = [round(val / sum(output[key]) * 100, 10) for val in value]
+                try:
+                    output[key] = [round(val / sum(output[key]) * 100, 10) for val in value]
+                except:
+                    output[key] = []
 
             return output
