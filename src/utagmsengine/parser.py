@@ -107,6 +107,7 @@ class Parser:
         criterion_dict = {}
         for criterion in xmcda_data.criteria:
             criterion_dict[criterion.id] = Criterion(criterion_id=criterion.name,
-                                                     gain=(1 if criterion.id[0] == 'g' else 0))
+                                                     gain=(1 if criterion.id[0] == 'g' else 0),
+                                                     number_of_linear_segments=0)
 
         return criterion_dict
