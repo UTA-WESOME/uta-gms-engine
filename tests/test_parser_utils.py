@@ -5,7 +5,7 @@ import _io
 
 
 def test_load_file():
-    with open('files/performance_table.xml', 'rb') as xml_file:
+    with open('performance_table.xml', 'rb') as xml_file:
         xml_file_text = _io.TextIOWrapper(xml_file, encoding='utf-8')
         xmcda: XMCDA = ParserUtils.load_xmcda(xml_file_text)
 
