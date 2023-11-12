@@ -1,4 +1,5 @@
 from xmcda.XMCDA import XMCDA
+import _io
 
 import os
 
@@ -6,22 +7,16 @@ import os
 class ParserUtils:
 
     @staticmethod
-    def load_file(path: str) -> XMCDA:
+    def load_xmcda(file: _io.TextIOWrapper) -> XMCDA:
         """
-        Private method responsible for loading XMCDA files from tests/files location.
-        To be refined later when we will read files from different location
+        Private method responsible for loading XMCDA files from python file objects.
 
-        :param path: Path to XMCDA file
+        :param file: XMCDA file
 
         :return: XMCDA
         """
         xmcda: XMCDA = XMCDA()
-        current_script_path: str = os.path.dirname(os.path.abspath(__file__))
-        directory_path: str = os.path.dirname(os.path.dirname(current_script_path))
-        refined_path: str = os.path.normpath(os.path.join(directory_path, f"../tests/files/{path}"))
-
-        xmcda: XMCDA = xmcda.load(refined_path)
-
-        return xmcda
+        xmcda_file: XMCDA = xmcda.load(file)
+        return xmcda_file
 
 

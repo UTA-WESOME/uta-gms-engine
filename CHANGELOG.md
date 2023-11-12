@@ -1,4 +1,12 @@
 # Changelog
+## v0.0.18 - 10-11-2023
+### Changed
+- xmcda parser functions do not receive a path now. They receive XMCDA file and return a dictionary. 
+  - get_performance_table_dict_xmcda has a new name. 
+  - get_alternative_dict_xmcda has a new name and now. 
+  - get_criterion_dict_xmcda has a new name and now.
+- load_xmcda function doesn't receive a path. It receives XMCDA file and returns loaded file.
+
 ## v0.0.17 - 06-11-2023
 ### Fixed
 - sampler_metrics now correctly takes into account interpolation when using predefined number of linear segments
