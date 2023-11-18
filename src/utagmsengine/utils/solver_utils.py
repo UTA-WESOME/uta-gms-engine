@@ -95,12 +95,17 @@ class SolverUtils:
             if indices_to_keep:
                 left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
                 right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
-
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(left_alternative)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(indices_to_keep)):
+                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
+                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
+            else:
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(left_alternative)):
+                    left_side.append(u_list_dict[i][left_alternative[i]])
+                    right_side.append(u_list_dict[i][right_alternative[i]])
 
             problem += lpSum(left_side) >= lpSum(right_side) + epsilon
 
@@ -113,12 +118,17 @@ class SolverUtils:
             if indices_to_keep:
                 left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
                 right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
-
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(left_alternative)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(indices_to_keep)):
+                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
+                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
+            else:
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(left_alternative)):
+                    left_side.append(u_list_dict[i][left_alternative[i]])
+                    right_side.append(u_list_dict[i][right_alternative[i]])
 
             problem += lpSum(left_side) == lpSum(right_side)
 
@@ -329,12 +339,17 @@ class SolverUtils:
             if indices_to_keep:
                 left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
                 right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
-
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(left_alternative)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(indices_to_keep)):
+                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
+                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
+            else:
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(left_alternative)):
+                    left_side.append(u_list_dict[i][left_alternative[i]])
+                    right_side.append(u_list_dict[i][right_alternative[i]])
 
             problem += lpSum(left_side) >= lpSum(right_side) + epsilon
 
@@ -347,12 +362,17 @@ class SolverUtils:
             if indices_to_keep:
                 left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
                 right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
-
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(left_alternative)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(indices_to_keep)):
+                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
+                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
+            else:
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(left_alternative)):
+                    left_side.append(u_list_dict[i][left_alternative[i]])
+                    right_side.append(u_list_dict[i][right_alternative[i]])
 
             problem += lpSum(left_side) == lpSum(right_side)
 
