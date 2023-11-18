@@ -1,4 +1,5 @@
 from pydantic import BaseModel, field_validator
+from typing import List
 
 
 class Preference(BaseModel):
@@ -10,12 +11,19 @@ class Preference(BaseModel):
     """
     superior: str
     inferior: str
+    criteria: List[str] = []
 
     @field_validator("inferior")
     def check_different(cls, inferior, values):
         if "superior" in values.data and inferior == values.data["superior"]:
             raise ValueError("Superior and inferior options must be different.")
         return inferior
+
+    @field_validator("criteria")
+    def check_unique_criteria(cls, criteria):
+        if criteria and len(set(criteria)) != len(criteria):
+            raise ValueError("Criteria list must contain unique elements.")
+        return criteria
 
 
 class Indifference(BaseModel):
@@ -28,12 +36,19 @@ class Indifference(BaseModel):
     """
     equal1: str
     equal2: str
+    criteria: List[str] = []
 
     @field_validator("equal2")
     def check_different(cls, equal2, values):
         if "equal1" in values.data and equal2 == values.data["equal1"]:
             raise ValueError("First and second options must be different.")
         return equal2
+
+    @field_validator("criteria")
+    def check_unique_criteria(cls, criteria):
+        if criteria and len(set(criteria)) != len(criteria):
+            raise ValueError("Criteria list must contain unique elements.")
+        return criteria
 
 
 class Criterion(BaseModel):
@@ -60,6 +75,7 @@ class Position(BaseModel):
     alternative_id: str
     worst_position: int
     best_position: int
+    criteria: List[str] = []
 
     @field_validator("worst_position")
     def check_worst_position(cls, worst_position):
@@ -72,6 +88,12 @@ class Position(BaseModel):
         if best_position < 0:
             raise ValueError("best_position can't be negative.")
         return best_position
+
+    @field_validator("criteria")
+    def check_unique_criteria(cls, criteria):
+        if criteria and len(set(criteria)) != len(criteria):
+            raise ValueError("Criteria list must contain unique elements.")
+        return criteria
 
 
 class DataValidator:
@@ -107,3 +129,28 @@ class DataValidator:
         for position in positions_list:
             if position.worst_position < position.best_position:
                 raise ValueError(f"worst_position can't be lower than best_position")
+
+    @staticmethod
+    def validate_preferences_indifferences_criteria(preferences, indifferences, positions, criteria):
+        """Validate whether Alternative IDs in positions_list and performance_table match."""
+        partial_criteria_list = []
+        for preference in preferences:
+            for criterion in preference.criteria:
+                if criterion not in partial_criteria_list:
+                    partial_criteria_list.append(criterion)
+
+        for indifference in indifferences:
+            for criterion in indifference.criteria:
+                if criterion not in partial_criteria_list:
+                    partial_criteria_list.append(criterion)
+
+        for position in positions:
+            for criterion in position.criteria:
+                if criterion not in partial_criteria_list:
+                    partial_criteria_list.append(criterion)
+
+        criteria_list = [criterion.criterion_id for criterion in criteria]
+
+        for criterion in partial_criteria_list:
+            if criterion not in criteria_list:
+                raise ValueError("Criteria name from partial criteria does not match name in Criterion")
