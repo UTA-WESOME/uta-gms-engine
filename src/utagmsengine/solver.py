@@ -1,7 +1,4 @@
 from typing import List, Dict, Optional, Tuple
-
-from pulp import LpProblem
-
 from .utils.solver_utils import SolverUtils
 from .utils.dataclasses_utils import DataclassesUtils
 from .dataclasses import Preference, Indifference, Criterion, DataValidator, Position
@@ -114,6 +111,7 @@ class Solver:
         DataValidator.validate_criteria(performance_table_dict, criteria)
         DataValidator.validate_performance_table(performance_table_dict)
         DataValidator.validate_positions(positions, performance_table_dict)
+        DataValidator.validate_preferences_indifferences_criteria(preferences, indifferences, positions, criteria)
 
         refined_performance_table_dict: List[List[float]] = DataclassesUtils.refine_performance_table_dict(
             performance_table_dict=performance_table_dict
