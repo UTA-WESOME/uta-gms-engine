@@ -104,7 +104,7 @@ def test_get_representative_value_function_dict(
         preferences_dummy,
         indifferences_dummy,
         predefined_criterions_dummy,
-        positions_dummy,
+        [],
         'files/polyrun-1.1.0-jar-with-dependencies.jar',
         '10'
     )
