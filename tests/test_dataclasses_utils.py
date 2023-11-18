@@ -40,15 +40,15 @@ def performance_table_dict_dummy():
 @pytest.fixture()
 def refined_preferences_dummy():
     return [
-        [6, 5],
-        [5, 4]
+        [6, 5, []],
+        [5, 4, []]
     ]
 
 
 @pytest.fixture()
 def refined_indifferences_dummy():
     return [
-        [3, 6]
+        [3, 6, []]
     ]
 
 

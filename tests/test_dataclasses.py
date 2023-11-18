@@ -46,12 +46,12 @@ def criterion_list_dummy():
 
 @pytest.fixture()
 def preferences_dummy():
-    return [Preference(superior='G', inferior='F'), Preference(superior='F', inferior='E')]
+    return [Preference(superior='G', inferior='F', criteria=[]), Preference(superior='F', inferior='E', criteria=[])]
 
 
 @pytest.fixture()
 def indifferences_dummy():
-    return [Indifference(equal1='D', equal2='G')]
+    return [Indifference(equal1='D', equal2='G', criteria=[])]
 
 
 @pytest.fixture()

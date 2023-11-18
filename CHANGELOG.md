@@ -1,4 +1,11 @@
 # Changelog
+## v0.0.19 - 18-11-2023
+### Added
+- New default parameter 'criteria' for Position, Preference and Indifference
+- All methods now take into account "partial criteria"
+### Fixed
+- alternative set in worst/best position can now be indifferent to other alternatives
+
 ## v0.0.18 - 10-11-2023
 ### Changed
 - xmcda parser functions do not receive a path now. They receive XMCDA file and return a dictionary. 

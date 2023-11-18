@@ -23,15 +23,15 @@ def performance_table_list_dummy():
 @pytest.fixture()
 def preferences_list_dummy():
     return [
-        [6, 5],
-        [5, 4]
+        [6, 5, []],
+        [5, 4, []]
     ]
 
 
 @pytest.fixture()
 def indifferences_list_dummy():
     return [
-        [3, 6]
+        [3, 6, []]
     ]
 
 

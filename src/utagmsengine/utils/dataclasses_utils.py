@@ -38,7 +38,14 @@ class DataclassesUtils:
         for preference in preferences:
             superior_index = keys.index(preference.superior)
             inferior_index = keys.index(preference.inferior)
-            output.append([superior_index, inferior_index])
+
+            first = next(iter(performance_table_dict.values()))  # Get the first dictionary value
+            criteria_index = []
+            for criteria in preference.criteria:
+                position = list(first.keys()).index(criteria)
+                criteria_index.append(position)
+
+            output.append([superior_index, inferior_index, criteria_index])
 
         return output
 
@@ -60,7 +67,14 @@ class DataclassesUtils:
         for indifference in indifferences:
             equal1_index = keys.index(indifference.equal1)
             equal2_index = keys.index(indifference.equal2)
-            output.append([equal1_index, equal2_index])
+
+            first = next(iter(performance_table_dict.values()))  # Get the first dictionary value
+            criteria_index = []
+            for criteria in indifference.criteria:
+                position = list(first.keys()).index(criteria)
+                criteria_index.append(position)
+
+            output.append([equal1_index, equal2_index, criteria_index])
 
         return output
 
@@ -120,6 +134,12 @@ class DataclassesUtils:
             tmp[key] = i
 
         for position in positions:
-            output.append([tmp[position.alternative_id], position.worst_position, position.best_position])
+            first = next(iter(performance_table_dict.values()))  # Get the first dictionary value
+            criteria_index = []
+            for criteria in position.criteria:
+                index = list(first.keys()).index(criteria)
+                criteria_index.append(index)
+
+            output.append([tmp[position.alternative_id], position.worst_position, position.best_position, criteria_index])
 
         return output

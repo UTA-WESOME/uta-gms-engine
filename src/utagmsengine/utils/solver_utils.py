@@ -91,11 +91,21 @@ class SolverUtils:
             left_alternative: List[float] = performance_table_list[preference[0]]
             right_alternative: List[float] = performance_table_list[preference[1]]
 
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(u_list_dict)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
+            indices_to_keep: List[int] = preference[2]
+            if indices_to_keep:
+                left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
+                right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(indices_to_keep)):
+                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
+                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
+            else:
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(left_alternative)):
+                    left_side.append(u_list_dict[i][left_alternative[i]])
+                    right_side.append(u_list_dict[i][right_alternative[i]])
 
             problem += lpSum(left_side) >= lpSum(right_side) + epsilon
 
@@ -104,11 +114,21 @@ class SolverUtils:
             left_alternative: List[float] = performance_table_list[indifference[0]]
             right_alternative: List[float] = performance_table_list[indifference[1]]
 
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(u_list_dict)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
+            indices_to_keep: List[int] = indifference[2]
+            if indices_to_keep:
+                left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
+                right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(indices_to_keep)):
+                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
+                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
+            else:
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(left_alternative)):
+                    left_side.append(u_list_dict[i][left_alternative[i]])
+                    right_side.append(u_list_dict[i][right_alternative[i]])
 
             problem += lpSum(left_side) == lpSum(right_side)
 
@@ -132,75 +152,68 @@ class SolverUtils:
                 pom.append(u_list_dict[j][performance_table_list[i][j]])
             alternatives_variables.append(pom[:])
 
-        alternatives_binary_variables: Dict[int, Dict[int, List[LpVariable]]] = {}
+        alternatives_binary_variables: Dict[int, List[Dict[int, LpVariable]]] = {}
         all_binary_variables = {}
         for i in worst_best_position:
             pom_dict = {}
             for j in range(len(performance_table_list)):
                 pom = []
                 if i[0] != j:
-                    variable_1_name: str = f"v_{i[0]}_higher_than_{j}"
+                    variable_1_name: str = f"v_{i[0]}_higher_than_{j}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_1_name not in all_binary_variables:
                         variable_1: LpVariable = LpVariable(variable_1_name, cat='Binary')
                         pom.append(variable_1)
                         all_binary_variables[variable_1_name] = variable_1
                     else:
                         pom.append(all_binary_variables[variable_1_name])
-                    variable_2_name: str = f"v_{j}_higher_than_{i[0]}"
+
+                    variable_2_name: str = f"v_{j}_higher_than_{i[0]}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_2_name not in all_binary_variables:
                         variable_2: LpVariable = LpVariable(variable_2_name, cat='Binary')
                         pom.append(variable_2)
                         all_binary_variables[variable_2_name] = variable_2
                     else:
                         pom.append(all_binary_variables[variable_2_name])
+
                     pom_dict[j] = pom[:]
 
-            alternatives_binary_variables[i[0]] = pom_dict
+            if i[0] not in alternatives_binary_variables:
+                alternatives_binary_variables[i[0]] = []
 
-        indifferences_dict = {}
-        for k in indifferences:
-            if k[0] not in indifferences_dict:
-                indifferences_dict[k[0]] = [k[1]]
-            else:
-                indifferences_dict[k[0]].append(k[1])
-
-            if k[1] not in indifferences_dict:
-                indifferences_dict[k[1]] = [k[0]]
-            else:
-                indifferences_dict[k[1]].append(k[0])
-
-        for k in indifferences_dict:
-            for i in indifferences_dict[k]:
-                differ = set(indifferences_dict[i]) - set(indifferences_dict[k]) - set([k])
-                indifferences_dict[k] = indifferences_dict[k] + list(differ)
+            alternatives_binary_variables[i[0]].append(pom_dict)
 
         big_M: int = 1e20
+        x: int = 0
         for worst_best in worst_best_position:
+            if len(alternatives_binary_variables[worst_best[0]]) == 1:
+                x: int = 0
             for i in range(len(performance_table_list)):
                 if i != worst_best[0]:
-                    checked = 0
-                    for k in indifferences_dict:
-                        if k == worst_best[0] and (i in indifferences_dict[k]):
-                            problem += alternatives_binary_variables[worst_best[0]][i][0] == 0
-                            problem += alternatives_binary_variables[worst_best[0]][i][1] == 0
-                            checked = 1
-                    if checked == 0:
-                        problem += lpSum(alternatives_variables[worst_best[0]]) - lpSum(
-                            alternatives_variables[i]) + big_M * alternatives_binary_variables[worst_best[0]][i][
-                                       0] >= epsilon
-                        problem += lpSum(alternatives_variables[i]) - lpSum(
-                            alternatives_variables[worst_best[0]]) + big_M * alternatives_binary_variables[worst_best[0]][i][
-                                       1] >= epsilon
-                        problem += alternatives_binary_variables[worst_best[0]][i][0] + \
-                                   alternatives_binary_variables[worst_best[0]][i][1] <= 1
+                    position_constraints: List[LpVariable] = alternatives_variables[worst_best[0]]
+                    compared_constraints: List[LpVariable] = alternatives_variables[i]
+
+                    indices_to_keep: List[int] = worst_best[3]
+                    if indices_to_keep:
+                        position_constraints: List[LpVariable] = [position_constraints[i] for i in indices_to_keep]
+                        compared_constraints: List[LpVariable] = [compared_constraints[i] for i in indices_to_keep]
+
+                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+
+                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+
+                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
 
             pom_higher = []
             pom_lower = []
-            for j in alternatives_binary_variables[worst_best[0]]:
-                pom_higher.append(alternatives_binary_variables[worst_best[0]][j][0])
-                pom_lower.append(alternatives_binary_variables[worst_best[0]][j][1])
+            for j in alternatives_binary_variables[worst_best[0]][x]:
+                pom_higher.append(alternatives_binary_variables[worst_best[0]][x][j][0])
+                pom_lower.append(alternatives_binary_variables[worst_best[0]][x][j][1])
             problem += lpSum(pom_higher) <= worst_best[1] - 1
             problem += lpSum(pom_lower) <= len(performance_table_list) - worst_best[2]
+
+            # If there are more Positions than one, relevant to one alternative
+            if len(alternatives_binary_variables[worst_best[0]]) > 1:
+                x += 1
 
         # Use linear interpolation to create constraints
         for i in range(len(u_list_of_characteristic_points)):
@@ -322,11 +335,21 @@ class SolverUtils:
             left_alternative: List[float] = performance_table_list[preference[0]]
             right_alternative: List[float] = performance_table_list[preference[1]]
 
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(u_list_dict)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
+            indices_to_keep: List[int] = preference[2]
+            if indices_to_keep:
+                left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
+                right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(indices_to_keep)):
+                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
+                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
+            else:
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(left_alternative)):
+                    left_side.append(u_list_dict[i][left_alternative[i]])
+                    right_side.append(u_list_dict[i][right_alternative[i]])
 
             problem += lpSum(left_side) >= lpSum(right_side) + epsilon
 
@@ -335,11 +358,21 @@ class SolverUtils:
             left_alternative: List[float] = performance_table_list[indifference[0]]
             right_alternative: List[float] = performance_table_list[indifference[1]]
 
-            left_side: List[LpVariable] = []
-            right_side: List[LpVariable] = []
-            for i in range(len(u_list_dict)):
-                left_side.append(u_list_dict[i][left_alternative[i]])
-                right_side.append(u_list_dict[i][right_alternative[i]])
+            indices_to_keep: List[int] = indifference[2]
+            if indices_to_keep:
+                left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
+                right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(indices_to_keep)):
+                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
+                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
+            else:
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(left_alternative)):
+                    left_side.append(u_list_dict[i][left_alternative[i]])
+                    right_side.append(u_list_dict[i][right_alternative[i]])
 
             problem += lpSum(left_side) == lpSum(right_side)
 
@@ -429,75 +462,68 @@ class SolverUtils:
                 pom.append(u_list_dict[j][performance_table_list[i][j]])
             alternatives_variables.append(pom[:])
 
-        alternatives_binary_variables: Dict[int, Dict[int, LpVariable]] = {}
+        alternatives_binary_variables: Dict[int, List[Dict[int, LpVariable]]] = {}
         all_binary_variables = {}
         for i in worst_best_position:
             pom_dict = {}
             for j in range(len(performance_table_list)):
                 pom = []
                 if i[0] != j:
-                    variable_1_name: str = f"v_{i[0]}_higher_than_{j}"
+                    variable_1_name: str = f"v_{i[0]}_higher_than_{j}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_1_name not in all_binary_variables:
                         variable_1: LpVariable = LpVariable(variable_1_name, cat='Binary')
                         pom.append(variable_1)
                         all_binary_variables[variable_1_name] = variable_1
                     else:
                         pom.append(all_binary_variables[variable_1_name])
-                    variable_2_name: str = f"v_{j}_higher_than_{i[0]}"
+
+                    variable_2_name: str = f"v_{j}_higher_than_{i[0]}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_2_name not in all_binary_variables:
                         variable_2: LpVariable = LpVariable(variable_2_name, cat='Binary')
                         pom.append(variable_2)
                         all_binary_variables[variable_2_name] = variable_2
                     else:
                         pom.append(all_binary_variables[variable_2_name])
+
                     pom_dict[j] = pom[:]
 
-            alternatives_binary_variables[i[0]] = pom_dict
+            if i[0] not in alternatives_binary_variables:
+                alternatives_binary_variables[i[0]] = []
 
-        indifferences_dict = {}
-        for k in indifferences:
-            if k[0] not in indifferences_dict:
-                indifferences_dict[k[0]] = [k[1]]
-            else:
-                indifferences_dict[k[0]].append(k[1])
-
-            if k[1] not in indifferences_dict:
-                indifferences_dict[k[1]] = [k[0]]
-            else:
-                indifferences_dict[k[1]].append(k[0])
-
-        for k in indifferences_dict:
-            for i in indifferences_dict[k]:
-                differ = set(indifferences_dict[i]) - set(indifferences_dict[k]) - set([k])
-                indifferences_dict[k] = indifferences_dict[k] + list(differ)
+            alternatives_binary_variables[i[0]].append(pom_dict)
 
         big_M: int = 1e20
+        x: int = 0
         for worst_best in worst_best_position:
+            if len(alternatives_binary_variables[worst_best[0]]) == 1:
+                x: int = 0
             for i in range(len(performance_table_list)):
                 if i != worst_best[0]:
-                    checked = 0
-                    for k in indifferences_dict:
-                        if k == worst_best[0] and (i in indifferences_dict[k]):
-                            problem += alternatives_binary_variables[worst_best[0]][i][0] == 0
-                            problem += alternatives_binary_variables[worst_best[0]][i][1] == 0
-                            checked = 1
-                    if checked == 0:
-                        problem += lpSum(alternatives_variables[worst_best[0]]) - lpSum(
-                            alternatives_variables[i]) + big_M * alternatives_binary_variables[worst_best[0]][i][
-                                       0] >= epsilon
-                        problem += lpSum(alternatives_variables[i]) - lpSum(
-                            alternatives_variables[worst_best[0]]) + big_M * alternatives_binary_variables[worst_best[0]][i][
-                                       1] >= epsilon
-                        problem += alternatives_binary_variables[worst_best[0]][i][0] + \
-                                   alternatives_binary_variables[worst_best[0]][i][1] <= 1
+                    position_constraints: List[LpVariable] = alternatives_variables[worst_best[0]]
+                    compared_constraints: List[LpVariable] = alternatives_variables[i]
+
+                    indices_to_keep: List[int] = worst_best[3]
+                    if indices_to_keep:
+                        position_constraints: List[LpVariable] = [position_constraints[i] for i in indices_to_keep]
+                        compared_constraints: List[LpVariable] = [compared_constraints[i] for i in indices_to_keep]
+
+                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+
+                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+
+                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
 
             pom_higher = []
             pom_lower = []
-            for j in alternatives_binary_variables[worst_best[0]]:
-                pom_higher.append(alternatives_binary_variables[worst_best[0]][j][0])
-                pom_lower.append(alternatives_binary_variables[worst_best[0]][j][1])
+            for j in alternatives_binary_variables[worst_best[0]][x]:
+                pom_higher.append(alternatives_binary_variables[worst_best[0]][x][j][0])
+                pom_lower.append(alternatives_binary_variables[worst_best[0]][x][j][1])
             problem += lpSum(pom_higher) <= worst_best[1] - 1
             problem += lpSum(pom_lower) <= len(performance_table_list) - worst_best[2]
+
+            # If there are more Positions than one, relevant to one alternative
+            if len(alternatives_binary_variables[worst_best[0]]) > 1:
+                x += 1
 
         problem += big_M * epsilon - delta
 
@@ -770,7 +796,7 @@ class SolverUtils:
                 stdout=output_file
             )
 
-            output: Dict[str, List[int]] = {}
+            output: Dict[str, List[float]] = {}
             for alternative in alternatives_id_list:
                 output[alternative] = [0] * len(alternatives_id_list)
 
