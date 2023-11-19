@@ -802,10 +802,16 @@ class SolverUtils:
 
             output_file.seek(0)
             for line in output_file:
-                values = line.strip().split('\t')[1:]
-
                 variables_and_values_dict: Dict[str, float] = {}
-                for var_name, var_value in zip(variable_names[1:], values):
+
+                if 'epsilon' in variable_names:
+                    var_names = variable_names[1:]
+                    values = line.strip().split('\t')[1:]
+                else:
+                    var_names = variable_names
+                    values = line.strip().split('\t')
+
+                for var_name, var_value in zip(var_names, values):
                     variables_and_values_dict[var_name] = float(var_value)
 
                 # need to add interpolation here to variables_and_values_dict
