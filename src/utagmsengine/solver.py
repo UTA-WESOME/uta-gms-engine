@@ -1,7 +1,13 @@
 from typing import List, Dict, Optional, Tuple
 from .utils.solver_utils import SolverUtils
 from .utils.dataclasses_utils import DataclassesUtils
-from .dataclasses import Preference, Indifference, Criterion, DataValidator, Position
+from .dataclasses import Preference, Indifference, Criterion, DataValidator, Position, Intensity
+
+
+class Inconsistency(Exception):
+    def __init__(self, message, data=None):
+        super().__init__(message)
+        self.data = data
 
 
 class Solver:
@@ -19,11 +25,13 @@ class Solver:
             preferences: List[Preference],
             indifferences: List[Indifference],
             criteria: List[Criterion],
-            positions: Optional[List[Position]] = []
+            positions: Optional[List[Position]] = [],
+            intensities: Optional[List[Intensity]] = [],
     ) -> Dict[str, List[str]]:
         """
         Method for getting hasse diagram dict
 
+        :param intensities:
         :param performance_table_dict:
         :param preferences: List of Preference objects
         :param indifferences: List of Indifference objects
@@ -63,6 +71,11 @@ class Solver:
             performance_table_dict=performance_table_dict
         )
 
+        refined_intensities: List[List[int]] = DataclassesUtils.refine_intensities(
+            intensities=intensities,
+            performance_table_dict=performance_table_dict
+        )
+
         alternatives_id_list: List[str] = list(performance_table_dict.keys())
 
         necessary_preference = SolverUtils.get_necessary_relations(
@@ -73,6 +86,7 @@ class Solver:
             criteria=refined_gains,
             worst_best_position=refined_worst_best_position,
             number_of_points=refined_linear_segments,
+            comprehensive_intensities=refined_intensities,
             show_logs=self.show_logs
         )
 
@@ -91,12 +105,14 @@ class Solver:
             indifferences: List[Indifference],
             criteria: List[Criterion],
             positions: Optional[List[Position]] = [],
+            intensities: Optional[List[Intensity]] = [],
             sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
             number_of_samples: str = '100'
     ) -> Tuple[Dict[str, float], Dict[str, List[Tuple[float, float]]], Dict[str, List[int]]]:
         """
         Method for getting The Most Representative Value Function
 
+        :param intensities:
         :param performance_table_dict:
         :param preferences: List of Preference objects
         :param indifferences: List of Indifference objects
@@ -140,6 +156,11 @@ class Solver:
             performance_table_dict=performance_table_dict
         )
 
+        refined_intensities: List[List[int]] = DataclassesUtils.refine_intensities(
+            intensities=intensities,
+            performance_table_dict=performance_table_dict
+        )
+
         alternatives_id_list: List[str] = list(performance_table_dict.keys())
 
         problem, sampler_metrics = SolverUtils.calculate_the_most_representative_function(
@@ -150,10 +171,34 @@ class Solver:
             criteria=refined_gains,
             worst_best_position=refined_worst_best_position,
             number_of_points=refined_linear_segments,
+            comprehensive_intensities=refined_intensities,
             show_logs=self.show_logs,
             sampler_path=sampler_path,
             number_of_samples=number_of_samples
         )
+
+        for variable in problem.variables():
+            if variable.name == 'epsilon':
+                if variable.varValue <= 0.0:
+                    resolved_inconsistencies = SolverUtils.resolve_incosistency(
+                        performance_table_list=refined_performance_table_dict,
+                        preferences=refined_preferences,
+                        indifferences=refined_indifferences,
+                        criteria=refined_gains,
+                        worst_best_position=refined_worst_best_position,
+                        number_of_points=refined_linear_segments,
+                        comprehensive_intensities=refined_intensities,
+                        subsets_to_remove=[],
+                        show_logs=self.show_logs
+                    )
+
+                    refined_resolved_inconsistencies = DataclassesUtils.refine_resolved_inconsistencies(
+                        resolved_inconsistencies=resolved_inconsistencies,
+                        performance_table_dict=performance_table_dict
+                    )
+
+                    raise Inconsistency("Found inconsistencies", refined_resolved_inconsistencies)
+                break
 
         variables_and_values_dict: Dict[str, float] = {variable.name: variable.varValue for variable in problem.variables()}
 
