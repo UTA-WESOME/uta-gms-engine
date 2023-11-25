@@ -13,9 +13,8 @@
 when inconsistencies are found.
 
 - Inconsistency exception carries data with constraints to be removed.
-
 ### Fixed
-- alternative set in worst/best position can now be indifferent to other alternatives
+- Issue that threw error when no preferences were given
 
 ## v0.0.19 - 18-11-2023
 ### Added
