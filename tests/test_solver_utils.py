@@ -108,6 +108,7 @@ def test_calculate_solved_problem(
         criteria=criteria_list_dummy,
         worst_best_position=worst_best_positions_dummy,
         number_of_points=number_of_points_dummy,
+        comprehensive_intensities=[],
         alternative_id_1=1,
         alternative_id_2=2
     )
