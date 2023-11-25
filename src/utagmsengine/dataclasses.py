@@ -96,6 +96,18 @@ class Position(BaseModel):
         return criteria
 
 
+class Intensity(BaseModel):
+    """
+    alternative_id_1 - alternative_id_2 >= alternative_id_3 - alternative_id_4 on given criteria
+    """
+    alternative_id_1: str
+    alternative_id_2: str
+    alternative_id_3: str
+    alternative_id_4: str
+    criteria: List[str] = []
+    sign: str = '>='
+
+
 class DataValidator:
     @staticmethod
     def validate_criteria(performance_table, criteria_list):
