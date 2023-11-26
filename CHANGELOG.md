@@ -1,4 +1,8 @@
 # Changelog
+## v0.0.21 - 26-11-2023
+### Fixed
+- refine_resolved_inconsistencies method
+
 ## v0.0.20 - 25-11-2023
 ### Added
 - 'Intensity' dataclass with this schema: <br>
