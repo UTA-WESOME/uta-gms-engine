@@ -1,4 +1,5 @@
 from typing import List, Dict
+from ..dataclasses import Preference, Indifference, Position, Intensity
 
 
 class DataclassesUtils:
@@ -143,3 +144,112 @@ class DataclassesUtils:
             output.append([tmp[position.alternative_id], position.worst_position, position.best_position, criteria_index])
 
         return output
+
+    @staticmethod
+    def refine_intensities(
+            intensities,
+            performance_table_dict
+    ) -> List[List[int]]:
+        """
+        Refine into [[1,[],3,[],4,[],5,[],'>']], meaning 1-3 > 4-5
+
+        :param intensities:
+        :param performance_table_dict:
+
+        :return output:
+        """
+        output = []
+        tmp = {}
+
+        for i, key in enumerate(performance_table_dict.keys()):
+            tmp[key] = i
+
+        for intensity in intensities:
+            first = next(iter(performance_table_dict.values()))  # Get the first dictionary value
+            criteria_index = []
+            for criteria in intensity.criteria:
+                index = list(first.keys()).index(criteria)
+                criteria_index.append(index)
+
+            output.append(
+                [
+                    tmp[intensity.alternative_id_1],
+                    criteria_index,
+                    tmp[intensity.alternative_id_2],
+                    criteria_index,
+                    tmp[intensity.alternative_id_3],
+                    criteria_index,
+                    tmp[intensity.alternative_id_4],
+                    criteria_index,
+                    intensity.sign
+                ]
+            )
+
+        return output
+
+    @staticmethod
+    def refine_resolved_inconsistencies(
+            resolved_inconsistencies,
+            performance_table_dict,
+    ) -> List[List[int]]:
+        """
+        Refine from [[1,[],3,[],4,[],5,[],'>']], meaning 1-3 > 4-5 into dataclasses
+
+        :param resolved_inconsistencies:
+        :param performance_table_dict:
+
+        :return output:
+        """
+        output = []
+        alt_idx = {}
+        crit_idx = {}
+
+        for i, key in enumerate(performance_table_dict.keys()):
+            alt_idx[i] = key
+
+        for i, key in enumerate(performance_table_dict[alt_idx[0]]):
+            crit_idx[i] = key
+
+        for inconsistencies in resolved_inconsistencies:
+            preferences = []
+            indifferences = []
+            positions = []
+            intensities = []
+
+            for preference in inconsistencies[0]:
+                preferences.append(
+                    Preference(superior=alt_idx[preference[0]], inferior=alt_idx[preference[1]], criteria=preference[2])
+                )
+
+            for indifference in inconsistencies[1]:
+                indifferences.append(
+                    Indifference(equal1=alt_idx[indifference[0]], equal2=alt_idx[indifference[1]], criteria=indifference[2])
+                )
+
+            for position in inconsistencies[2]:
+                positions.append(
+                    Position(alternative_id=alt_idx[position[0]], worst_position=position[1], best_position=position[2], criteria=position[3])
+                )
+
+            for intensity in inconsistencies[3]:
+                intensities.append(
+                    Intensity(
+                        alternative_id_1=alt_idx[intensity[0]],
+                        alternative_id_2=alt_idx[intensity[2]],
+                        alternative_id_3=alt_idx[intensity[4]],
+                        alternative_id_4=alt_idx[intensity[6]],
+                        criteria=[crit_idx[idx] for idx in intensity[1]],
+                        sign=intensity[8]
+                    )
+                )
+
+            output.append(
+                [
+                    preferences,
+                    indifferences,
+                    positions,
+                    intensities
+                 ]
+            )
+
+        return output[:-1]

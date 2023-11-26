@@ -1,4 +1,21 @@
 # Changelog
+## v0.0.20 - 25-11-2023
+### Added
+- 'Intensity' dataclass with this schema: <br>
+    alternative_id_1: str <br>
+    alternative_id_2: str <br>
+    alternative_id_3: str <br>
+    alternative_id_4: str <br>
+    criteria: List[str] = [] <br>
+    sign: str = '>=' <br>
+
+- get_representative_value_function_dict now raises Inconsistency exception 
+when inconsistencies are found.
+
+- Inconsistency exception carries data with constraints to be removed.
+### Fixed
+- Issue that threw error when no preferences were given
+
 ## v0.0.19 - 18-11-2023
 ### Added
 - New default parameter 'criteria' for Position, Preference and Indifference
