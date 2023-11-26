@@ -218,17 +218,17 @@ class DataclassesUtils:
 
             for preference in inconsistencies[0]:
                 preferences.append(
-                    Preference(superior=alt_idx[preference[0]], inferior=alt_idx[preference[1]], criteria=preference[2])
+                    Preference(superior=alt_idx[preference[0]], inferior=alt_idx[preference[1]], criteria=[crit_idx[idx] for idx in preference[2]])
                 )
 
             for indifference in inconsistencies[1]:
                 indifferences.append(
-                    Indifference(equal1=alt_idx[indifference[0]], equal2=alt_idx[indifference[1]], criteria=indifference[2])
+                    Indifference(equal1=alt_idx[indifference[0]], equal2=alt_idx[indifference[1]], criteria=[crit_idx[idx] for idx in indifference[2]])
                 )
 
             for position in inconsistencies[2]:
                 positions.append(
-                    Position(alternative_id=alt_idx[position[0]], worst_position=position[1], best_position=position[2], criteria=position[3])
+                    Position(alternative_id=alt_idx[position[0]], worst_position=position[1], best_position=position[2], criteria=[crit_idx[idx] for idx in position[3]])
                 )
 
             for intensity in inconsistencies[3]:
