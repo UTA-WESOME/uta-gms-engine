@@ -259,7 +259,7 @@ class SolverUtils:
             right_side_2: List[LpVariable] = []
 
             indices_to_keep: List[List[int]] = [intensity[1], intensity[3], intensity[5], intensity[7]]
-            print(indices_to_keep)
+
             if indices_to_keep[0]:
                 left_alternative_1: List[float] = [left_alternative_1[i] for i in indices_to_keep[0]]
                 for i in range(len(indices_to_keep[0])):
@@ -597,7 +597,7 @@ class SolverUtils:
             right_side_2: List[LpVariable] = []
 
             indices_to_keep: List[List[int]] = [intensity[1], intensity[3], intensity[5], intensity[7]]
-            print(indices_to_keep)
+
             if indices_to_keep[0]:
                 left_alternative_1: List[float] = [left_alternative_1[i] for i in indices_to_keep[0]]
                 for i in range(len(indices_to_keep[0])):
