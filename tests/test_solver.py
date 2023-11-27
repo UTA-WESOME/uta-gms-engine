@@ -1,6 +1,6 @@
 import pytest
 from src.utagmsengine.solver import Solver, Inconsistency
-from src.utagmsengine.dataclasses import Preference, Indifference, Criterion, Position, Intensity
+from src.utagmsengine.dataclasses import Comparison, Criterion, Position, Intensity
 
 
 @pytest.fixture()
@@ -22,13 +22,12 @@ def performance_table_dict_dummy():
 
 
 @pytest.fixture()
-def preferences_dummy():
-    return [Preference(superior='G', inferior='F'), Preference(superior='F', inferior='E')]
-
-
-@pytest.fixture()
-def indifferences_dummy():
-    return [Indifference(equal1='D', equal2='G')]
+def comparison_dummy():
+    return [
+        Comparison(alternative_1='G', alternative_2='F', sign='>'),
+        Comparison(alternative_1='F', alternative_2='E', sign='>'),
+        Comparison(alternative_1='D', alternative_2='G', sign='='),
+    ]
 
 
 @pytest.fixture()
@@ -53,7 +52,7 @@ def intensities_dummy():
 
 @pytest.fixture()
 def resolved_inconsistencies_dummy():
-    return [[[], [], [Position(alternative_id='A', worst_position=12, best_position=9, criteria=[])], []], [[Preference(superior='G', inferior='F', criteria=[])], [], [], []], [[], [Indifference(equal1='D', equal2='G', criteria=[])], [], []]]
+    return [[[], [], [Position(alternative_id='A', worst_position=12, best_position=9, criteria=[])], []], [[Comparison(alternative_1='G', alternative_2='F', criteria=[], sign='>')], [], [], []], [[], [Comparison(alternative_1='D', alternative_2='G', criteria=[], sign='=')], [], []]]
 
 
 @pytest.fixture()
@@ -78,8 +77,7 @@ def predefined_hasse_diagram_dict_dummy():
 
 def test_get_hasse_diagram_dict(
         performance_table_dict_dummy,
-        preferences_dummy,
-        indifferences_dummy,
+        comparison_dummy,
         criterions_dummy,
         positions_dummy,
         intensities_dummy,
@@ -89,8 +87,7 @@ def test_get_hasse_diagram_dict(
 
     hasse_diagram_list = solver.get_hasse_diagram_dict(
         performance_table_dict_dummy,
-        preferences_dummy,
-        indifferences_dummy,
+        comparison_dummy,
         criterions_dummy,
         positions_dummy,
         intensities_dummy
@@ -101,8 +98,7 @@ def test_get_hasse_diagram_dict(
 
 def test_get_representative_value_function_dict(
         performance_table_dict_dummy,
-        preferences_dummy,
-        indifferences_dummy,
+        comparison_dummy,
         predefined_criterions_dummy,
         criterions_dummy,
         positions_dummy,
@@ -116,8 +112,7 @@ def test_get_representative_value_function_dict(
     try:
         representative_value_function_dict, criterion_functions, sampler_metrics = solver.get_representative_value_function_dict(
             performance_table_dict_dummy,
-            preferences_dummy,
-            indifferences_dummy,
+            comparison_dummy,
             predefined_criterions_dummy,
             positions_dummy,
             intensities_dummy,
