@@ -1,4 +1,8 @@
 # Changelog
+## v0.0.22 - 27-11-2023
+### Fixed
+- deleted prints
+
 ## v0.0.21 - 26-11-2023
 ### Fixed
 - refine_resolved_inconsistencies method
