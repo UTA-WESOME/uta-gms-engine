@@ -2,47 +2,20 @@ from pydantic import BaseModel, field_validator
 from typing import List
 
 
-class Preference(BaseModel):
+class Comparison(BaseModel):
     """
-    Pydantic dataclass - Represents a preference between two options.
-    Attributes:
-        superior (str): The superior option.
-        inferior (str): The inferior option.
+    Pydantic dataclass - Represents a comparison between two options.
     """
-    superior: str
-    inferior: str
+    alternative_1: str
+    alternative_2: str
     criteria: List[str] = []
+    sign: str = '>'
 
-    @field_validator("inferior")
-    def check_different(cls, inferior, values):
-        if "superior" in values.data and inferior == values.data["superior"]:
-            raise ValueError("Superior and inferior options must be different.")
-        return inferior
-
-    @field_validator("criteria")
-    def check_unique_criteria(cls, criteria):
-        if criteria and len(set(criteria)) != len(criteria):
-            raise ValueError("Criteria list must contain unique elements.")
-        return criteria
-
-
-class Indifference(BaseModel):
-    """
-    Pydantic dataclass - Represents an indifference criterion with two equal values.
-
-    Attributes:
-        equal1 (str): The first equal value.
-        equal2 (str): The second equal value.
-    """
-    equal1: str
-    equal2: str
-    criteria: List[str] = []
-
-    @field_validator("equal2")
-    def check_different(cls, equal2, values):
-        if "equal1" in values.data and equal2 == values.data["equal1"]:
-            raise ValueError("First and second options must be different.")
-        return equal2
+    @field_validator("alternative_2")
+    def check_different(cls, alternative_2, values):
+        if "alternative_1" in values.data and alternative_2 == values.data["alternative_1"]:
+            raise ValueError("alternative_1 and alternative_2 options must be different.")
+        return alternative_2
 
     @field_validator("criteria")
     def check_unique_criteria(cls, criteria):
@@ -143,16 +116,11 @@ class DataValidator:
                 raise ValueError(f"worst_position can't be lower than best_position")
 
     @staticmethod
-    def validate_preferences_indifferences_criteria(preferences, indifferences, positions, criteria):
+    def validate_comparisons_criteria(comparisons, positions, criteria):
         """Validate whether Alternative IDs in positions_list and performance_table match."""
         partial_criteria_list = []
-        for preference in preferences:
-            for criterion in preference.criteria:
-                if criterion not in partial_criteria_list:
-                    partial_criteria_list.append(criterion)
-
-        for indifference in indifferences:
-            for criterion in indifference.criteria:
+        for comparison in comparisons:
+            for criterion in comparison.criteria:
                 if criterion not in partial_criteria_list:
                     partial_criteria_list.append(criterion)
 

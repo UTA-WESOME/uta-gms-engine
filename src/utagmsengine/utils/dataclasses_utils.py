@@ -1,5 +1,5 @@
 from typing import List, Dict
-from ..dataclasses import Preference, Indifference, Position, Intensity
+from ..dataclasses import Comparison, Position, Intensity
 
 
 class DataclassesUtils:
@@ -22,60 +22,32 @@ class DataclassesUtils:
         return output_list
 
     @staticmethod
-    def refine_preferences(
+    def refine_comparisons(
             performance_table_dict: Dict[str, Dict[str, float]],
-            preferences
+            comparisons
     ) -> List[List[int]]:
         """
         Convert a list of Preferences into a list of indices corresponding to alternatives.
 
         :param performance_table_dict:
-        :param preferences:
+        :param comparisons:
         :return output:
         """
         output = []
-        keys = list(performance_table_dict.keys())
+        keys: List[str] = list(performance_table_dict.keys())
 
-        for preference in preferences:
-            superior_index = keys.index(preference.superior)
-            inferior_index = keys.index(preference.inferior)
+        for comparison in comparisons:
+            alternative_1_index: int = keys.index(comparison.alternative_1)
+            alternative_2_index: int = keys.index(comparison.alternative_2)
+            sign: str = comparison.sign
 
-            first = next(iter(performance_table_dict.values()))  # Get the first dictionary value
-            criteria_index = []
-            for criteria in preference.criteria:
+            first: Dict[str, float] = next(iter(performance_table_dict.values()))  # Get the first dictionary value
+            criteria_index: List[int] = []
+            for criteria in comparison.criteria:
                 position = list(first.keys()).index(criteria)
                 criteria_index.append(position)
 
-            output.append([superior_index, inferior_index, criteria_index])
-
-        return output
-
-    @staticmethod
-    def refine_indifferences(
-            performance_table_dict: Dict[str, Dict[str, float]],
-            indifferences
-    ) -> List[List[int]]:
-        """
-        Convert a list of Indifferences into a list of indices corresponding to alternatives.
-
-        :param performance_table_dict:
-        :param indifferences:
-        :return output:
-        """
-        output = []
-        keys = list(performance_table_dict.keys())
-
-        for indifference in indifferences:
-            equal1_index = keys.index(indifference.equal1)
-            equal2_index = keys.index(indifference.equal2)
-
-            first = next(iter(performance_table_dict.values()))  # Get the first dictionary value
-            criteria_index = []
-            for criteria in indifference.criteria:
-                position = list(first.keys()).index(criteria)
-                criteria_index.append(position)
-
-            output.append([equal1_index, equal2_index, criteria_index])
+            output.append([alternative_1_index, alternative_2_index, criteria_index, sign])
 
         return output
 
@@ -111,7 +83,11 @@ class DataclassesUtils:
         output = []
 
         for criterion in criterions:
-            output.append(criterion.number_of_linear_segments)
+            if criterion.number_of_linear_segments == 0:
+                linear_segments = 0
+            else:
+                linear_segments = criterion.number_of_linear_segments + 1
+            output.append(linear_segments)
 
         return output
 
@@ -211,27 +187,21 @@ class DataclassesUtils:
             crit_idx[i] = key
 
         for inconsistencies in resolved_inconsistencies:
-            preferences = []
-            indifferences = []
+            comparisons = []
             positions = []
             intensities = []
 
-            for preference in inconsistencies[0]:
-                preferences.append(
-                    Preference(superior=alt_idx[preference[0]], inferior=alt_idx[preference[1]], criteria=[crit_idx[idx] for idx in preference[2]])
+            for comparison in inconsistencies[0]:
+                comparisons.append(
+                    Comparison(alternative_1=alt_idx[comparison[0]], alternative_2=alt_idx[comparison[1]], criteria=[crit_idx[idx] for idx in comparison[2]], sign=comparison[3])
                 )
 
-            for indifference in inconsistencies[1]:
-                indifferences.append(
-                    Indifference(equal1=alt_idx[indifference[0]], equal2=alt_idx[indifference[1]], criteria=[crit_idx[idx] for idx in indifference[2]])
-                )
-
-            for position in inconsistencies[2]:
+            for position in inconsistencies[1]:
                 positions.append(
                     Position(alternative_id=alt_idx[position[0]], worst_position=position[1], best_position=position[2], criteria=[crit_idx[idx] for idx in position[3]])
                 )
 
-            for intensity in inconsistencies[3]:
+            for intensity in inconsistencies[2]:
                 intensities.append(
                     Intensity(
                         alternative_id_1=alt_idx[intensity[0]],
@@ -245,8 +215,7 @@ class DataclassesUtils:
 
             output.append(
                 [
-                    preferences,
-                    indifferences,
+                    comparisons,
                     positions,
                     intensities
                  ]
