@@ -1,4 +1,17 @@
 # Changelog
+## v0.0.23 - 27-11-2023
+### Added
+- Comparison dataclass: <br>
+    alternative_1: str <br>
+    alternative_2: str <br>
+    criteria: List[str] = [] <br>
+    sign: str = '>' <br>
+### Deleted
+- Preference dataclass, Indifference dataclass
+
+### Fixed
+- number of linear segmets is now number of linear segments and not number of characteristic points
+
 ## v0.0.22 - 27-11-2023
 ### Fixed
 - deleted prints
