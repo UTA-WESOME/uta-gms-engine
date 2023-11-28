@@ -1,5 +1,5 @@
 # Changelog
-## v0.0.23 - 27-11-2023
+## v0.0.23 - 28-11-2023
 ### Added
 - Now '>=' comparison is possible
 - Comparison dataclass: <br>
