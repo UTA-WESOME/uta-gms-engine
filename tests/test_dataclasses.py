@@ -1,5 +1,5 @@
 import pytest
-from src.utagmsengine.dataclasses import Preference, Indifference, Criterion, DataValidator, Position
+from src.utagmsengine.dataclasses import Comparison, Criterion, DataValidator, Position
 
 
 @pytest.fixture()
@@ -21,17 +21,11 @@ def performance_table_list_dummy():
 
 
 @pytest.fixture()
-def preferences_list_dummy():
+def comparisons_list_dummy():
     return [
-        {'superior': 'G', 'inferior': 'F'},
-        {'superior': 'F', 'inferior': 'E'},
-    ]
-
-
-@pytest.fixture()
-def indifferences_list_dummy():
-    return [
-        {'equal1': 'D', 'equal2': 'G'}
+        {'alternative_1': 'G', 'alternative_2': 'F'},
+        {'alternative_1': 'F', 'alternative_2': 'E'},
+        {'alternative_1': 'D', 'alternative_2': 'G', 'sign': '='}
     ]
 
 
@@ -45,13 +39,12 @@ def criterion_list_dummy():
 
 
 @pytest.fixture()
-def preferences_dummy():
-    return [Preference(superior='G', inferior='F', criteria=[]), Preference(superior='F', inferior='E', criteria=[])]
-
-
-@pytest.fixture()
-def indifferences_dummy():
-    return [Indifference(equal1='D', equal2='G', criteria=[])]
+def comparisons_dummy():
+    return [
+        Comparison(alternative_1='G', alternative_2='F', criteria=[], sign='>'),
+        Comparison(alternative_1='F', alternative_2='E', criteria=[], sign='>'),
+        Comparison(alternative_1='D', alternative_2='G', criteria=[], sign='=')
+    ]
 
 
 @pytest.fixture()
@@ -64,22 +57,13 @@ def positions_list_dummy():
     return [Position(alternative_id='M', worst_position=1, best_position=3)]
 
 
-def test_preferences(
-        preferences_list_dummy,
-        preferences_dummy
+def test_comparisons(
+        comparisons_list_dummy,
+        comparisons_dummy
 ):
-    preferences = [Preference(**data) for data in preferences_list_dummy]
+    comparisons = [Comparison(**data) for data in comparisons_list_dummy]
 
-    assert preferences == preferences_dummy
-
-
-def test_indifferences(
-        indifferences_list_dummy,
-        indifferences_dummy
-):
-    indifferences = [Indifference(**data) for data in indifferences_list_dummy]
-
-    assert indifferences == indifferences_dummy
+    assert comparisons == comparisons_dummy
 
 
 def test_criterions(
@@ -91,14 +75,9 @@ def test_criterions(
     assert criterions == criterions_dummy
 
 
-def test_preference_validation():
-    with pytest.raises(ValueError, match="Superior and inferior options must be different."):
-        Preference(superior='A', inferior='A')
-
-
-def test_indifference_validation():
-    with pytest.raises(ValueError, match="First and second options must be different."):
-        Indifference(equal1='A', equal2='A')
+def test_comparison_validation():
+    with pytest.raises(ValueError, match="alternative_1 and alternative_2 options must be different."):
+        Comparison(alternative_1='A', alternative_2='A')
 
 
 def test_criterion_linear_segments_validation():
