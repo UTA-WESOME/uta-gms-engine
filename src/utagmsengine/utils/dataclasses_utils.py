@@ -27,7 +27,7 @@ class DataclassesUtils:
             comparisons
     ) -> List[List[int]]:
         """
-        Convert a list of Preferences into a list of indices corresponding to alternatives.
+        Convert a list of Comparison into a list of indices corresponding to alternatives.
 
         :param performance_table_dict:
         :param comparisons:

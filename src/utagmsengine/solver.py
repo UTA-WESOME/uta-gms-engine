@@ -32,7 +32,7 @@ class Solver:
 
         :param intensities:
         :param performance_table_dict:
-        :param comparisons: List of Preference objects
+        :param comparisons: List of Comparison objects
         :param criteria: List of Criterion objects
         :param positions: List of Position objects
 
