@@ -21,17 +21,11 @@ def performance_table_list_dummy():
 
 
 @pytest.fixture()
-def preferences_list_dummy():
+def comparisons_list_dummy():
     return [
-        [6, 5, []],
-        [5, 4, []]
-    ]
-
-
-@pytest.fixture()
-def indifferences_list_dummy():
-    return [
-        [3, 6, []]
+        [6, 5, [], '>'],
+        [5, 4, [], '>'],
+        [3, 6, [], '=']
     ]
 
 
@@ -94,8 +88,7 @@ def test_create_variables_list_and_dict(performance_table_list_dummy):
 
 def test_calculate_solved_problem(
     performance_table_list_dummy,
-    preferences_list_dummy,
-    indifferences_list_dummy,
+    comparisons_list_dummy,
     criteria_list_dummy,
     number_of_points_dummy,
     worst_best_positions_dummy,
@@ -103,8 +96,7 @@ def test_calculate_solved_problem(
 ):
     problem: LpProblem = SolverUtils.calculate_solved_problem(
         performance_table_list=performance_table_list_dummy,
-        preferences=preferences_list_dummy,
-        indifferences=indifferences_list_dummy,
+        comparisons=comparisons_list_dummy,
         criteria=criteria_list_dummy,
         worst_best_position=worst_best_positions_dummy,
         number_of_points=number_of_points_dummy,

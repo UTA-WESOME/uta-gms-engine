@@ -1,7 +1,7 @@
 from typing import List, Dict, Optional, Tuple
 from .utils.solver_utils import SolverUtils
 from .utils.dataclasses_utils import DataclassesUtils
-from .dataclasses import Preference, Indifference, Criterion, DataValidator, Position, Intensity
+from .dataclasses import Comparison, Criterion, DataValidator, Position, Intensity
 
 
 class Inconsistency(Exception):
@@ -22,8 +22,7 @@ class Solver:
     def get_hasse_diagram_dict(
             self,
             performance_table_dict: Dict[str, Dict[str, float]],
-            preferences: List[Preference],
-            indifferences: List[Indifference],
+            comparisons: List[Comparison],
             criteria: List[Criterion],
             positions: Optional[List[Position]] = [],
             intensities: Optional[List[Intensity]] = [],
@@ -33,8 +32,7 @@ class Solver:
 
         :param intensities:
         :param performance_table_dict:
-        :param preferences: List of Preference objects
-        :param indifferences: List of Indifference objects
+        :param comparisons: List of Comparison objects
         :param criteria: List of Criterion objects
         :param positions: List of Position objects
 
@@ -48,14 +46,9 @@ class Solver:
             performance_table_dict=performance_table_dict
         )
 
-        refined_preferences: List[List[int]] = DataclassesUtils.refine_preferences(
+        refined_comparisons: List[List[int]] = DataclassesUtils.refine_comparisons(
             performance_table_dict=performance_table_dict,
-            preferences=preferences
-        )
-
-        refined_indifferences: List[List[int]] = DataclassesUtils.refine_indifferences(
-            performance_table_dict=performance_table_dict,
-            indifferences=indifferences
+            comparisons=comparisons
         )
 
         refined_gains: List[bool] = DataclassesUtils.refine_gains(
@@ -81,8 +74,7 @@ class Solver:
         necessary_preference = SolverUtils.get_necessary_relations(
             performance_table_list=refined_performance_table_dict,
             alternatives_id_list=alternatives_id_list,
-            preferences=refined_preferences,
-            indifferences=refined_indifferences,
+            comparisons=refined_comparisons,
             criteria=refined_gains,
             worst_best_position=refined_worst_best_position,
             number_of_points=refined_linear_segments,
@@ -101,8 +93,7 @@ class Solver:
     def get_representative_value_function_dict(
             self,
             performance_table_dict: Dict[str, Dict[str, float]],
-            preferences: List[Preference],
-            indifferences: List[Indifference],
+            comparisons: List[Comparison],
             criteria: List[Criterion],
             positions: Optional[List[Position]] = [],
             intensities: Optional[List[Intensity]] = [],
@@ -114,33 +105,26 @@ class Solver:
 
         :param intensities:
         :param performance_table_dict:
-        :param preferences: List of Preference objects
-        :param indifferences: List of Indifference objects
+        :param comparisons: List of Comparison objects
         :param criteria: List of Criterion objects
         :param positions: List of Position objects
         :param sampler_path:
         :param number_of_samples:
-
 
         :return:
         """
         DataValidator.validate_criteria(performance_table_dict, criteria)
         DataValidator.validate_performance_table(performance_table_dict)
         DataValidator.validate_positions(positions, performance_table_dict)
-        DataValidator.validate_preferences_indifferences_criteria(preferences, indifferences, positions, criteria)
+        DataValidator.validate_comparisons_criteria(comparisons, positions, criteria)
 
         refined_performance_table_dict: List[List[float]] = DataclassesUtils.refine_performance_table_dict(
             performance_table_dict=performance_table_dict
         )
 
-        refined_preferences: List[List[int]] = DataclassesUtils.refine_preferences(
+        refined_comparisons: List[List[int]] = DataclassesUtils.refine_comparisons(
             performance_table_dict=performance_table_dict,
-            preferences=preferences
-        )
-
-        refined_indifferences: List[List[int]] = DataclassesUtils.refine_indifferences(
-            performance_table_dict=performance_table_dict,
-            indifferences=indifferences
+            comparisons=comparisons
         )
 
         refined_gains: List[bool] = DataclassesUtils.refine_gains(
@@ -166,8 +150,7 @@ class Solver:
         problem, sampler_metrics = SolverUtils.calculate_the_most_representative_function(
             performance_table_list=refined_performance_table_dict,
             alternatives_id_list=alternatives_id_list,
-            preferences=refined_preferences,
-            indifferences=refined_indifferences,
+            comparisons=refined_comparisons,
             criteria=refined_gains,
             worst_best_position=refined_worst_best_position,
             number_of_points=refined_linear_segments,
@@ -182,8 +165,7 @@ class Solver:
                 if variable.varValue <= 0.0:
                     resolved_inconsistencies = SolverUtils.resolve_incosistency(
                         performance_table_list=refined_performance_table_dict,
-                        preferences=refined_preferences,
-                        indifferences=refined_indifferences,
+                        comparisons=refined_comparisons,
                         criteria=refined_gains,
                         worst_best_position=refined_worst_best_position,
                         number_of_points=refined_linear_segments,

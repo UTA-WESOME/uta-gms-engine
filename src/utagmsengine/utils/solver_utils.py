@@ -12,8 +12,7 @@ class SolverUtils:
     @staticmethod
     def calculate_solved_problem(
             performance_table_list: List[List[float]],
-            preferences: List[List[int]],
-            indifferences: List[List[int]],
+            comparisons: List[List[int]],
             criteria: List[bool],
             worst_best_position: List[List[int]],
             number_of_points: List[int],
@@ -28,8 +27,7 @@ class SolverUtils:
 
         :param comprehensive_intensities:
         :param performance_table_list:
-        :param preferences:
-        :param indifferences:
+        :param comparisons:
         :param criteria:
         :param worst_best_position:
         :param number_of_points:
@@ -88,12 +86,12 @@ class SolverUtils:
                     problem += u_list_of_characteristic_points[i][0] >= u_list_of_characteristic_points[i][j]
                     problem += u_list_of_characteristic_points[i][j] >= u_list_of_characteristic_points[i][-1]
 
-        # Preference constraint
-        for preference in preferences:
-            left_alternative: List[float] = performance_table_list[preference[0]]
-            right_alternative: List[float] = performance_table_list[preference[1]]
+        # Comparison constraint
+        for comparison in comparisons:
+            left_alternative: List[float] = performance_table_list[comparison[0]]
+            right_alternative: List[float] = performance_table_list[comparison[1]]
 
-            indices_to_keep: List[int] = preference[2]
+            indices_to_keep: List[int] = comparison[2]
             if indices_to_keep:
                 left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
                 right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
@@ -109,30 +107,12 @@ class SolverUtils:
                     left_side.append(u_list_dict[i][left_alternative[i]])
                     right_side.append(u_list_dict[i][right_alternative[i]])
 
-            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
-
-        # Indifference constraint
-        for indifference in indifferences:
-            left_alternative: List[float] = performance_table_list[indifference[0]]
-            right_alternative: List[float] = performance_table_list[indifference[1]]
-
-            indices_to_keep: List[int] = indifference[2]
-            if indices_to_keep:
-                left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
-                right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
-                left_side: List[LpVariable] = []
-                right_side: List[LpVariable] = []
-                for i in range(len(indices_to_keep)):
-                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
-                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
-            else:
-                left_side: List[LpVariable] = []
-                right_side: List[LpVariable] = []
-                for i in range(len(left_alternative)):
-                    left_side.append(u_list_dict[i][left_alternative[i]])
-                    right_side.append(u_list_dict[i][right_alternative[i]])
-
-            problem += lpSum(left_side) == lpSum(right_side)
+            if comparison[3] == '>':
+                problem += lpSum(left_side) >= lpSum(right_side) + epsilon
+            if comparison[3] == '=':
+                problem += lpSum(left_side) == lpSum(right_side)
+            if comparison[3] == '>=':
+                problem += lpSum(left_side) >= lpSum(right_side)
 
         if alternative_id_1 >= 0 and alternative_id_2 >= 0:
             left_alternative: List[float] = performance_table_list[alternative_id_2]
@@ -310,8 +290,7 @@ class SolverUtils:
     def calculate_the_most_representative_function(
             performance_table_list: List[List[float]],
             alternatives_id_list: List[str],
-            preferences: List[List[int]],
-            indifferences: List[List[int]],
+            comparisons: List[List[int]],
             criteria: List[bool],
             worst_best_position: List[List[int]],
             number_of_points: List[int],
@@ -326,8 +305,7 @@ class SolverUtils:
         :param comprehensive_intensities:
         :param performance_table_list:
         :param alternatives_id_list:
-        :param preferences:
-        :param indifferences:
+        :param comparisons:
         :param criteria:
         :param worst_best_position:
         :param number_of_points:
@@ -388,12 +366,12 @@ class SolverUtils:
                     problem += u_list_of_characteristic_points[i][0] >= u_list_of_characteristic_points[i][j]
                     problem += u_list_of_characteristic_points[i][j] >= u_list_of_characteristic_points[i][-1]
 
-        # Preference constraint
-        for preference in preferences:
-            left_alternative: List[float] = performance_table_list[preference[0]]
-            right_alternative: List[float] = performance_table_list[preference[1]]
+        # Comparison constraint
+        for comparison in comparisons:
+            left_alternative: List[float] = performance_table_list[comparison[0]]
+            right_alternative: List[float] = performance_table_list[comparison[1]]
 
-            indices_to_keep: List[int] = preference[2]
+            indices_to_keep: List[int] = comparison[2]
             if indices_to_keep:
                 left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
                 right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
@@ -409,41 +387,12 @@ class SolverUtils:
                     left_side.append(u_list_dict[i][left_alternative[i]])
                     right_side.append(u_list_dict[i][right_alternative[i]])
 
-            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
-
-        # Indifference constraint
-        for indifference in indifferences:
-            left_alternative: List[float] = performance_table_list[indifference[0]]
-            right_alternative: List[float] = performance_table_list[indifference[1]]
-
-            indices_to_keep: List[int] = indifference[2]
-            if indices_to_keep:
-                left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
-                right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
-                left_side: List[LpVariable] = []
-                right_side: List[LpVariable] = []
-                for i in range(len(indices_to_keep)):
-                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
-                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
-            else:
-                left_side: List[LpVariable] = []
-                right_side: List[LpVariable] = []
-                for i in range(len(left_alternative)):
-                    left_side.append(u_list_dict[i][left_alternative[i]])
-                    right_side.append(u_list_dict[i][right_alternative[i]])
-
-            problem += lpSum(left_side) == lpSum(right_side)
-
-        sampler_metrics: Dict[str, List[int]] = SolverUtils.get_sampler_metrics(
-            problem=problem,
-            performance_table_list=performance_table_list,
-            alternatives_id_list=alternatives_id_list,
-            sampler_path=sampler_path,
-            number_of_samples=number_of_samples,
-            u_list_of_characteristic_points=u_list_of_characteristic_points,
-            u_list_dict=u_list_dict,
-            characteristic_points=characteristic_points
-        )
+            if comparison[3] == '>':
+                problem += lpSum(left_side) >= lpSum(right_side) + epsilon
+            if comparison[3] == '=':
+                problem += lpSum(left_side) == lpSum(right_side)
+            if comparison[3] == '>=':
+                problem += lpSum(left_side) >= lpSum(right_side)
 
         # Use linear interpolation to create constraints
         for i in range(len(u_list_of_characteristic_points)):
@@ -470,17 +419,28 @@ class SolverUtils:
 
                     problem += u_list_dict[i][j] == value
 
+        sampler_metrics: Dict[str, List[int]] = SolverUtils.get_sampler_metrics(
+            problem=problem,
+            performance_table_list=performance_table_list,
+            alternatives_id_list=alternatives_id_list,
+            sampler_path=sampler_path,
+            number_of_samples=number_of_samples,
+            u_list_of_characteristic_points=u_list_of_characteristic_points,
+            u_list_dict=u_list_dict,
+            characteristic_points=characteristic_points
+        )
+
         necessary_preference: Dict[str, List[str]] = SolverUtils.get_necessary_relations(
             performance_table_list=performance_table_list,
             alternatives_id_list=alternatives_id_list,
-            preferences=preferences,
-            indifferences=indifferences,
+            comparisons=comparisons,
             criteria=criteria,
             worst_best_position=worst_best_position,
             number_of_points=number_of_points,
             comprehensive_intensities=comprehensive_intensities
         )
 
+        # Representative value
         for i in range(len(alternatives_id_list) - 1):
             for j in range(i + 1, len(alternatives_id_list)):
                 name_i = alternatives_id_list[i]
@@ -648,8 +608,7 @@ class SolverUtils:
     def get_necessary_relations(
             performance_table_list: List[List[float]],
             alternatives_id_list: List[str],
-            preferences: List[List[int]],
-            indifferences: List[List[int]],
+            comparisons: List[List[int]],
             criteria: List[bool],
             worst_best_position: List[List[int]],
             number_of_points: List[int],
@@ -662,8 +621,7 @@ class SolverUtils:
         :param comprehensive_intensities:
         :param performance_table_list:
         :param alternatives_id_list:
-        :param preferences:
-        :param indifferences:
+        :param comparisons:
         :param criteria:
         :param worst_best_position:
         :param number_of_points:
@@ -679,8 +637,7 @@ class SolverUtils:
 
                 problem: LpProblem = SolverUtils.calculate_solved_problem(
                     performance_table_list=performance_table_list,
-                    preferences=preferences,
-                    indifferences=indifferences,
+                    comparisons=comparisons,
                     criteria=criteria,
                     worst_best_position=worst_best_position,
                     number_of_points=number_of_points,
@@ -995,8 +952,7 @@ class SolverUtils:
     @staticmethod
     def resolve_incosistency(
             performance_table_list: List[List[float]],
-            preferences: List[List[int]],
-            indifferences: List[List[int]],
+            comparisons: List[List[int]],
             criteria: List[bool],
             worst_best_position: List[List[int]],
             number_of_points: List[int],
@@ -1010,14 +966,11 @@ class SolverUtils:
 
         :param subsets_to_remove:
         :param performance_table_list:
-        :param preferences:
-        :param indifferences:
+        :param comparisons:
         :param criteria:
         :param worst_best_position:
         :param number_of_points:
         :param comprehensive_intensities:
-        :param alternative_id_1: used only in calculation for hasse graphs
-        :param alternative_id_2: used only in calculation for hasse graphs
         :param show_logs: default None
 
         :return problem:
@@ -1160,13 +1113,13 @@ class SolverUtils:
             if len(alternatives_binary_variables[worst_best[0]]) > 1:
                 x += 1
 
-        binary_variables_inconsistency_list_preferences = []
-        # Preference constraint
-        for preference in preferences:
-            left_alternative: List[float] = performance_table_list[preference[0]]
-            right_alternative: List[float] = performance_table_list[preference[1]]
+        binary_variables_inconsistency_list_comparisons = []
+        # Comparison constraint
+        for comparison in comparisons:
+            left_alternative: List[float] = performance_table_list[comparison[0]]
+            right_alternative: List[float] = performance_table_list[comparison[1]]
 
-            indices_to_keep: List[int] = preference[2]
+            indices_to_keep: List[int] = comparison[2]
             if indices_to_keep:
                 left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
                 right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
@@ -1182,48 +1135,41 @@ class SolverUtils:
                     left_side.append(u_list_dict[i][left_alternative[i]])
                     right_side.append(u_list_dict[i][right_alternative[i]])
 
-            variable: str = f"vp_{preference[0]}_{preference[1]}_criteria_{'_'.join(map(str, preference[2]))}"
-            if variable not in binary_variables_inconsistency_dict:
-                variable_1: LpVariable = LpVariable(variable, cat='Binary')
-                binary_variables_inconsistency_dict[variable] = variable_1
-                binary_variables_inconsistency_list_preferences.append(variable_1)
+            if comparison[3] == '>':
+                variable: str = f"vp_{comparison[0]}_{comparison[1]}_criteria_{'_'.join(map(str, comparison[2]))}"
+                if variable not in binary_variables_inconsistency_dict:
+                    variable_1: LpVariable = LpVariable(variable, cat='Binary')
+                    binary_variables_inconsistency_dict[variable] = variable_1
+                    binary_variables_inconsistency_list_comparisons.append(variable_1)
 
-            if preference[0] == preference[1]:
-                problem += lpSum(left_side) >= lpSum(right_side) + epsilon - big_M * variable_1
-                problem += variable_1 == 1
-            else:
-                problem += lpSum(left_side) >= lpSum(right_side) + epsilon - big_M * variable_1
+                if comparison[0] == comparison[1]:
+                    problem += lpSum(left_side) >= lpSum(right_side) + epsilon - big_M * variable_1
+                    problem += variable_1 == 1
+                else:
+                    problem += lpSum(left_side) >= lpSum(right_side) + epsilon - big_M * variable_1
 
-        binary_variables_inconsistency_list_indifferences = []
-        # Indifference constraint
-        for indifference in indifferences:
-            left_alternative: List[float] = performance_table_list[indifference[0]]
-            right_alternative: List[float] = performance_table_list[indifference[1]]
+            if comparison[3] == '=':
+                variable: str = f"vi_{comparison[0]}_{comparison[1]}_criteria_{'_'.join(map(str, comparison[2]))}"
+                if variable not in binary_variables_inconsistency_dict:
+                    variable_1: LpVariable = LpVariable(variable, cat='Binary')
+                    binary_variables_inconsistency_dict[variable] = variable_1
+                    binary_variables_inconsistency_list_comparisons.append(variable_1)
 
-            indices_to_keep: List[int] = indifference[2]
-            if indices_to_keep:
-                left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
-                right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
-                left_side: List[LpVariable] = []
-                right_side: List[LpVariable] = []
-                for i in range(len(indices_to_keep)):
-                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
-                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
-            else:
-                left_side: List[LpVariable] = []
-                right_side: List[LpVariable] = []
-                for i in range(len(left_alternative)):
-                    left_side.append(u_list_dict[i][left_alternative[i]])
-                    right_side.append(u_list_dict[i][right_alternative[i]])
+                problem += lpSum(left_side) + big_M * variable_1 >= lpSum(right_side)
+                problem += lpSum(right_side) + big_M * variable_1 >= lpSum(left_side)
 
-            variable: str = f"vi_{indifference[0]}_{indifference[1]}_criteria_{'_'.join(map(str, indifference[2]))}"
-            if variable not in binary_variables_inconsistency_dict:
-                variable_1: LpVariable = LpVariable(variable, cat='Binary')
-                binary_variables_inconsistency_dict[variable] = variable_1
-                binary_variables_inconsistency_list_indifferences.append(variable_1)
+            if comparison[3] == '>=':
+                variable: str = f"vx_{comparison[0]}_{comparison[1]}_criteria_{'_'.join(map(str, comparison[2]))}"
+                if variable not in binary_variables_inconsistency_dict:
+                    variable_1: LpVariable = LpVariable(variable, cat='Binary')
+                    binary_variables_inconsistency_dict[variable] = variable_1
+                    binary_variables_inconsistency_list_comparisons.append(variable_1)
 
-            problem += lpSum(left_side) + big_M * variable_1 >= lpSum(right_side)
-            problem += lpSum(right_side) + big_M * variable_1 >= lpSum(left_side)
+                if comparison[0] == comparison[1]:
+                    problem += lpSum(left_side) >= lpSum(right_side) - big_M * variable_1
+                    problem += variable_1 == 1
+                else:
+                    problem += lpSum(left_side) >= lpSum(right_side) - big_M * variable_1
 
         binary_variables_inconsistency_list_comprehensive_intensities = []
         # comprehensive comparisons of intensities of preference
@@ -1340,15 +1286,19 @@ class SolverUtils:
                 for j in range(len(subsets_to_remove[i])):
                     for k in range(len(subsets_to_remove[i][j])):
                         if j == 0:
-                            variable: str = f"vp_{subsets_to_remove[i][j][k][0]}_{subsets_to_remove[i][j][k][1]}_criteria_{'_'.join(map(str, subsets_to_remove[i][j][k][2]))}"
-                            pom.append(binary_variables_inconsistency_dict[variable])
+                            if subsets_to_remove[i][j][k][-1] == '>':
+                                variable: str = f"vp_{subsets_to_remove[i][j][k][0]}_{subsets_to_remove[i][j][k][1]}_criteria_{'_'.join(map(str, subsets_to_remove[i][j][k][2]))}"
+                                pom.append(binary_variables_inconsistency_dict[variable])
+                            if subsets_to_remove[i][j][k][-1] == '=':
+                                variable: str = f"vi_{subsets_to_remove[i][j][k][0]}_{subsets_to_remove[i][j][k][1]}_criteria_{'_'.join(map(str, subsets_to_remove[i][j][k][2]))}"
+                                pom.append(binary_variables_inconsistency_dict[variable])
+                            if subsets_to_remove[i][j][k][-1] == '>=':
+                                variable: str = f"vx_{subsets_to_remove[i][j][k][0]}_{subsets_to_remove[i][j][k][1]}_criteria_{'_'.join(map(str, subsets_to_remove[i][j][k][2]))}"
+                                pom.append(binary_variables_inconsistency_dict[variable])
                         elif j == 1:
-                            variable: str = f"vi_{subsets_to_remove[i][j][k][0]}_{subsets_to_remove[i][j][k][1]}_criteria_{'_'.join(map(str, subsets_to_remove[i][j][k][2]))}"
-                            pom.append(binary_variables_inconsistency_dict[variable])
-                        elif j == 2:
                             variable: str = f"vwb_{subsets_to_remove[i][j][k][0]}_{subsets_to_remove[i][j][k][1]}_{subsets_to_remove[i][j][k][2]}_criteria_{'_'.join(map(str, subsets_to_remove[i][j][k][3]))}"
                             pom.append(binary_variables_inconsistency_dict[variable])
-                        elif j == 3:
+                        elif j == 2:
 
                             if subsets_to_remove[i][j][k][8] == '=':
                                 relation = 'e'
@@ -1361,10 +1311,9 @@ class SolverUtils:
                             pom.append(binary_variables_inconsistency_dict[variable])
 
                 problem += lpSum(pom[:]) <= len(subsets_to_remove[i][0]) + len(subsets_to_remove[i][1]) + len(
-                    subsets_to_remove[i][2]) + len(subsets_to_remove[i][3]) - 1
+                    subsets_to_remove[i][2]) - 1
 
-        v = lpSum(binary_variables_inconsistency_list_preferences) + lpSum(
-            binary_variables_inconsistency_list_indifferences) + lpSum(
+        v = lpSum(binary_variables_inconsistency_list_comparisons) + lpSum(
             binary_variables_inconsistency_list_worst_best) + lpSum(
             binary_variables_inconsistency_list_comprehensive_intensities)
         problem += v
@@ -1372,8 +1321,7 @@ class SolverUtils:
         problem.solve(solver=GLPK(msg=show_logs))
 
         result = []
-        resultp = []
-        resulti = []
+        resultc = []
         resultwb = []
         resultci = []
         for i in problem.variables():
@@ -1393,7 +1341,8 @@ class SolverUtils:
                     else:
                         pom.append(int(numbers_in_string[j]))
                 pom.append(criterion[:])
-                resulti.append(pom[:])
+                pom.append('=')
+                resultc.append(pom[:])
             elif i.name[0] == "v" and i.name[1] == "p" and i.name[2] != 'i' and i.varValue == 1:
                 criterion = []
                 for j in range(1, len(numbers_in_string)):
@@ -1407,7 +1356,23 @@ class SolverUtils:
                     else:
                         pom.append(int(numbers_in_string[j]))
                 pom.append(criterion[:])
-                resultp.append(pom[:])
+                pom.append('>')
+                resultc.append(pom[:])
+            elif i.name[0] == "v" and i.name[1] == "x" and i.varValue == 1:
+                criterion = []
+                for j in range(1, len(numbers_in_string)):
+                    if j == 3:
+                        continue
+                    elif j > 2:
+                        if numbers_in_string[j] == "":
+                            continue
+                        else:
+                            criterion.append(int(numbers_in_string[j]))
+                    else:
+                        pom.append(int(numbers_in_string[j]))
+                pom.append(criterion[:])
+                pom.append('>=')
+                resultc.append(pom[:])
             elif i.name[0] == "v" and i.name[1] == "w" and i.name[2] == "b" and i.varValue == 1:
                 criterion = []
                 for j in range(1, len(numbers_in_string)):
@@ -1456,20 +1421,17 @@ class SolverUtils:
                         pom_final.append(criterion[x])
                 resultci.append(pom_final[:])
 
-        result.append(resultp)
-        result.append(resulti)
+        result.append(resultc)
         result.append(resultwb)
         result.append(resultci)
         subsets_to_remove.append(result)
 
-        if subsets_to_remove[-1][0] == [] and subsets_to_remove[-1][1] == [] and subsets_to_remove[-1][2] == [] and \
-                subsets_to_remove[-1][3] == []:
+        if subsets_to_remove[-1][0] == [] and subsets_to_remove[-1][1] == [] and subsets_to_remove[-1][2] == []:
             return subsets_to_remove
         else:
             return SolverUtils.resolve_incosistency(
                 performance_table_list,
-                preferences,
-                indifferences,
+                comparisons,
                 criteria,
                 worst_best_position,
                 number_of_points,
