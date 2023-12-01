@@ -75,6 +75,11 @@ def predefined_hasse_diagram_dict_dummy():
     return {'A': ['F', 'K'], 'C': ['J'], 'D': ['G'], 'F': ['E', 'J'], 'G': ['B', 'D', 'F', 'H', 'K'], 'I': ['B'], 'K': ['C'], 'L': ['J'], 'B': [], 'E': [], 'H': [], 'J': []}
 
 
+@pytest.fixture()
+def extreme_ranking_dummy():
+    return [['A', 11, 2], ['B', 12, 1], ['C', 12, 3], ['D', 7, 1], ['E', 12, 5], ['F', 11, 3], ['G', 7, 1], ['H', 12, 1], ['I', 11, 1], ['J', 12, 4], ['K', 12, 3], ['L', 12, 1]]
+
+
 def test_get_hasse_diagram_dict(
         performance_table_dict_dummy,
         comparison_dummy,
@@ -105,23 +110,27 @@ def test_get_representative_value_function_dict(
         intensities_dummy,
         representative_value_function_dict_dummy,
         criterion_functions_dummy,
-        resolved_inconsistencies_dummy
+        resolved_inconsistencies_dummy,
+        extreme_ranking_dummy
 ):
     solver = Solver(show_logs=True)
 
     try:
-        representative_value_function_dict, criterion_functions, sampler_metrics = solver.get_representative_value_function_dict(
-            performance_table_dict_dummy,
-            comparison_dummy,
-            predefined_criterions_dummy,
-            positions_dummy,
-            intensities_dummy,
-            'files/polyrun-1.1.0-jar-with-dependencies.jar',
-            '10'
+        representative_value_function_dict, criterion_functions, sampler_metrics, extreme_ranking, necessary, possible = (
+            solver.get_representative_value_function_dict(
+                performance_table_dict_dummy,
+                comparison_dummy,
+                predefined_criterions_dummy,
+                positions_dummy,
+                intensities_dummy,
+                'files/polyrun-1.1.0-jar-with-dependencies.jar',
+                '10'
+            )
         )
 
         assert representative_value_function_dict == representative_value_function_dict_dummy
         assert criterion_functions == criterion_functions_dummy
+        assert extreme_ranking == extreme_ranking_dummy
 
     except Inconsistency as e:
         resolved_inconsistencies = e.data
