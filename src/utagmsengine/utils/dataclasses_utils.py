@@ -222,3 +222,28 @@ class DataclassesUtils:
             )
 
         return output[:-1]
+
+    @staticmethod
+    def refine_extreme_ranking(
+            extreme_ranking,
+            performance_table_dict
+    ) -> List[List[int]]:
+        """
+        Refine extreme_ranking
+
+        :param extreme_ranking:
+        :param performance_table_dict:
+
+        :return output:
+        """
+        output = []
+        tmp = {}
+
+        for i, key in enumerate(performance_table_dict.keys()):
+            tmp[i] = key
+
+        for extreme_rank in extreme_ranking:
+            extreme_rank[0] = tmp[extreme_rank[0]]
+
+        output = extreme_ranking
+        return output
