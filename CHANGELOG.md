@@ -1,4 +1,15 @@
 # Changelog
+## v0.0.24 - 01-12-2023
+### Added
+- extreme ranking
+- necessary and possible relations dicts
+
+### Changed
+- get_representative_value_function_dict now returns: alternatives_and_utilities_dict, criterion_functions, sampler_metrics, refined_extreme_ranking, necessary, possible
+
+### Fixed
+- criterion_functions from get_representative_value_function_dict now correctly returns negative values
+
 ## v0.0.23 - 28-11-2023
 ### Added
 - Now '>=' comparison is possible

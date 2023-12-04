@@ -62,17 +62,22 @@ def hasse_diagram_dict_dummy():
 
 @pytest.fixture()
 def representative_value_function_dict_dummy():
-    return {'J': 0.1015, 'E': 0.1821, 'C': 0.2716, 'L': 0.3663, 'F': 0.3889, 'B': 0.4101, 'H': 0.4416, 'K': 0.4417, 'A': 0.6117, 'D': 0.6117, 'G': 0.6117, 'I': 0.629}
+    return {'J': 0.0738, 'E': 0.1955, 'L': 0.2244, 'C': 0.3235, 'F': 0.382, 'B': 0.4467, 'H': 0.4523, 'K': 0.4741, 'A': 0.6248, 'D': 0.6248, 'G': 0.6248, 'I': 0.7754}
 
 
 @pytest.fixture()
 def criterion_functions_dummy():
-    return {'g1': [(0.0, 0.0), (2.0, 0.0), (6.0, 0.0), (7.0, 0.0), (9.0, 0.0), (10.25, 0.0), (16.0, 0.10148), (18.0, 0.136777), (25.0, 0.260318), (26.0, 0.277966), (27.5, 0.304439), (35.0, 0.304439), (44.75, 0.304439), (62.0, 0.304439)], 'g2': [(2.0, 0.0), (8.75, 0.0), (9.0, 0.0), (15.0, 0.0), (17.0, 0.0), (24.0, 0.0), (26.5, 0.0), (30.0, 0.0131292), (40.0, 0.050641), (43.0, 0.0618946), (44.25, 0.0665836), (55.0, 0.0665836), (62.0, 0.0665836)], 'g3': [(0.0, 0.0), (12.0, 0.115518), (14.0, 0.134772), (17.0, 0.163651), (25.0, 0.240663), (44.0, 0.283079), (50.0, 0.296473), (68.0, 0.410064), (73.0, 0.441617), (75.0, 0.454239), (88.0, 0.545103), (100.0, 0.628977)]}
+    return {'g1': [(-7.0, 0.0), (0.0, 0.0), (2.0, 0.0), (6.0, 0.0), (9.0, 0.0), (10.25, 0.0), (16.0, 0.0737571), (18.0, 0.0994118), (25.0, 0.189203), (26.0, 0.20203), (27.5, 0.221271), (35.0, 0.221271), (44.75, 0.221271), (62.0, 0.221271)], 'g2': [(-9.0, 0.0), (2.0, 0.0), (8.75, 0.0), (15.0, 0.0), (17.0, 0.0), (24.0, 0.0), (26.5, 0.0), (30.0, 0.000661446), (40.0, 0.00255129), (43.0, 0.00311825), (44.25, 0.00335448), (55.0, 0.00335448), (62.0, 0.00335448)], 'g3': [(0.0, 0.0), (12.0, 0.192056), (14.0, 0.224065), (17.0, 0.272079), (25.0, 0.400116), (44.0, 0.42016), (50.0, 0.42649), (68.0, 0.446706), (73.0, 0.452322), (75.0, 0.454568), (88.0, 0.621387), (100.0, 0.775374)]}
 
 
 @pytest.fixture()
 def predefined_hasse_diagram_dict_dummy():
     return {'A': ['F', 'K'], 'C': ['J'], 'D': ['G'], 'F': ['E', 'J'], 'G': ['B', 'D', 'F', 'H', 'K'], 'I': ['B'], 'K': ['C'], 'L': ['J'], 'B': [], 'E': [], 'H': [], 'J': []}
+
+
+@pytest.fixture()
+def extreme_ranking_dummy():
+    return {'A': (11, 2), 'B': (12, 1), 'C': (12, 3), 'D': (7, 1), 'E': (12, 5), 'F': (11, 3), 'G': (7, 1), 'H': (12, 1), 'I': (11, 1), 'J': (12, 4), 'K': (12, 3), 'L': (12, 1)}
 
 
 def test_get_hasse_diagram_dict(
@@ -105,23 +110,27 @@ def test_get_representative_value_function_dict(
         intensities_dummy,
         representative_value_function_dict_dummy,
         criterion_functions_dummy,
-        resolved_inconsistencies_dummy
+        resolved_inconsistencies_dummy,
+        extreme_ranking_dummy
 ):
     solver = Solver(show_logs=True)
 
     try:
-        representative_value_function_dict, criterion_functions, sampler_metrics = solver.get_representative_value_function_dict(
-            performance_table_dict_dummy,
-            comparison_dummy,
-            predefined_criterions_dummy,
-            positions_dummy,
-            intensities_dummy,
-            'files/polyrun-1.1.0-jar-with-dependencies.jar',
-            '10'
+        representative_value_function_dict, criterion_functions, sampler_metrics, extreme_ranking, necessary, possible = (
+            solver.get_representative_value_function_dict(
+                performance_table_dict_dummy,
+                comparison_dummy,
+                predefined_criterions_dummy,
+                positions_dummy,
+                intensities_dummy,
+                'files/polyrun-1.1.0-jar-with-dependencies.jar',
+                '10'
+            )
         )
 
         assert representative_value_function_dict == representative_value_function_dict_dummy
         assert criterion_functions == criterion_functions_dummy
+        assert extreme_ranking == extreme_ranking_dummy
 
     except Inconsistency as e:
         resolved_inconsistencies = e.data

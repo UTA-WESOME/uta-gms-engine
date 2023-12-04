@@ -19,12 +19,18 @@ class SolverUtils:
             comprehensive_intensities: List[List[int]],
             alternative_id_1: int = -1,
             alternative_id_2: int = -1,
+            alternative_id_extreme: int = -1,
+            type_of_rank: int = -1,
+            type_of_relation: int = 0,
             show_logs: bool = False,
     ) -> LpProblem:
         """
         Main calculation method for problem-solving.
         The idea is that this should be a generic method used across different problems
 
+        :param type_of_relation:
+        :param type_of_rank:
+        :param alternative_id_extreme:
         :param comprehensive_intensities:
         :param performance_table_list:
         :param comparisons:
@@ -37,9 +43,15 @@ class SolverUtils:
 
         :return problem:
         """
-        problem: LpProblem = LpProblem("UTA-GMS", LpMaximize)
+        type_of_model: int = LpMaximize
+        if alternative_id_extreme != -1:
+            type_of_model: int = LpMinimize
+
+        problem: LpProblem = LpProblem("UTA-GMS", type_of_model)
 
         epsilon: LpVariable = LpVariable("epsilon")
+        if alternative_id_extreme != -1:
+            problem += epsilon == 0.0001
 
         u_list, u_list_dict = SolverUtils.create_variables_list_and_dict(performance_table_list)
 
@@ -124,7 +136,10 @@ class SolverUtils:
                 left_side.append(u_list_dict[i][left_alternative[i]])
                 right_side.append(u_list_dict[i][right_alternative[i]])
 
-            problem += lpSum(left_side) >= lpSum(right_side) + epsilon
+            if type_of_relation == 0:
+                problem += lpSum(left_side) >= lpSum(right_side) + epsilon
+            else:
+                problem += lpSum(left_side) >= lpSum(right_side)
 
         # Worst and Best position
         alternatives_variables: List[List[LpVariable]] = []
@@ -141,7 +156,7 @@ class SolverUtils:
             for j in range(len(performance_table_list)):
                 pom = []
                 if i[0] != j:
-                    variable_1_name: str = f"v_{i[0]}_higher_than_{j}_criteria_{'_'.join(map(str, i[3]))}"
+                    variable_1_name: str = f"v_{i[0]}_{i[0]}_higher_than_{j}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_1_name not in all_binary_variables:
                         variable_1: LpVariable = LpVariable(variable_1_name, cat='Binary')
                         pom.append(variable_1)
@@ -149,7 +164,7 @@ class SolverUtils:
                     else:
                         pom.append(all_binary_variables[variable_1_name])
 
-                    variable_2_name: str = f"v_{j}_higher_than_{i[0]}_criteria_{'_'.join(map(str, i[3]))}"
+                    variable_2_name: str = f"v_{i[0]}_{j}_higher_than_{i[0]}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_2_name not in all_binary_variables:
                         variable_2: LpVariable = LpVariable(variable_2_name, cat='Binary')
                         pom.append(variable_2)
@@ -179,11 +194,25 @@ class SolverUtils:
                         position_constraints: List[LpVariable] = [position_constraints[i] for i in indices_to_keep]
                         compared_constraints: List[LpVariable] = [compared_constraints[i] for i in indices_to_keep]
 
-                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+                    if worst_best[2] != len(performance_table_list):
 
-                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
 
-                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
+                    else:
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
 
             pom_higher = []
             pom_lower = []
@@ -280,7 +309,35 @@ class SolverUtils:
             else:
                 problem += lpSum(left_side_1) - lpSum(left_side_2) == lpSum(right_side_1) - lpSum(right_side_2)
 
-        problem += epsilon
+        # extreme ranking
+        binary_variables_rank_dict = {}
+        binary_variables_rank = []
+        if alternative_id_extreme >= 0:
+            for i in range(len(performance_table_list)):
+                if i != alternative_id_extreme:
+                    left_alternative: List[float] = performance_table_list[alternative_id_extreme]
+                    right_alternative: List[float] = performance_table_list[i]
+                    left_side: List[LpVariable] = []
+                    right_side: List[LpVariable] = []
+                    for j in range(len(left_alternative)):
+                        left_side.append(u_list_dict[j][left_alternative[j]])
+                        right_side.append(u_list_dict[j][right_alternative[j]])
+
+                    variable: str = f"vrank_{i}"
+                    if variable not in binary_variables_rank_dict:
+                        variable_1: LpVariable = LpVariable(variable, cat='Binary')
+                        binary_variables_rank_dict[variable] = variable_1
+                        binary_variables_rank.append(variable_1)
+                    if type_of_rank == 0:
+
+                        problem += lpSum(left_side) - lpSum(right_side) + big_M * variable_1 >= 0
+
+                    else:
+                        problem += lpSum(right_side) - lpSum(left_side) + big_M * variable_1 >= 0
+
+            problem += lpSum(binary_variables_rank)
+        else:
+            problem += epsilon
 
         problem.solve(solver=GLPK(msg=show_logs))
 
@@ -488,7 +545,7 @@ class SolverUtils:
             for j in range(len(performance_table_list)):
                 pom = []
                 if i[0] != j:
-                    variable_1_name: str = f"v_{i[0]}_higher_than_{j}_criteria_{'_'.join(map(str, i[3]))}"
+                    variable_1_name: str = f"v_{i[0]}_{i[0]}_higher_than_{j}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_1_name not in all_binary_variables:
                         variable_1: LpVariable = LpVariable(variable_1_name, cat='Binary')
                         pom.append(variable_1)
@@ -496,7 +553,7 @@ class SolverUtils:
                     else:
                         pom.append(all_binary_variables[variable_1_name])
 
-                    variable_2_name: str = f"v_{j}_higher_than_{i[0]}_criteria_{'_'.join(map(str, i[3]))}"
+                    variable_2_name: str = f"v_{i[0]}_{j}_higher_than_{i[0]}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_2_name not in all_binary_variables:
                         variable_2: LpVariable = LpVariable(variable_2_name, cat='Binary')
                         pom.append(variable_2)
@@ -526,11 +583,25 @@ class SolverUtils:
                         position_constraints: List[LpVariable] = [position_constraints[i] for i in indices_to_keep]
                         compared_constraints: List[LpVariable] = [compared_constraints[i] for i in indices_to_keep]
 
-                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+                    if worst_best[2] != len(performance_table_list):
 
-                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
 
-                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
+                    else:
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
 
             pom_higher = []
             pom_lower = []
@@ -824,6 +895,7 @@ class SolverUtils:
                 first_part, x_value = key.rsplit('_', 1)
                 if first_part.endswith('_'):
                     _, i, __ = first_part.rsplit('_', 2)
+                    x_value = -float(key.rsplit('_', 1)[1])
                 else:
                     _, i = first_part.rsplit('_', 1)
 
@@ -911,7 +983,7 @@ class SolverUtils:
                                 point_after += 1
                             value = SolverUtils.linear_interpolation(val, characteristic_points[i][point_before], u_list_dict[i][float(characteristic_points[i][point_before])], characteristic_points[i][point_after], u_list_dict[i][float(characteristic_points[i][point_after])])
 
-                            result: float  = sum(coef * variables_and_values_dict[var.name] for var, coef in value.items())
+                            result: float = sum(coef * variables_and_values_dict[var.name] for var, coef in value.items())
                             variable_name: str = str(u_list_dict[i][j])
                             variables_and_values_dict[variable_name] = result
 
@@ -939,7 +1011,7 @@ class SolverUtils:
                     place += 1
 
                 for key, value in single_ranking.items():
-                    output[key][value-1] = output[key][value-1] + 1
+                    output[key][value - 1] = output[key][value - 1] + 1
 
             for key, value in output.items():
                 try:
@@ -1047,7 +1119,7 @@ class SolverUtils:
             for j in range(len(performance_table_list)):
                 pom = []
                 if i[0] != j:
-                    variable_1_name: str = f"v_{i[0]}_higher_than_{j}_criteria_{'_'.join(map(str, i[3]))}"
+                    variable_1_name: str = f"v_{i[0]}_{i[0]}_higher_than_{j}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_1_name not in all_binary_variables:
                         variable_1: LpVariable = LpVariable(variable_1_name, cat='Binary')
                         pom.append(variable_1)
@@ -1055,7 +1127,7 @@ class SolverUtils:
                     else:
                         pom.append(all_binary_variables[variable_1_name])
 
-                    variable_2_name: str = f"v_{j}_higher_than_{i[0]}_criteria_{'_'.join(map(str, i[3]))}"
+                    variable_2_name: str = f"v_{i[0]}_{j}_higher_than_{i[0]}_criteria_{'_'.join(map(str, i[3]))}"
                     if variable_2_name not in all_binary_variables:
                         variable_2: LpVariable = LpVariable(variable_2_name, cat='Binary')
                         pom.append(variable_2)
@@ -1092,14 +1164,25 @@ class SolverUtils:
                         binary_variables_inconsistency_dict[variable] = variable_1
                         binary_variables_inconsistency_list_worst_best.append(variable_1)
 
-                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + variable_1 * big_M + big_M * \
-                               alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+                    if worst_best[2] != len(performance_table_list):
 
-                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + variable_1 * big_M + big_M * \
-                               alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + variable_1 * big_M + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
 
-                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
-                               alternatives_binary_variables[worst_best[0]][x][i][1] <= 1 + variable_1 * big_M
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + variable_1 * big_M + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1 + variable_1 * big_M
+                    else:
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + variable_1 * big_M + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + variable_1 * big_M + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1 + variable_1 * big_M
 
             pom_higher = []
             pom_lower = []
@@ -1438,3 +1521,132 @@ class SolverUtils:
                 comprehensive_intensities,
                 subsets_to_remove
             )
+
+    @staticmethod
+    def calculate_extreme_ranking_analysis(
+            performance_table_list: List[List[float]],
+            comparisons: List[List[int]],
+            criteria: List[bool],
+            worst_best_position: List[List[int]],
+            number_of_points: List[int],
+            comprehensive_intensities: List[List[int]],
+            show_logs: bool = False,
+    ):
+        results = []
+
+        for j in range(len(performance_table_list)):
+            problem_max_position = SolverUtils.calculate_solved_problem(
+                performance_table_list,
+                comparisons,
+                criteria,
+                worst_best_position,
+                number_of_points,
+                comprehensive_intensities,
+                alternative_id_extreme=j,
+                type_of_rank=0,
+                show_logs=show_logs
+            )
+
+            problem_min_position = SolverUtils.calculate_solved_problem(
+                performance_table_list,
+                comparisons,
+                criteria,
+                worst_best_position,
+                number_of_points,
+                comprehensive_intensities,
+                alternative_id_extreme=j,
+                type_of_rank=1,
+                show_logs=show_logs
+            )
+
+            count_from_max = 0
+            for i in problem_max_position.variables():
+
+                name = i.name
+                name = name.split("_")
+                if name[0] == 'vrank' and i.varValue == 1:
+                    count_from_max = count_from_max + 1
+
+            count_from_min = 0
+            for i in problem_min_position.variables():
+
+                name = i.name
+                name = name.split("_")
+                if name[0] == 'vrank' and i.varValue == 1:
+                    count_from_min = count_from_min + 1
+
+            pom = [j, len(performance_table_list) - count_from_min, count_from_max + 1]
+
+            results.append(pom)
+
+        return results
+
+    @staticmethod
+    def calculate_necessary_and_possible_relation_matrix(
+            performance_table_list: List[List[float]],
+            alternatives_id_list: List[str],
+            comparisons: List[List[int]],
+            criteria: List[bool],
+            worst_best_position: List[List[int]],
+            number_of_points: List[int],
+            comprehensive_intensities: List[List[int]],
+            show_logs: bool = False
+    ):
+        """
+        Method used for getting relation_matrix.
+
+        :param comprehensive_intensities:
+        :param performance_table_list:
+        :param alternatives_id_list:
+        :param comparisons:
+        :param criteria:
+        :param worst_best_position:
+        :param number_of_points:
+        :param show_logs: default None
+
+        :return necessary, possible:
+        """
+        necessary: Dict[str, List[str]] = {}
+        possible: Dict[str, List[str]] = {}
+        for i in range(len(performance_table_list)):
+            for j in range(len(performance_table_list)):
+                if i == j:
+                    continue
+
+                problem_necessary: LpProblem = SolverUtils.calculate_solved_problem(
+                    performance_table_list=performance_table_list,
+                    comparisons=comparisons,
+                    criteria=criteria,
+                    worst_best_position=worst_best_position,
+                    number_of_points=number_of_points,
+                    comprehensive_intensities=comprehensive_intensities,
+                    alternative_id_1=i,
+                    alternative_id_2=j,
+                    type_of_relation=0,
+                    show_logs=show_logs
+                )
+
+                problem_possible: LpProblem = SolverUtils.calculate_solved_problem(
+                    performance_table_list=performance_table_list,
+                    comparisons=comparisons,
+                    criteria=criteria,
+                    worst_best_position=worst_best_position,
+                    number_of_points=number_of_points,
+                    comprehensive_intensities=comprehensive_intensities,
+                    alternative_id_1=j,
+                    alternative_id_2=i,
+                    type_of_relation=1,
+                    show_logs=show_logs
+                )
+
+                if problem_necessary.variables()[0].varValue <= 0:
+                    if alternatives_id_list[i] not in necessary:
+                        necessary[alternatives_id_list[i]] = []
+                    necessary[alternatives_id_list[i]].append(alternatives_id_list[j])
+
+                if problem_possible.variables()[0].varValue > 0:
+                    if alternatives_id_list[i] not in possible:
+                        possible[alternatives_id_list[i]] = []
+                    possible[alternatives_id_list[i]].append(alternatives_id_list[j])
+
+        return necessary, possible

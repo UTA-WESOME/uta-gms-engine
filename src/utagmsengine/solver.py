@@ -99,7 +99,7 @@ class Solver:
             intensities: Optional[List[Intensity]] = [],
             sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
             number_of_samples: str = '100'
-    ) -> Tuple[Dict[str, float], Dict[str, List[Tuple[float, float]]], Dict[str, List[int]]]:
+    ) -> Tuple[Dict[str, float], Dict[str, List[Tuple[float, float]]], Dict[str, List[int]], List[List[int]], Dict[str, List[str]], Dict[str, List[str]]]:
         """
         Method for getting The Most Representative Value Function
 
@@ -160,6 +160,32 @@ class Solver:
             number_of_samples=number_of_samples
         )
 
+        extreme_ranking = SolverUtils.calculate_extreme_ranking_analysis(
+            performance_table_list=refined_performance_table_dict,
+            comparisons=refined_comparisons,
+            criteria=refined_gains,
+            worst_best_position=refined_worst_best_position,
+            number_of_points=refined_linear_segments,
+            comprehensive_intensities=refined_intensities,
+            show_logs=self.show_logs
+        )
+
+        refined_extreme_ranking: List[List[int]] = DataclassesUtils.refine_extreme_ranking(
+            extreme_ranking=extreme_ranking,
+            performance_table_dict=performance_table_dict
+        )
+
+        necessary, possible = SolverUtils.calculate_necessary_and_possible_relation_matrix(
+            performance_table_list=refined_performance_table_dict,
+            alternatives_id_list=alternatives_id_list,
+            comparisons=refined_comparisons,
+            criteria=refined_gains,
+            worst_best_position=refined_worst_best_position,
+            number_of_points=refined_linear_segments,
+            comprehensive_intensities=refined_intensities,
+            show_logs=self.show_logs
+        )
+
         for variable in problem.variables():
             if variable.name == 'epsilon':
                 if variable.varValue <= 0.0:
@@ -195,4 +221,4 @@ class Solver:
             alternatives_id_list=alternatives_id_list,
         )
 
-        return alternatives_and_utilities_dict, criterion_functions, sampler_metrics
+        return alternatives_and_utilities_dict, criterion_functions, sampler_metrics, refined_extreme_ranking, necessary, possible
