@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from ..dataclasses import Comparison, Position, Intensity
 
 
@@ -236,14 +236,13 @@ class DataclassesUtils:
 
         :return output:
         """
-        output = []
+        output: Dict[str, Tuple[int]] = {}
         tmp = {}
 
         for i, key in enumerate(performance_table_dict.keys()):
             tmp[i] = key
 
         for extreme_rank in extreme_ranking:
-            extreme_rank[0] = tmp[extreme_rank[0]]
+            output[tmp[extreme_rank[0]]] = (extreme_rank[1], extreme_rank[2])
 
-        output = extreme_ranking
         return output
