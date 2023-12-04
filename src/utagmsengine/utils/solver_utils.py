@@ -583,14 +583,25 @@ class SolverUtils:
                         position_constraints: List[LpVariable] = [position_constraints[i] for i in indices_to_keep]
                         compared_constraints: List[LpVariable] = [compared_constraints[i] for i in indices_to_keep]
 
-                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
-                               alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+                    if worst_best[2] != len(performance_table_list):
 
-                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
-                               alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
 
-                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
-                               alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
+                    else:
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
 
             pom_higher = []
             pom_lower = []
@@ -884,6 +895,7 @@ class SolverUtils:
                 first_part, x_value = key.rsplit('_', 1)
                 if first_part.endswith('_'):
                     _, i, __ = first_part.rsplit('_', 2)
+                    x_value = -float(key.rsplit('_', 1)[1])
                 else:
                     _, i = first_part.rsplit('_', 1)
 
@@ -1152,14 +1164,25 @@ class SolverUtils:
                         binary_variables_inconsistency_dict[variable] = variable_1
                         binary_variables_inconsistency_list_worst_best.append(variable_1)
 
-                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + variable_1 * big_M + big_M * \
-                               alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+                    if worst_best[2] != len(performance_table_list):
 
-                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + variable_1 * big_M + big_M * \
-                               alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + variable_1 * big_M + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
 
-                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
-                               alternatives_binary_variables[worst_best[0]][x][i][1] <= 1 + variable_1 * big_M
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + variable_1 * big_M + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1 + variable_1 * big_M
+                    else:
+                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + variable_1 * big_M + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
+
+                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + variable_1 * big_M + big_M * \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
+
+                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
+                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1 + variable_1 * big_M
 
             pom_higher = []
             pom_lower = []
@@ -1570,7 +1593,7 @@ class SolverUtils:
             show_logs: bool = False
     ):
         """
-        Method used for getting necessary relations.
+        Method used for getting relation_matrix.
 
         :param comprehensive_intensities:
         :param performance_table_list:
