@@ -194,25 +194,11 @@ class SolverUtils:
                         position_constraints: List[LpVariable] = [position_constraints[i] for i in indices_to_keep]
                         compared_constraints: List[LpVariable] = [compared_constraints[i] for i in indices_to_keep]
 
-                    if worst_best[2] != len(performance_table_list):
+                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
 
-                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
+                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
 
-                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
-
-                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
-                    else:
-                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
-
-                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
-
-                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
+                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
 
             pom_higher = []
             pom_lower = []
