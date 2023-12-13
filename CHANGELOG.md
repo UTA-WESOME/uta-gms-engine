@@ -1,4 +1,13 @@
 # Changelog
+## v0.0.25 - 14-12-2023
+### Added
+- new sampler metric - pairwise_percentage
+- new Tuple inside extreme_ranking, first one is pessimistic and the second one is optimistic approach
+
+### Changed
+- Sampler now does not take into account indifference
+- Adding pairwise_percentage, means that representative_value_function_dict now returns 7 arguments.
+
 ## v0.0.24 - 01-12-2023
 ### Added
 - extreme ranking
