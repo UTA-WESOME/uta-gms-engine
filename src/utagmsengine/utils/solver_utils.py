@@ -341,7 +341,7 @@ class SolverUtils:
             show_logs: bool = False,
             sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
             number_of_samples: str = '100'
-    ) -> Tuple[LpProblem, Dict[str, List[int]]]:
+    ) -> Tuple[LpProblem, Dict[str, List[int]], Dict[str, Dict[str, float]]]:
         """
         Main method used in getting the most representative value function.
 
@@ -437,6 +437,73 @@ class SolverUtils:
             if comparison[3] == '>=':
                 problem += lpSum(left_side) >= lpSum(right_side)
 
+        # comprehensive comparisons of intensities of preference
+        for intensity in comprehensive_intensities:
+            left_alternative_1: List[float] = performance_table_list[intensity[0]]
+            left_alternative_2: List[float] = performance_table_list[intensity[2]]
+            right_alternative_1: List[float] = performance_table_list[intensity[4]]
+            right_alternative_2: List[float] = performance_table_list[intensity[6]]
+
+            left_side_1: List[LpVariable] = []
+            left_side_2: List[LpVariable] = []
+            right_side_1: List[LpVariable] = []
+            right_side_2: List[LpVariable] = []
+
+            indices_to_keep: List[List[int]] = [intensity[1], intensity[3], intensity[5], intensity[7]]
+
+            if indices_to_keep[0]:
+                left_alternative_1: List[float] = [left_alternative_1[i] for i in indices_to_keep[0]]
+                for i in range(len(indices_to_keep[0])):
+                    left_side_1.append(u_list_dict[indices_to_keep[0][i]][left_alternative_1[i]])
+            else:
+                for i in range(len(left_alternative_1)):
+                    left_side_1.append(u_list_dict[i][left_alternative_1[i]])
+
+            if indices_to_keep[1]:
+                left_alternative_2: List[float] = [left_alternative_2[i] for i in indices_to_keep[1]]
+                for i in range(len(indices_to_keep[1])):
+                    left_side_2.append(u_list_dict[indices_to_keep[1][i]][left_alternative_2[i]])
+            else:
+                for i in range(len(left_alternative_2)):
+                    left_side_2.append(u_list_dict[i][left_alternative_2[i]])
+
+            if indices_to_keep[2]:
+                right_alternative_1: List[float] = [right_alternative_1[i] for i in indices_to_keep[2]]
+                for i in range(len(indices_to_keep[2])):
+                    right_side_1.append(u_list_dict[indices_to_keep[2][i]][right_alternative_1[i]])
+            else:
+                for i in range(len(right_alternative_1)):
+                    right_side_1.append(u_list_dict[i][right_alternative_1[i]])
+
+            if indices_to_keep[3]:
+                right_alternative_2: List[float] = [right_alternative_2[i] for i in indices_to_keep[3]]
+                for i in range(len(indices_to_keep[3])):
+                    right_side_2.append(u_list_dict[indices_to_keep[3][i]][right_alternative_2[i]])
+            else:
+                for i in range(len(right_alternative_2)):
+                    right_side_2.append(u_list_dict[i][right_alternative_2[i]])
+
+            if intensity[-1] == '>':
+                problem += lpSum(left_side_1) - lpSum(left_side_2) >= lpSum(right_side_1) - lpSum(
+                    right_side_2) + epsilon
+            elif intensity[-1] == '>=':
+                problem += lpSum(left_side_1) - lpSum(left_side_2) >= lpSum(right_side_1) - lpSum(right_side_2)
+            else:
+                problem += lpSum(left_side_1) - lpSum(left_side_2) == lpSum(right_side_1) - lpSum(right_side_2)
+
+        problem += epsilon >= 0.0000001
+
+        position_percentage, pairwise_percentage = SolverUtils.get_sampler_metrics(
+            problem=problem,
+            performance_table_list=performance_table_list,
+            alternatives_id_list=alternatives_id_list,
+            sampler_path=sampler_path,
+            number_of_samples=number_of_samples,
+            u_list_of_characteristic_points=u_list_of_characteristic_points,
+            u_list_dict=u_list_dict,
+            characteristic_points=characteristic_points
+        )
+
         # Use linear interpolation to create constraints
         for i in range(len(u_list_of_characteristic_points)):
             for j in u_list_dict[i]:
@@ -461,17 +528,6 @@ class SolverUtils:
                     value = SolverUtils.linear_interpolation(val, characteristic_points[i][point_before], u_list_dict[i][float(characteristic_points[i][point_before])], characteristic_points[i][point_after], u_list_dict[i][float(characteristic_points[i][point_after])])
 
                     problem += u_list_dict[i][j] == value
-
-        sampler_metrics: Dict[str, List[int]] = SolverUtils.get_sampler_metrics(
-            problem=problem,
-            performance_table_list=performance_table_list,
-            alternatives_id_list=alternatives_id_list,
-            sampler_path=sampler_path,
-            number_of_samples=number_of_samples,
-            u_list_of_characteristic_points=u_list_of_characteristic_points,
-            u_list_dict=u_list_dict,
-            characteristic_points=characteristic_points
-        )
 
         necessary_preference: Dict[str, List[str]] = SolverUtils.get_necessary_relations(
             performance_table_list=performance_table_list,
@@ -569,25 +625,11 @@ class SolverUtils:
                         position_constraints: List[LpVariable] = [position_constraints[i] for i in indices_to_keep]
                         compared_constraints: List[LpVariable] = [compared_constraints[i] for i in indices_to_keep]
 
-                    if worst_best[2] != len(performance_table_list):
+                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
 
-                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
+                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
 
-                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
-
-                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
-                    else:
-                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
-
-                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
-
-                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
+                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
 
             pom_higher = []
             pom_lower = []
@@ -601,65 +643,11 @@ class SolverUtils:
             if len(alternatives_binary_variables[worst_best[0]]) > 1:
                 x += 1
 
-        # comprehensive comparisons of intensities of preference
-        for intensity in comprehensive_intensities:
-            left_alternative_1: List[float] = performance_table_list[intensity[0]]
-            left_alternative_2: List[float] = performance_table_list[intensity[2]]
-            right_alternative_1: List[float] = performance_table_list[intensity[4]]
-            right_alternative_2: List[float] = performance_table_list[intensity[6]]
-
-            left_side_1: List[LpVariable] = []
-            left_side_2: List[LpVariable] = []
-            right_side_1: List[LpVariable] = []
-            right_side_2: List[LpVariable] = []
-
-            indices_to_keep: List[List[int]] = [intensity[1], intensity[3], intensity[5], intensity[7]]
-
-            if indices_to_keep[0]:
-                left_alternative_1: List[float] = [left_alternative_1[i] for i in indices_to_keep[0]]
-                for i in range(len(indices_to_keep[0])):
-                    left_side_1.append(u_list_dict[indices_to_keep[0][i]][left_alternative_1[i]])
-            else:
-                for i in range(len(left_alternative_1)):
-                    left_side_1.append(u_list_dict[i][left_alternative_1[i]])
-
-            if indices_to_keep[1]:
-                left_alternative_2: List[float] = [left_alternative_2[i] for i in indices_to_keep[1]]
-                for i in range(len(indices_to_keep[1])):
-                    left_side_2.append(u_list_dict[indices_to_keep[1][i]][left_alternative_2[i]])
-            else:
-                for i in range(len(left_alternative_2)):
-                    left_side_2.append(u_list_dict[i][left_alternative_2[i]])
-
-            if indices_to_keep[2]:
-                right_alternative_1: List[float] = [right_alternative_1[i] for i in indices_to_keep[2]]
-                for i in range(len(indices_to_keep[2])):
-                    right_side_1.append(u_list_dict[indices_to_keep[2][i]][right_alternative_1[i]])
-            else:
-                for i in range(len(right_alternative_1)):
-                    right_side_1.append(u_list_dict[i][right_alternative_1[i]])
-
-            if indices_to_keep[3]:
-                right_alternative_2: List[float] = [right_alternative_2[i] for i in indices_to_keep[3]]
-                for i in range(len(indices_to_keep[3])):
-                    right_side_2.append(u_list_dict[indices_to_keep[3][i]][right_alternative_2[i]])
-            else:
-                for i in range(len(right_alternative_2)):
-                    right_side_2.append(u_list_dict[i][right_alternative_2[i]])
-
-            if intensity[-1] == '>':
-                problem += lpSum(left_side_1) - lpSum(left_side_2) >= lpSum(right_side_1) - lpSum(
-                    right_side_2) + epsilon
-            elif intensity[-1] == '>=':
-                problem += lpSum(left_side_1) - lpSum(left_side_2) >= lpSum(right_side_1) - lpSum(right_side_2)
-            else:
-                problem += lpSum(left_side_1) - lpSum(left_side_2) == lpSum(right_side_1) - lpSum(right_side_2)
-
         problem += big_M * epsilon - delta
 
         problem.solve(solver=GLPK(msg=show_logs))
 
-        return problem, sampler_metrics
+        return problem, position_percentage, pairwise_percentage
 
     @staticmethod
     def get_necessary_relations(
@@ -902,21 +890,87 @@ class SolverUtils:
             u_list_of_characteristic_points,
             u_list_dict,
             characteristic_points
-    ) -> Dict[str, List[int]]:
+    ) -> Tuple[Dict[str, List[int]], Dict[str, Dict[str, float]]]:
+        precision = 5
+        worst_variants = []
+        characteristic_points_in_one_list = {}
+        for i in range(len(u_list_of_characteristic_points)):
+            for j in range(len(u_list_of_characteristic_points[i])):
+                if j == 0:
+                    worst_variants.append(u_list_of_characteristic_points[i][j].name)
+                characteristic_points_in_one_list[u_list_of_characteristic_points[i][j].name] = 1
+
         # Write input file for Sampler
         with TemporaryFile("w+") as input_file, TemporaryFile("w+") as output_file:
+            positions_of_the_worst = []
             # Write header, useful only for testing
             variable_names = [var.name for var in problem.variables()]
 
             for constraint in problem.constraints.values():
+                pom = []
                 constraint_values = []
                 for var in problem.variables():
                     if var in constraint:
-                        constraint_values.append(str(constraint[var]))
+
+                        if var.name in characteristic_points_in_one_list or var.name == 'epsilon':
+                            constraint_values.append(str(round(constraint[var], precision)))
+
+                        else:
+                            point_before = 0
+                            point_after = 1
+                            if len(var.name.split("_")) == 4:
+                                val = -float(var.name.split("_")[-1])
+                            else:
+                                val = float(var.name.split("_")[-1])
+
+                            while characteristic_points[int(var.name.split("_")[1])][point_before] > val or val > \
+                                    characteristic_points[int(var.name.split("_")[1])][point_after]:
+                                point_before += 1
+                                point_after += 1
+
+                            value = SolverUtils.linear_interpolation(val, characteristic_points[int(var.name.split("_")[1])][point_before], u_list_dict[int(var.name.split("_")[1])][float(characteristic_points[int(var.name.split("_")[1])][point_before])], characteristic_points[int(var.name.split("_")[1])][point_after], u_list_dict[int(var.name.split("_")[1])][float(characteristic_points[int(var.name.split("_")[1])][point_after])])
+                            for variable in value:
+                                i = 0
+                                for var1 in problem.variables():
+
+                                    if var1.name != variable.name:
+                                        if var1.name in characteristic_points_in_one_list or var1.name == 'epsilon':
+                                            i += 1
+                                            if var.name in worst_variants and i not in positions_of_the_worst:
+                                                positions_of_the_worst.append(iteration)
+                                    else:
+                                        break
+                                if round(constraint[var], 4) >= 0:
+                                    pom.append([i, str(round(value[variable], precision))])
+                                else:
+                                    pom.append([i, str(round(-value[variable], precision))])
+
                     else:
-                        constraint_values.append("0")
+                        if var.name in characteristic_points_in_one_list or var.name == 'epsilon':
+                            constraint_values.append("0")
+
+                iteration = 0
+                for var1 in problem.variables():
+                    if var1.name in characteristic_points_in_one_list or var1.name == 'epsilon':
+                        if var1.name in worst_variants and iteration not in positions_of_the_worst:
+                            positions_of_the_worst.append(iteration)
+                        iteration += 1
+
                 constraint_values.append(re.search(r'([<>=]=?)', str(constraint)).group(1))
-                constraint_values.append(str(-constraint.constant))
+                if str(constraint.constant) == '0.0':
+                    constraint_values.append(str(0))
+                else:
+                    constraint_values.append(str(-constraint.constant))
+
+                for k in range(len(pom)):
+                    if pom[k][0] in positions_of_the_worst:
+                        continue
+                    else:
+                        if constraint_values[pom[k][0]] != '0':
+                            constraint_values[pom[k][0]] = str(round(float(pom[k][1]) + float(constraint_values[pom[k][0]]), precision))
+                        else:
+                            constraint_values[pom[k][0]] = str(round(float(pom[k][1]), precision))
+
                 input_file.write(" ".join(constraint_values) + "\n")
 
             input_file.seek(0)
@@ -927,9 +981,23 @@ class SolverUtils:
                 stdout=output_file
             )
 
+            points_in_constrtaints_file = []
+            for i in range(len(u_list_of_characteristic_points)):
+                for j in range(len(u_list_of_characteristic_points[i])):
+                    points_in_constrtaints_file.append(u_list_of_characteristic_points[i][j].name)
+            points_in_constrtaints_file.sort()
+
             output: Dict[str, List[float]] = {}
             for alternative in alternatives_id_list:
                 output[alternative] = [0] * len(alternatives_id_list)
+
+            output2: Dict[str, Dict[str, float]] = {}
+            for alternative in alternatives_id_list:
+                output2[alternative] = {}
+            for alternative1 in alternatives_id_list:
+                for alternative2 in alternatives_id_list:
+                    if alternative1 != alternative2:
+                        output2[alternative1][alternative2] = 0
 
             output_file.seek(0)
             for line in output_file:
@@ -942,36 +1010,40 @@ class SolverUtils:
                     var_names = variable_names
                     values = line.strip().split('\t')
 
-                for var_name, var_value in zip(var_names, values):
-                    variables_and_values_dict[var_name] = float(var_value)
+                number_of_value = 0
+                for var_name in var_names:
+                    if var_name in points_in_constrtaints_file:
+                        variables_and_values_dict[var_name] = float(values[number_of_value])
+                        number_of_value += 1
+                    else:
+                        variables_and_values_dict[var_name] = float(10000)
 
-                # need to add interpolation here to variables_and_values_dict
-                # Use linear interpolation to create constraints
-                for i in range(len(u_list_of_characteristic_points)):
-                    for j in u_list_dict[i]:
-                        if_characteristic = 0
+                for i in range(len(performance_table_list)):
+                    for j in range(len(performance_table_list[i])):
+                        variable_name: str = f"u_{j}_{performance_table_list[i][j]}"
+                        if '-' in variable_name:
+                            variable_name: str = variable_name.replace('-', '_')
+                        if variable_name not in variables_and_values_dict:
+                            variables_and_values_dict[variable_name] = float(10000)
 
-                        for z in range(len(u_list_of_characteristic_points[i])):
-                            if u_list_dict[i][j].name == u_list_of_characteristic_points[i][z].name:
-                                if_characteristic = 1
-                                break
+                for var_name in variables_and_values_dict:
+                    if variables_and_values_dict[var_name] == 10000.0:
+                        point_before = 0
+                        point_after = 1
 
-                        if if_characteristic == 0:
-                            point_before = 0
-                            point_after = 1
+                        if len(var_name.split("_")) == 4:
+                            val = -float(var_name.split("_")[-1])
+                        else:
+                            val = float(var_name.split("_")[-1])
 
-                            if len(u_list_dict[i][j].name.split("_")) == 4:
-                                val = -float(u_list_dict[i][j].name.split("_")[-1])
-                            else:
-                                val = float(u_list_dict[i][j].name.split("_")[-1])
-                            while characteristic_points[i][point_before] > val or val > characteristic_points[i][point_after]:
-                                point_before += 1
-                                point_after += 1
-                            value = SolverUtils.linear_interpolation(val, characteristic_points[i][point_before], u_list_dict[i][float(characteristic_points[i][point_before])], characteristic_points[i][point_after], u_list_dict[i][float(characteristic_points[i][point_after])])
+                        while characteristic_points[int(var_name.split("_")[1])][point_before] > val or val > \
+                                characteristic_points[int(var_name.split("_")[1])][point_after]:
+                            point_before += 1
+                            point_after += 1
 
-                            result: float = sum(coef * variables_and_values_dict[var.name] for var, coef in value.items())
-                            variable_name: str = str(u_list_dict[i][j])
-                            variables_and_values_dict[variable_name] = result
+                        value = SolverUtils.linear_interpolation(val, characteristic_points[int(var_name.split("_")[1])][point_before], variables_and_values_dict[str(u_list_dict[int(var_name.split("_")[1])][float(characteristic_points[int(var_name.split("_")[1])][point_before])])], characteristic_points[int(var_name.split("_")[1])][point_after], variables_and_values_dict[str(u_list_dict[int(var_name.split("_")[1])][float(characteristic_points[int(var_name.split("_")[1])][point_after])])])
+
+                        variables_and_values_dict[var_name] = float(value)
 
                 alternatives_and_utilities_dict: Dict[str, float] = SolverUtils.get_alternatives_and_utilities_dict(
                     variables_and_values_dict=variables_and_values_dict,
@@ -983,6 +1055,17 @@ class SolverUtils:
 
                 letter_value_pairs.sort(key=lambda x: x[1], reverse=True)
 
+                # Calculate the pairwise percentage
+                for i in range(len(letter_value_pairs)):
+                    for j in range(len(letter_value_pairs)):
+                        if i != j:
+                            letter1, value1 = letter_value_pairs[i]
+                            letter2, value2 = letter_value_pairs[j]
+
+                            if value1 > value2:
+                                output2[letter1][letter2] += 1
+
+                # Calculate the percentage on each position
                 single_ranking = {}
                 place = 1
                 for i in range(len(letter_value_pairs)):
@@ -999,13 +1082,17 @@ class SolverUtils:
                 for key, value in single_ranking.items():
                     output[key][value - 1] = output[key][value - 1] + 1
 
+            for alternative1, alternative_dict in output2.items():
+                for alternative2, value in alternative_dict.items():
+                    output2[alternative1][alternative2] = output2[alternative1][alternative2] * 100 / sum(output[key])
+
             for key, value in output.items():
                 try:
                     output[key] = [round(val / sum(output[key]) * 100, 10) for val in value]
                 except:
                     output[key] = []
 
-            return output
+            return output, output2
 
     @staticmethod
     def resolve_incosistency(
@@ -1150,25 +1237,11 @@ class SolverUtils:
                         binary_variables_inconsistency_dict[variable] = variable_1
                         binary_variables_inconsistency_list_worst_best.append(variable_1)
 
-                    if worst_best[2] != len(performance_table_list):
+                    problem += lpSum(position_constraints) - lpSum(compared_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
 
-                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + variable_1 * big_M + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= 0
+                    problem += lpSum(compared_constraints) - lpSum(position_constraints) + big_M * alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
 
-                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + variable_1 * big_M + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= epsilon
-
-                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1 + variable_1 * big_M
-                    else:
-                        problem += lpSum(position_constraints) - lpSum(compared_constraints) + variable_1 * big_M + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][0] >= epsilon
-
-                        problem += lpSum(compared_constraints) - lpSum(position_constraints) + variable_1 * big_M + big_M * \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] >= 0
-
-                        problem += alternatives_binary_variables[worst_best[0]][x][i][0] + \
-                                   alternatives_binary_variables[worst_best[0]][x][i][1] <= 1 + variable_1 * big_M
+                    problem += alternatives_binary_variables[worst_best[0]][x][i][0] + alternatives_binary_variables[worst_best[0]][x][i][1] <= 1
 
             pom_higher = []
             pom_lower = []
