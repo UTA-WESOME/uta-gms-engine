@@ -315,10 +315,12 @@ class SolverUtils:
                         binary_variables_rank_dict[variable] = variable_1
                         binary_variables_rank.append(variable_1)
                     if type_of_rank == 0:
-
                         problem += lpSum(left_side) - lpSum(right_side) + big_M * variable_1 >= 0
-
-                    else:
+                    elif type_of_rank == 1:
+                        problem += lpSum(left_side) - lpSum(right_side) + big_M * variable_1 >= epsilon
+                    elif type_of_rank == 2:
+                        problem += lpSum(right_side) - lpSum(left_side) + big_M * variable_1 >= epsilon
+                    elif type_of_rank == 3:
                         problem += lpSum(right_side) - lpSum(left_side) + big_M * variable_1 >= 0
 
             problem += lpSum(binary_variables_rank)
@@ -409,7 +411,7 @@ class SolverUtils:
                     problem += u_list_of_characteristic_points[i][0] >= u_list_of_characteristic_points[i][j]
                     problem += u_list_of_characteristic_points[i][j] >= u_list_of_characteristic_points[i][-1]
 
-        # Comparison constraint
+        # Comparison constraint, but not indifference
         for comparison in comparisons:
             left_alternative: List[float] = performance_table_list[comparison[0]]
             right_alternative: List[float] = performance_table_list[comparison[1]]
@@ -432,8 +434,6 @@ class SolverUtils:
 
             if comparison[3] == '>':
                 problem += lpSum(left_side) >= lpSum(right_side) + epsilon
-            if comparison[3] == '=':
-                problem += lpSum(left_side) == lpSum(right_side)
             if comparison[3] == '>=':
                 problem += lpSum(left_side) >= lpSum(right_side)
 
@@ -501,8 +501,33 @@ class SolverUtils:
             number_of_samples=number_of_samples,
             u_list_of_characteristic_points=u_list_of_characteristic_points,
             u_list_dict=u_list_dict,
-            characteristic_points=characteristic_points
+            characteristic_points=characteristic_points,
+            #positions=worst_best_position
         )
+
+        # Comparison constraint, only indifference
+        for comparison in comparisons:
+            left_alternative: List[float] = performance_table_list[comparison[0]]
+            right_alternative: List[float] = performance_table_list[comparison[1]]
+
+            indices_to_keep: List[int] = comparison[2]
+            if indices_to_keep:
+                left_alternative: List[float] = [left_alternative[i] for i in indices_to_keep]
+                right_alternative: List[float] = [right_alternative[i] for i in indices_to_keep]
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(indices_to_keep)):
+                    left_side.append(u_list_dict[indices_to_keep[i]][left_alternative[i]])
+                    right_side.append(u_list_dict[indices_to_keep[i]][right_alternative[i]])
+            else:
+                left_side: List[LpVariable] = []
+                right_side: List[LpVariable] = []
+                for i in range(len(left_alternative)):
+                    left_side.append(u_list_dict[i][left_alternative[i]])
+                    right_side.append(u_list_dict[i][right_alternative[i]])
+
+            if comparison[3] == '=':
+                problem += lpSum(left_side) == lpSum(right_side)
 
         # Use linear interpolation to create constraints
         for i in range(len(u_list_of_characteristic_points)):
@@ -889,7 +914,8 @@ class SolverUtils:
             number_of_samples,
             u_list_of_characteristic_points,
             u_list_dict,
-            characteristic_points
+            characteristic_points,
+            #positions
     ) -> Tuple[Dict[str, List[int]], Dict[str, Dict[str, float]]]:
         precision = 5
         worst_variants = []
@@ -1051,6 +1077,15 @@ class SolverUtils:
                     alternatives_id_list=alternatives_id_list,
                 )
 
+                # for position in positions:
+                #     alternative = alternatives_id_list[position[0]]
+                #     ranking = list(alternatives_and_utilities_dict.keys())
+                #     position_in_ranking = ranking.index(alternative)
+                #
+                #     if position_in_ranking > position[1] or position_in_ranking < position[2]:
+                #         print('xd')
+                #         # continue
+
                 letter_value_pairs = [(letter, value) for letter, value in alternatives_and_utilities_dict.items()]
 
                 letter_value_pairs.sort(key=lambda x: x[1], reverse=True)
@@ -1084,7 +1119,7 @@ class SolverUtils:
 
             for alternative1, alternative_dict in output2.items():
                 for alternative2, value in alternative_dict.items():
-                    output2[alternative1][alternative2] = output2[alternative1][alternative2] * 100 / sum(output[key])
+                    output2[alternative1][alternative2] = output2[alternative1][alternative2] * 100 / sum(output[alternative1])
 
             for key, value in output.items():
                 try:
@@ -1591,50 +1626,44 @@ class SolverUtils:
             comprehensive_intensities: List[List[int]],
             show_logs: bool = False,
     ):
+
         results = []
 
         for j in range(len(performance_table_list)):
-            problem_max_position = SolverUtils.calculate_solved_problem(
-                performance_table_list,
-                comparisons,
-                criteria,
-                worst_best_position,
-                number_of_points,
-                comprehensive_intensities,
-                alternative_id_extreme=j,
-                type_of_rank=0,
-                show_logs=show_logs
-            )
+            problem_max_position_optimistic = SolverUtils.calculate_solved_problem(performance_table_list, comparisons, criteria, worst_best_position, number_of_points, comprehensive_intensities, alternative_id_extreme=j, type_of_rank=0)
+            problem_max_position_pessimistic = SolverUtils.calculate_solved_problem(performance_table_list, comparisons, criteria, worst_best_position, number_of_points, comprehensive_intensities, alternative_id_extreme=j, type_of_rank=1)
+            problem_min_position_optimistic = SolverUtils.calculate_solved_problem(performance_table_list, comparisons, criteria, worst_best_position, number_of_points, comprehensive_intensities, alternative_id_extreme=j, type_of_rank=2)
+            problem_min_position_pessimistic = SolverUtils.calculate_solved_problem(performance_table_list, comparisons, criteria, worst_best_position, number_of_points, comprehensive_intensities, alternative_id_extreme=j, type_of_rank=3)
 
-            problem_min_position = SolverUtils.calculate_solved_problem(
-                performance_table_list,
-                comparisons,
-                criteria,
-                worst_best_position,
-                number_of_points,
-                comprehensive_intensities,
-                alternative_id_extreme=j,
-                type_of_rank=1,
-                show_logs=show_logs
-            )
-
-            count_from_max = 0
-            for i in problem_max_position.variables():
-
+            count_from_max_optimistic = 0
+            for i in problem_max_position_optimistic.variables():
                 name = i.name
                 name = name.split("_")
                 if name[0] == 'vrank' and i.varValue == 1:
-                    count_from_max = count_from_max + 1
+                    count_from_max_optimistic = count_from_max_optimistic + 1
 
-            count_from_min = 0
-            for i in problem_min_position.variables():
-
+            count_from_max_pessimistic = 0
+            for i in problem_max_position_pessimistic.variables():
                 name = i.name
                 name = name.split("_")
                 if name[0] == 'vrank' and i.varValue == 1:
-                    count_from_min = count_from_min + 1
+                    count_from_max_pessimistic = count_from_max_pessimistic + 1
 
-            pom = [j, len(performance_table_list) - count_from_min, count_from_max + 1]
+            count_from_min_optimistic = 0
+            for i in problem_min_position_optimistic.variables():
+                name = i.name
+                name = name.split("_")
+                if name[0] == 'vrank' and i.varValue == 1:
+                    count_from_min_optimistic = count_from_min_optimistic + 1
+
+            count_from_min_pessimistic = 0
+            for i in problem_min_position_pessimistic.variables():
+                name = i.name
+                name = name.split("_")
+                if name[0] == 'vrank' and i.varValue == 1:
+                    count_from_min_pessimistic = count_from_min_pessimistic + 1
+
+            pom = [j, len(performance_table_list) - count_from_min_pessimistic, len(performance_table_list) - count_from_min_optimistic, count_from_max_pessimistic + 1, count_from_max_optimistic + 1]
 
             results.append(pom)
 
