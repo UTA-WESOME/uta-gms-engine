@@ -343,7 +343,7 @@ class SolverUtils:
             show_logs: bool = False,
             sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
             number_of_samples: str = '100'
-    ) -> Tuple[LpProblem, Dict[str, List[int]], Dict[str, Dict[str, float]]]:
+    ) -> Tuple[LpProblem, Dict[str, List[int]], Dict[str, Dict[str, float]], int]:
         """
         Main method used in getting the most representative value function.
 
@@ -493,7 +493,7 @@ class SolverUtils:
 
         problem += epsilon >= 0.0000001
 
-        position_percentage, pairwise_percentage = SolverUtils.get_sampler_metrics(
+        position_percentage, pairwise_percentage, number_of_rejected = SolverUtils.get_sampler_metrics(
             problem=problem,
             performance_table_list=performance_table_list,
             alternatives_id_list=alternatives_id_list,
@@ -502,7 +502,7 @@ class SolverUtils:
             u_list_of_characteristic_points=u_list_of_characteristic_points,
             u_list_dict=u_list_dict,
             characteristic_points=characteristic_points,
-            #positions=worst_best_position
+            positions=worst_best_position
         )
 
         # Comparison constraint, only indifference
@@ -672,7 +672,7 @@ class SolverUtils:
 
         problem.solve(solver=GLPK(msg=show_logs))
 
-        return problem, position_percentage, pairwise_percentage
+        return problem, position_percentage, pairwise_percentage, number_of_rejected
 
     @staticmethod
     def get_necessary_relations(
@@ -915,8 +915,8 @@ class SolverUtils:
             u_list_of_characteristic_points,
             u_list_dict,
             characteristic_points,
-            #positions
-    ) -> Tuple[Dict[str, List[int]], Dict[str, Dict[str, float]]]:
+            positions
+    ) -> Tuple[Dict[str, List[int]], Dict[str, Dict[str, float]], int]:
         precision = 5
         worst_variants = []
         characteristic_points_in_one_list = {}
@@ -1001,6 +1001,7 @@ class SolverUtils:
 
             input_file.seek(0)
             # Write Sampler output file
+            number_of_rejected = 0
             subprocess.call(
                 ['java', '-jar', sampler_path, '-n', number_of_samples],
                 stdin=input_file,
@@ -1077,14 +1078,14 @@ class SolverUtils:
                     alternatives_id_list=alternatives_id_list,
                 )
 
-                # for position in positions:
-                #     alternative = alternatives_id_list[position[0]]
-                #     ranking = list(alternatives_and_utilities_dict.keys())
-                #     position_in_ranking = ranking.index(alternative)
-                #
-                #     if position_in_ranking > position[1] or position_in_ranking < position[2]:
-                #         print('xd')
-                #         # continue
+                for position in positions:
+                    alternative = alternatives_id_list[position[0]]
+                    ranking = list(alternatives_and_utilities_dict.keys())
+                    position_in_ranking = ranking.index(alternative)
+
+                    if position_in_ranking > position[1] or position_in_ranking < position[2]:
+                        number_of_rejected += 1
+                        continue
 
                 letter_value_pairs = [(letter, value) for letter, value in alternatives_and_utilities_dict.items()]
 
@@ -1127,7 +1128,7 @@ class SolverUtils:
                 except:
                     output[key] = []
 
-            return output, output2
+            return output, output2, number_of_rejected
 
     @staticmethod
     def resolve_incosistency(
