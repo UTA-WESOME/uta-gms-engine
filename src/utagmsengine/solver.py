@@ -147,7 +147,7 @@ class Solver:
 
         alternatives_id_list: List[str] = list(performance_table_dict.keys())
 
-        problem, position_percentage, pairwise_percentage, number_of_rejected = SolverUtils.calculate_the_most_representative_function(
+        problem, position_percentage, pairwise_percentage, number_of_samples_used = SolverUtils.calculate_the_most_representative_function(
             performance_table_list=refined_performance_table_dict,
             alternatives_id_list=alternatives_id_list,
             comparisons=refined_comparisons,
@@ -221,4 +221,4 @@ class Solver:
             alternatives_id_list=alternatives_id_list,
         )
 
-        return alternatives_and_utilities_dict, criterion_functions, position_percentage, pairwise_percentage, number_of_rejected, refined_extreme_ranking, necessary, possible
+        return alternatives_and_utilities_dict, criterion_functions, position_percentage, pairwise_percentage, number_of_samples_used, refined_extreme_ranking, necessary, possible

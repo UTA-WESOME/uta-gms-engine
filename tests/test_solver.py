@@ -1,6 +1,7 @@
 import pytest
 from src.utagmsengine.solver import Solver, Inconsistency
 from src.utagmsengine.dataclasses import Comparison, Criterion, Position, Intensity
+from src.utagmsengine.utils.solver_utils import SamplerError
 
 
 @pytest.fixture()
@@ -136,6 +137,11 @@ def test_get_representative_value_function_dict(
         resolved_inconsistencies = e.data
 
         assert resolved_inconsistencies == resolved_inconsistencies_dummy
+
+    except SamplerError as e:
+        sampler_error = e.data
+
+        assert sampler_error == 'For input string: "error"\n'
 
 
 def test_predefined_get_hasse_diagram_dict(
