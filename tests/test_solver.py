@@ -116,7 +116,7 @@ def test_get_representative_value_function_dict(
     solver = Solver(show_logs=True)
 
     try:
-        representative_value_function_dict, criterion_functions, position_percentage, pairwise_percentage, extreme_ranking, necessary, possible = (
+        representative_value_function_dict, criterion_functions, position_percentage, pairwise_percentage, number_of_rejected, extreme_ranking, necessary, possible = (
             solver.get_representative_value_function_dict(
                 performance_table_dict_dummy,
                 comparison_dummy,
