@@ -141,7 +141,7 @@ def test_get_representative_value_function_dict(
     except SamplerError as e:
         sampler_error = e.data
 
-        assert sampler_error == 'For input string: "error"\n'
+        assert sampler_error == 'Unable to access jarfile files/polyrun-1.1.0-jar-with-dependencies.jar'
 
 
 def test_predefined_get_hasse_diagram_dict(
