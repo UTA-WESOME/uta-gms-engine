@@ -1120,7 +1120,10 @@ class SolverUtils:
 
             for alternative1, alternative_dict in output2.items():
                 for alternative2, value in alternative_dict.items():
-                    output2[alternative1][alternative2] = output2[alternative1][alternative2] * 100 / sum(output[alternative1])
+                    try:
+                        output2[alternative1][alternative2] = output2[alternative1][alternative2] * 100 / sum(output[alternative1])
+                    except:
+                        output2[alternative1][alternative2] = -1
 
             for key, value in output.items():
                 try:
