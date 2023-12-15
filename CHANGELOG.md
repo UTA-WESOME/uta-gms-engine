@@ -4,10 +4,10 @@
 - Rejection Sampling
 - new sampler metric - pairwise_percentage
 - new Tuple inside extreme_ranking, first one is pessimistic and the second one is optimistic approach
-- new argument returned by get_representative_value_function_dict - number_of_samples_used. Meaning get_representative_value_function_dict now returns:
-  (representative_value_function_dict, criterion_functions, position_percentage, pairwise_percentage, number_of_rejected, extreme_ranking, necessary, possible)
-- Sampler now raises SamplerError exception when encounters and error.
-
+- new argument returned by get_representative_value_function_dict - number_of_samples_used.
+- get_representative_value_function_dict now returns sampler_error argument when encounters and error.
+- Meaning get_representative_value_function_dict now returns:
+  (representative_value_function_dict, criterion_functions, position_percentage, pairwise_percentage, number_of_rejected, extreme_ranking, necessary, possible, sampler_error)
 ### Changed
 - Sampler now does not take into account indifference
 
