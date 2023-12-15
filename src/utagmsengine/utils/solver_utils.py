@@ -7,12 +7,6 @@ import re
 import subprocess
 
 
-class SamplerError(Exception):
-    def __init__(self, message, data=None):
-        super().__init__(message)
-        self.data = data
-
-
 class SolverUtils:
 
     @staticmethod
@@ -349,7 +343,7 @@ class SolverUtils:
             show_logs: bool = False,
             sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
             number_of_samples: str = '100'
-    ) -> Tuple[LpProblem, Dict[str, List[float]], Dict[str, Dict[str, float]], int]:
+    ) -> Tuple[LpProblem, Dict[str, List[float]], Dict[str, Dict[str, float]], int, str]:
         """
         Main method used in getting the most representative value function.
 
@@ -495,9 +489,9 @@ class SolverUtils:
             elif intensity[-1] == '>=':
                 problem += lpSum(left_side_1) - lpSum(left_side_2) >= lpSum(right_side_1) - lpSum(right_side_2)
 
-        problem += epsilon >= 0.0000001
+        #problem += epsilon >= 0.0000001
 
-        position_percentage, pairwise_percentage, number_of_samples_used = SolverUtils.get_sampler_metrics(
+        position_percentage, pairwise_percentage, number_of_samples_used, sampler_error = SolverUtils.get_sampler_metrics(
             problem=problem,
             performance_table_list=performance_table_list,
             alternatives_id_list=alternatives_id_list,
@@ -725,7 +719,7 @@ class SolverUtils:
 
         problem.solve(solver=GLPK(msg=show_logs))
 
-        return problem, position_percentage, pairwise_percentage, number_of_samples_used
+        return problem, position_percentage, pairwise_percentage, number_of_samples_used, sampler_error
 
     @staticmethod
     def get_necessary_relations(
@@ -969,8 +963,8 @@ class SolverUtils:
             u_list_dict,
             characteristic_points,
             positions
-    ) -> Tuple[Dict[str, List[float]], Dict[str, Dict[str, float]], int]:
-        refined_number_of_samples = SolverUtils.calculate_rejected_ratio(
+    ) -> Tuple[Dict[str, List[float]], Dict[str, Dict[str, float]], int, str]:
+        refined_number_of_samples: str = SolverUtils.calculate_rejected_ratio(
             problem=problem,
             performance_table_list=performance_table_list,
             alternatives_id_list=alternatives_id_list,
@@ -1064,6 +1058,14 @@ class SolverUtils:
 
                 input_file.write(" ".join(constraint_values) + "\n")
 
+            epsilon_constraint = ["1"]
+            if 'epsilon' in variable_names:
+                epsilon_constraint.extend(["0"] * (len(constraint_values) - 3))
+                epsilon_constraint.append(">=")
+                epsilon_constraint.append("0.0000001")
+
+                input_file.write(" ".join(epsilon_constraint) + "\n")
+
             input_file.seek(0)
             error_file.seek(0)
             # Write Sampler output file
@@ -1075,9 +1077,7 @@ class SolverUtils:
                 stderr=error_file
             )
             error_file.seek(0)
-            error = error_file.read()
-            if error != '':
-                raise SamplerError("Sampler error", error)
+            error: str = error_file.read()
 
             points_in_constrtaints_file = []
             for i in range(len(u_list_of_characteristic_points)):
@@ -1204,7 +1204,7 @@ class SolverUtils:
 
             number_of_samples_used: int = int(refined_number_of_samples) - number_of_rejected
 
-            return output, output2, number_of_samples_used
+            return output, output2, number_of_samples_used, error
 
     @staticmethod
     def resolve_incosistency(
@@ -1828,7 +1828,7 @@ class SolverUtils:
             characteristic_points,
             positions
     ) -> str:
-        precision = 5
+        precision: int = 5
         worst_variants = []
         characteristic_points_in_one_list = {}
         for i in range(len(u_list_of_characteristic_points)):
@@ -1838,7 +1838,7 @@ class SolverUtils:
                 characteristic_points_in_one_list[u_list_of_characteristic_points[i][j].name] = 1
 
         # Write input file for Sampler
-        with TemporaryFile("w+") as input_file2, TemporaryFile("w+") as output_file2, TemporaryFile("w+") as error_file2:
+        with TemporaryFile("w+") as input_file2, TemporaryFile("w+") as output_file2:
             positions_of_the_worst = []
             # Write header, useful only for testing
             variable_names = [var.name for var in problem.variables()]
@@ -1923,22 +1923,23 @@ class SolverUtils:
 
                 input_file2.write(" ".join(constraint_values) + "\n")
 
+            epsilon_constraint = ["1"]
+            if 'epsilon' in variable_names:
+                epsilon_constraint.extend(["0"] * (len(constraint_values) - 3))
+                epsilon_constraint.append(">=")
+                epsilon_constraint.append("0.0000001")
+
+                input_file2.write(" ".join(epsilon_constraint) + "\n")
+
             input_file2.seek(0)
-            error_file2.seek(0)
             # Write Sampler output file
             number_of_rejected = 0
 
             subprocess.call(
                 ['java', '-jar', sampler_path, '-n', '1000'],
                 stdin=input_file2,
-                stdout=output_file2,
-                stderr=error_file2
+                stdout=output_file2
             )
-
-            error_file2.seek(0)
-            error = error_file2.read()
-            if error != '':
-                raise SamplerError("Sampler error", error)
 
             points_in_constrtaints_file = []
             for i in range(len(u_list_of_characteristic_points)):

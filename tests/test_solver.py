@@ -1,7 +1,6 @@
 import pytest
 from src.utagmsengine.solver import Solver, Inconsistency
 from src.utagmsengine.dataclasses import Comparison, Criterion, Position, Intensity
-from src.utagmsengine.utils.solver_utils import SamplerError
 
 
 @pytest.fixture()
@@ -117,7 +116,7 @@ def test_get_representative_value_function_dict(
     solver = Solver(show_logs=True)
 
     try:
-        representative_value_function_dict, criterion_functions, position_percentage, pairwise_percentage, number_of_rejected, extreme_ranking, necessary, possible = (
+        representative_value_function_dict, criterion_functions, position_percentage, pairwise_percentage, number_of_rejected, extreme_ranking, necessary, possible, sampler_error = (
             solver.get_representative_value_function_dict(
                 performance_table_dict_dummy,
                 comparison_dummy,
@@ -137,11 +136,6 @@ def test_get_representative_value_function_dict(
         resolved_inconsistencies = e.data
 
         assert resolved_inconsistencies == resolved_inconsistencies_dummy
-
-    except SamplerError as e:
-        sampler_error = e.data
-
-        assert sampler_error == 'Error: Unable to access jarfile files/polyrun-1.1.0-jar-with-dependencies.jar\n'
 
 
 def test_predefined_get_hasse_diagram_dict(
