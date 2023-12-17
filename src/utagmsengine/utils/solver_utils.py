@@ -342,7 +342,8 @@ class SolverUtils:
             comprehensive_intensities: List[List[int]],
             show_logs: bool = False,
             sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
-            number_of_samples: str = '100'
+            number_of_samples: str = '100',
+            sampler_on: bool = True
     ) -> Tuple[LpProblem, Dict[str, List[float]], Dict[str, Dict[str, float]], int, str]:
         """
         Main method used in getting the most representative value function.
@@ -357,6 +358,7 @@ class SolverUtils:
         :param show_logs: default None
         :param sampler_path:
         :param number_of_samples:
+        :param sampler_on:
 
         :return problem:
         """
@@ -489,19 +491,23 @@ class SolverUtils:
             elif intensity[-1] == '>=':
                 problem += lpSum(left_side_1) - lpSum(left_side_2) >= lpSum(right_side_1) - lpSum(right_side_2)
 
-        #problem += epsilon >= 0.0000001
-
-        position_percentage, pairwise_percentage, number_of_samples_used, sampler_error = SolverUtils.get_sampler_metrics(
-            problem=problem,
-            performance_table_list=performance_table_list,
-            alternatives_id_list=alternatives_id_list,
-            sampler_path=sampler_path,
-            number_of_samples=number_of_samples,
-            u_list_of_characteristic_points=u_list_of_characteristic_points,
-            u_list_dict=u_list_dict,
-            characteristic_points=characteristic_points,
-            positions=worst_best_position
-        )
+        if sampler_on:
+            position_percentage, pairwise_percentage, number_of_samples_used, sampler_error = SolverUtils.get_sampler_metrics(
+                problem=problem,
+                performance_table_list=performance_table_list,
+                alternatives_id_list=alternatives_id_list,
+                sampler_path=sampler_path,
+                number_of_samples=number_of_samples,
+                u_list_of_characteristic_points=u_list_of_characteristic_points,
+                u_list_dict=u_list_dict,
+                characteristic_points=characteristic_points,
+                positions=worst_best_position,
+            )
+        else:
+            position_percentage = None
+            pairwise_percentage = None
+            number_of_samples_used = None
+            sampler_error = None
 
         # Comparison constraint, only indifference
         for comparison in comparisons:

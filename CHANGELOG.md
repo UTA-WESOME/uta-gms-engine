@@ -1,6 +1,8 @@
 # Changelog
-## v0.0.25 - 14-12-2023
+## v0.0.25 - 17-12-2023
 ### Added
+- sampler_on flag for get_representative_value_function_dict method, default true. 
+When sampler_on is Fale, then position_percentage, pairwise_percentage, number_of_rejected and sampler_error are None
 - Rejection Sampling
 - new sampler metric - pairwise_percentage
 - new Tuple inside extreme_ranking, first one is pessimistic and the second one is optimistic approach

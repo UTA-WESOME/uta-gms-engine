@@ -98,7 +98,8 @@ class Solver:
             positions: Optional[List[Position]] = [],
             intensities: Optional[List[Intensity]] = [],
             sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
-            number_of_samples: str = '100'
+            number_of_samples: str = '100',
+            sampler_on: bool = True
     ) -> Tuple[Dict[str, float], Dict[str, List[Tuple[float, float]]], Dict[str, List[float]], Dict[str, Dict[str, float]], int, List[List[int]], Dict[str, List[str]], Dict[str, List[str]], str]:
         """
         Method for getting The Most Representative Value Function
@@ -110,6 +111,7 @@ class Solver:
         :param positions: List of Position objects
         :param sampler_path:
         :param number_of_samples:
+        :param sampler_on:
 
         :return:
         """
@@ -157,7 +159,8 @@ class Solver:
             comprehensive_intensities=refined_intensities,
             show_logs=self.show_logs,
             sampler_path=sampler_path,
-            number_of_samples=number_of_samples
+            number_of_samples=number_of_samples,
+            sampler_on=sampler_on
         )
 
         extreme_ranking = SolverUtils.calculate_extreme_ranking_analysis(
