@@ -1,4 +1,7 @@
 # Changelog
+## v0.0.26 - 18-12-2023
+### Added
+- Error when rejection ratio is too high
 ## v0.0.25 - 17-12-2023
 ### Added
 - sampler_on flag for get_representative_value_function_dict method, default true. 

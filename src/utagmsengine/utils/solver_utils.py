@@ -982,6 +982,9 @@ class SolverUtils:
             positions=positions
         )
 
+        if refined_number_of_samples == 'Rejection ratio to high':
+            return None, None, None, refined_number_of_samples
+
         precision = 5
         worst_variants = []
         characteristic_points_in_one_list = {}
@@ -2034,6 +2037,9 @@ class SolverUtils:
                         number_of_rejected += 1
 
             ratio = 1 - (number_of_rejected/1000)
+
+            if ratio <= 0.1:
+                return 'Rejection ratio to high'
 
             refined_number_of_samples = str(round(int(number_of_samples) / ratio))
 
