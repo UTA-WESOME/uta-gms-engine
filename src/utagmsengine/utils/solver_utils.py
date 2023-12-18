@@ -982,8 +982,8 @@ class SolverUtils:
             positions=positions
         )
 
-        if refined_number_of_samples is None:
-            return None, None, None, 'Rejection ratio to high'
+        if refined_number_of_samples == 'Rejection ratio to high':
+            return None, None, None, refined_number_of_samples
 
         precision = 5
         worst_variants = []
@@ -2039,7 +2039,7 @@ class SolverUtils:
             ratio = 1 - (number_of_rejected/1000)
 
             if ratio <= 0.1:
-                return None
+                return 'Rejection ratio to high'
 
             refined_number_of_samples = str(round(int(number_of_samples) / ratio))
 
