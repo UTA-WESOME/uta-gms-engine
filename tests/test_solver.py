@@ -77,7 +77,7 @@ def predefined_hasse_diagram_dict_dummy():
 
 @pytest.fixture()
 def extreme_ranking_dummy():
-    return {'A': (11, 2), 'B': (12, 1), 'C': (12, 3), 'D': (7, 1), 'E': (12, 5), 'F': (11, 3), 'G': (7, 1), 'H': (12, 1), 'I': (11, 1), 'J': (12, 4), 'K': (12, 3), 'L': (12, 1)}
+    return {'A': ((11, 2), (7, 2)), 'B': ((12, 4), (12, 1)), 'C': ((12, 5), (11, 3)), 'D': ((7, 2), (4, 1)), 'E': ((12, 5), (12, 5)), 'F': ((11, 4), (10, 3)), 'G': ((7, 2), (4, 1)), 'H': ((12, 3), (12, 1)), 'I': ((11, 1), (10, 1)), 'J': ((12, 8), (12, 4)), 'K': ((12, 4), (10, 3)), 'L': ((12, 1), (11, 1))}
 
 
 def test_get_hasse_diagram_dict(
@@ -116,7 +116,7 @@ def test_get_representative_value_function_dict(
     solver = Solver(show_logs=True)
 
     try:
-        representative_value_function_dict, criterion_functions, sampler_metrics, extreme_ranking, necessary, possible = (
+        representative_value_function_dict, criterion_functions, position_percentage, pairwise_percentage, number_of_rejected, extreme_ranking, necessary, possible, sampler_error = (
             solver.get_representative_value_function_dict(
                 performance_table_dict_dummy,
                 comparison_dummy,

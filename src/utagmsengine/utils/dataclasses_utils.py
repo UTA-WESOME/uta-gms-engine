@@ -236,13 +236,14 @@ class DataclassesUtils:
 
         :return output:
         """
-        output: Dict[str, Tuple[int]] = {}
+        output: Dict[str, Tuple[Tuple[int]]] = {}
         tmp = {}
 
         for i, key in enumerate(performance_table_dict.keys()):
             tmp[i] = key
 
         for extreme_rank in extreme_ranking:
-            output[tmp[extreme_rank[0]]] = (extreme_rank[1], extreme_rank[2])
-
+            pessimistic = (extreme_rank[1], extreme_rank[3])
+            optimistic = (extreme_rank[2], extreme_rank[4])
+            output[tmp[extreme_rank[0]]] = (pessimistic, optimistic)
         return output

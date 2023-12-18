@@ -98,8 +98,9 @@ class Solver:
             positions: Optional[List[Position]] = [],
             intensities: Optional[List[Intensity]] = [],
             sampler_path: str = 'files/polyrun-1.1.0-jar-with-dependencies.jar',
-            number_of_samples: str = '100'
-    ) -> Tuple[Dict[str, float], Dict[str, List[Tuple[float, float]]], Dict[str, List[int]], List[List[int]], Dict[str, List[str]], Dict[str, List[str]]]:
+            number_of_samples: str = '100',
+            sampler_on: bool = True
+    ) -> Tuple[Dict[str, float], Dict[str, List[Tuple[float, float]]], Dict[str, List[float]], Dict[str, Dict[str, float]], int, List[List[int]], Dict[str, List[str]], Dict[str, List[str]], str]:
         """
         Method for getting The Most Representative Value Function
 
@@ -110,6 +111,7 @@ class Solver:
         :param positions: List of Position objects
         :param sampler_path:
         :param number_of_samples:
+        :param sampler_on:
 
         :return:
         """
@@ -147,7 +149,7 @@ class Solver:
 
         alternatives_id_list: List[str] = list(performance_table_dict.keys())
 
-        problem, sampler_metrics = SolverUtils.calculate_the_most_representative_function(
+        problem, position_percentage, pairwise_percentage, number_of_samples_used, sampler_error = SolverUtils.calculate_the_most_representative_function(
             performance_table_list=refined_performance_table_dict,
             alternatives_id_list=alternatives_id_list,
             comparisons=refined_comparisons,
@@ -157,7 +159,8 @@ class Solver:
             comprehensive_intensities=refined_intensities,
             show_logs=self.show_logs,
             sampler_path=sampler_path,
-            number_of_samples=number_of_samples
+            number_of_samples=number_of_samples,
+            sampler_on=sampler_on
         )
 
         extreme_ranking = SolverUtils.calculate_extreme_ranking_analysis(
@@ -221,4 +224,4 @@ class Solver:
             alternatives_id_list=alternatives_id_list,
         )
 
-        return alternatives_and_utilities_dict, criterion_functions, sampler_metrics, refined_extreme_ranking, necessary, possible
+        return alternatives_and_utilities_dict, criterion_functions, position_percentage, pairwise_percentage, number_of_samples_used, refined_extreme_ranking, necessary, possible, sampler_error
