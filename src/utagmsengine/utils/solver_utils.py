@@ -901,7 +901,7 @@ class SolverUtils:
             pom = []
             if number_of_points[i] != 0:
                 for j in range(number_of_points[i]):
-                    x = worst_values[i] + (j / (number_of_points[i] - 1)) * (best_values[i] - worst_values[i])
+                    x = round(worst_values[i] + (j / (number_of_points[i] - 1)) * (best_values[i] - worst_values[i]), 4)
                     if x not in u_list_dict[i]:
                         new: str = f"u_{i}_{x}"
                         variable: LpVariable = LpVariable(new)
@@ -1869,8 +1869,7 @@ class SolverUtils:
                             else:
                                 val = float(var.name.split("_")[-1])
 
-                            while characteristic_points[int(var.name.split("_")[1])][point_before] > val or val > \
-                                    characteristic_points[int(var.name.split("_")[1])][point_after]:
+                            while characteristic_points[int(var.name.split("_")[1])][point_before] > val or val > characteristic_points[int(var.name.split("_")[1])][point_after]:
                                 point_before += 1
                                 point_after += 1
 
