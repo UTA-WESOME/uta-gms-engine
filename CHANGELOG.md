@@ -1,4 +1,8 @@
 # Changelog
+## v0.0.27 - 27-12-2023
+### Fixed
+- Rounding error
+
 ## v0.0.26 - 18-12-2023
 ### Added
 - Error when rejection ratio is too high
