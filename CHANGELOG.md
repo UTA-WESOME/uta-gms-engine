@@ -1,4 +1,8 @@
 # Changelog
+## v0.0.28 - 27-12-2023
+### Fixed
+- Delta issue (whenever there are no possible relations)
+
 ## v0.0.27 - 27-12-2023
 ### Fixed
 - Rounding error
