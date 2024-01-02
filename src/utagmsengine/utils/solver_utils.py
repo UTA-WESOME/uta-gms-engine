@@ -721,7 +721,10 @@ class SolverUtils:
             if len(alternatives_binary_variables[worst_best[0]]) > 1:
                 x += 1
 
-        problem += big_M * epsilon - delta
+        if 'delta' in problem.variablesDict():
+            problem += big_M * epsilon - delta
+        else:
+            problem += big_M * epsilon
 
         problem.solve(solver=GLPK(msg=show_logs))
 
