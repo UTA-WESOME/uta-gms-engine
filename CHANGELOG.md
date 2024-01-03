@@ -1,4 +1,8 @@
 # Changelog
+## v0.0.29 - 03-01-2024
+### Fixed
+- Rejection issue
+
 ## v0.0.28 - 27-12-2023
 ### Fixed
 - Delta issue (whenever there are no possible relations)
