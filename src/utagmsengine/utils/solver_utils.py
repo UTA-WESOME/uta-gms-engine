@@ -2033,7 +2033,7 @@ class SolverUtils:
                 for position in positions:
                     alternative = alternatives_id_list[position[0]]
                     ranking = list(alternatives_and_utilities_dict.keys())
-                    position_in_ranking = ranking.index(alternative)
+                    position_in_ranking = len(performance_table_list) - ranking.index(alternative)
 
                     if position_in_ranking > position[1] or position_in_ranking < position[2]:
                         number_of_rejected += 1
