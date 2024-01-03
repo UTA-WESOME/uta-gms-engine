@@ -1161,6 +1161,7 @@ class SolverUtils:
                     alternatives_id_list=alternatives_id_list,
                 )
 
+                to_continue: bool = False
                 for position in positions:
                     alternative = alternatives_id_list[position[0]]
                     ranking = list(alternatives_and_utilities_dict.keys())
@@ -1168,7 +1169,11 @@ class SolverUtils:
 
                     if position_in_ranking > position[1] or position_in_ranking < position[2]:
                         number_of_rejected += 1
-                        continue
+                        to_continue: bool = True
+                        break
+
+                if to_continue:
+                    continue
 
                 letter_value_pairs = [(letter, value) for letter, value in alternatives_and_utilities_dict.items()]
 
