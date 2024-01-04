@@ -180,10 +180,13 @@ class SolverUtils:
             alternatives_binary_variables[i[0]].append(pom_dict)
 
         big_M: int = 1e20
-        x: int = 0
+        dict_with_worst_best_iterations = {}
+        for i in range(len(performance_table_list)):
+            dict_with_worst_best_iterations[i] = 0
+
         for worst_best in worst_best_position:
-            if len(alternatives_binary_variables[worst_best[0]]) == 1:
-                x: int = 0
+            x = dict_with_worst_best_iterations[worst_best[0]]
+
             for i in range(len(performance_table_list)):
                 if i != worst_best[0]:
                     position_constraints: List[LpVariable] = alternatives_variables[worst_best[0]]
@@ -208,9 +211,7 @@ class SolverUtils:
             problem += lpSum(pom_higher) <= worst_best[1] - 1
             problem += lpSum(pom_lower) <= len(performance_table_list) - worst_best[2]
 
-            # If there are more Positions than one, relevant to one alternative
-            if len(alternatives_binary_variables[worst_best[0]]) > 1:
-                x += 1
+            dict_with_worst_best_iterations[worst_best[0]] = dict_with_worst_best_iterations[worst_best[0]] + 1
 
         # Use linear interpolation to create constraints
         for i in range(len(u_list_of_characteristic_points)):
@@ -689,10 +690,13 @@ class SolverUtils:
             alternatives_binary_variables[i[0]].append(pom_dict)
 
         big_M: int = 1e20
-        x: int = 0
+        dict_with_worst_best_iterations = {}
+        for i in range(len(performance_table_list)):
+            dict_with_worst_best_iterations[i] = 0
+
         for worst_best in worst_best_position:
-            if len(alternatives_binary_variables[worst_best[0]]) == 1:
-                x: int = 0
+            x = dict_with_worst_best_iterations[worst_best[0]]
+
             for i in range(len(performance_table_list)):
                 if i != worst_best[0]:
                     position_constraints: List[LpVariable] = alternatives_variables[worst_best[0]]
@@ -717,9 +721,7 @@ class SolverUtils:
             problem += lpSum(pom_higher) <= worst_best[1] - 1
             problem += lpSum(pom_lower) <= len(performance_table_list) - worst_best[2]
 
-            # If there are more Positions than one, relevant to one alternative
-            if len(alternatives_binary_variables[worst_best[0]]) > 1:
-                x += 1
+            dict_with_worst_best_iterations[worst_best[0]] = dict_with_worst_best_iterations[worst_best[0]] + 1
 
         if 'delta' in problem.variablesDict():
             problem += big_M * epsilon - delta
@@ -1344,14 +1346,16 @@ class SolverUtils:
 
             alternatives_binary_variables[i[0]].append(pom_dict)
 
-        big_M: float = 1e20
-        x: int = 0
+        big_M: int = 1e20
+        dict_with_worst_best_iterations = {}
+        for i in range(len(performance_table_list)):
+            dict_with_worst_best_iterations[i] = 0
+
         for worst_best in worst_best_position:
-            if len(alternatives_binary_variables[worst_best[0]]) == 1:
-                x: int = 0
+            x = dict_with_worst_best_iterations[worst_best[0]]
+
             for i in range(len(performance_table_list)):
                 if i != worst_best[0]:
-
                     position_constraints: List[LpVariable] = alternatives_variables[worst_best[0]]
                     compared_constraints: List[LpVariable] = alternatives_variables[i]
 
@@ -1380,9 +1384,7 @@ class SolverUtils:
             problem += lpSum(pom_higher) <= worst_best[1] - 1 + big_M * variable_1
             problem += lpSum(pom_lower) <= len(performance_table_list) - worst_best[2] + big_M * variable_1
 
-            # If there are more Positions than one, relevant to one alternative
-            if len(alternatives_binary_variables[worst_best[0]]) > 1:
-                x += 1
+            dict_with_worst_best_iterations[worst_best[0]] = dict_with_worst_best_iterations[worst_best[0]] + 1
 
         binary_variables_inconsistency_list_comparisons = []
         # Comparison constraint

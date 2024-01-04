@@ -1,4 +1,8 @@
 # Changelog
+## v0.0.30 - 04-01-2024
+### Fixed
+- Worst/best issue
+
 ## v0.0.29 - 03-01-2024
 ### Fixed
 - Rejection issue
