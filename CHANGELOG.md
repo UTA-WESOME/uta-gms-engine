@@ -1,4 +1,8 @@
 # Changelog
+## v0.0.31 - 10-01-2024
+### Fixed
+- When there is no epsilon in the main problem
+- 
 ## v0.0.30 - 04-01-2024
 ### Fixed
 - Worst/best issue

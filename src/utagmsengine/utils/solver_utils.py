@@ -728,6 +728,14 @@ class SolverUtils:
         else:
             problem += big_M * epsilon
 
+        epsilon_not_in_constraints: bool = True
+        for c in problem.coefficients():
+            if c[0] == 'epsilon':
+                epsilon_not_in_constraints: bool = False
+
+        if epsilon_not_in_constraints:
+            problem += epsilon == 0.0000001
+
         problem.solve(solver=GLPK(msg=show_logs))
 
         return problem, position_percentage, pairwise_percentage, number_of_samples_used, sampler_error
