@@ -1,4 +1,4 @@
-# uta-gms-engine: model and solve UTA
+# uta-gms-engine
 
 The official repository for the `uta-gms-engine` Python package.
 
